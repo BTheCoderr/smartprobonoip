@@ -73,10 +73,9 @@ function BarList({
 
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [backend, setBackend] = useState<"supabase" | "local">("local");
+  const backend = getBackendName();
 
   useEffect(() => {
-    setBackend(getBackendName());
     getStore()
       .listRecords()
       .then((records) => setMetrics(computeMetrics(records)));

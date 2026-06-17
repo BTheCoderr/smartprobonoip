@@ -3,12 +3,13 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ProfileView } from "@/components/profile/ProfileView";
+import { ProfileEditor } from "@/components/profile/ProfileEditor";
 import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
 import { downloadProfilePdf } from "@/lib/pdf";
 import { BRAND } from "@/lib/brand";
-import type { ProjectRecord } from "@/lib/types";
+import type { ProjectRecord, ReadinessProfile } from "@/lib/types";
 
 type LoadState = "loading" | "found" | "missing";
 
@@ -22,6 +23,8 @@ export default function ProfilePage({
   const [record, setRecord] = useState<ProjectRecord | null>(null);
   const [postClarity, setPostClarity] = useState<number>(0);
   const [saved, setSaved] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -46,6 +49,14 @@ export default function ProfilePage({
     setPostClarity(value);
     await getStore().updatePostClarity(id, value);
     setSaved(true);
+  }
+
+  async function saveProfile(next: ReadinessProfile) {
+    setSavingProfile(true);
+    await getStore().updateProfile(id, next);
+    setRecord((prev) => (prev ? { ...prev, profile: next } : prev));
+    setSavingProfile(false);
+    setEditing(false);
   }
 
   if (state === "loading") {
@@ -98,17 +109,37 @@ export default function ProfilePage({
             draft
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => downloadProfilePdf(record)}
-          className="inline-flex items-center gap-2 rounded-lg border border-navy-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:bg-mist-100"
-        >
-          <span aria-hidden>⬇</span> Download PDF
-        </button>
+        <div className="flex gap-2">
+          {!editing ? (
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-navy-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:bg-mist-100"
+            >
+              ✎ Edit
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => downloadProfilePdf(record)}
+            className="inline-flex items-center gap-2 rounded-lg border border-navy-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:bg-mist-100"
+          >
+            <span aria-hidden>⬇</span> Download PDF
+          </button>
+        </div>
       </div>
 
       <div className="mt-8">
-        <ProfileView profile={record.profile} />
+        {editing ? (
+          <ProfileEditor
+            profile={record.profile}
+            onSave={saveProfile}
+            onCancel={() => setEditing(false)}
+            saving={savingProfile}
+          />
+        ) : (
+          <ProfileView profile={record.profile} />
+        )}
       </div>
 
       <Card className="mt-6">

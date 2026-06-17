@@ -1,20 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { IntakeForm } from "@/components/intake/IntakeForm";
 import { Card } from "@/components/ui/Card";
 import { hasAcknowledgedDisclaimer } from "@/lib/ack";
+import { useIsClient } from "@/lib/useIsClient";
 import { BRAND } from "@/lib/brand";
 
 export default function StartPage() {
-  const [ready, setReady] = useState(false);
-  const [acknowledged, setAcknowledged] = useState(false);
-
-  useEffect(() => {
-    setAcknowledged(hasAcknowledgedDisclaimer());
-    setReady(true);
-  }, []);
+  const ready = useIsClient();
+  const acknowledged = ready && hasAcknowledgedDisclaimer();
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
