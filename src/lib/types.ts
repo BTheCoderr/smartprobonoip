@@ -73,6 +73,14 @@ export type ResourceCategory =
 
 export type GeneratorKind = "rule" | "ai";
 
+export type FollowUpState = "pending" | "done" | "skipped";
+
+export interface FollowUpStatus {
+  day30: FollowUpState;
+  day60: FollowUpState;
+  day90: FollowUpState;
+}
+
 export interface ReadinessProfile {
   ideaSummary: string;
   signals: IpSignal[];
@@ -94,6 +102,8 @@ export interface ProjectRecord {
   profile: ReadinessProfile;
   preClarity: number;
   postClarity: number | null;
+  isDemo?: boolean;
+  followUpStatus?: FollowUpStatus;
 }
 
 export interface DashboardMetrics {
@@ -105,9 +115,18 @@ export interface DashboardMetrics {
   avgPreClarity: number | null;
   avgPostClarity: number | null;
   clarityResponses: number;
+  clarityImprovedCount: number;
+  avgClarityDelta: number | null;
   followUp: {
     day30: number;
     day60: number;
     day90: number;
   };
 }
+
+export type ClarityFilter =
+  | "all"
+  | "improved"
+  | "same"
+  | "declined"
+  | "no_response";

@@ -1,0 +1,72 @@
+import { NextResponse } from "next/server";
+import { listLiveRecords, verifyPartnerSecret } from "@/lib/db/records";
+import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
+
+function readSecret(request: Request): string | null {
+  return (
+    request.headers.get("x-partner-secret") ??
+    new URL(request.url).searchParams.get("secret")
+  );
+}
+
+function escapeCsv(value: string | number | boolean | null | undefined): string {
+  if (value === null || value === undefined) return "";
+  const str = String(value);
+  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+export async function GET(request: Request) {
+  if (!verifyPartnerSecret(readSecret(request))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const records = await listLiveRecords();
+  const header = [
+    "id",
+    "created_at",
+    "item_type",
+    "signals",
+    "public_disclosure",
+    "pre_clarity",
+    "post_clarity",
+    "clarity_delta",
+    "recommended_resources",
+    "followup_30",
+    "followup_60",
+    "followup_90",
+    "is_demo",
+  ];
+
+  const rows = records.map((r) => {
+    const delta =
+      typeof r.postClarity === "number" ? r.postClarity - r.preClarity : "";
+    return [
+      r.id,
+      r.createdAt,
+      r.answers.itemType,
+      r.profile.signals.map((s) => SIGNAL_LABELS[s]).join("; "),
+      r.profile.publicDisclosure,
+      r.preClarity,
+      r.postClarity ?? "",
+      delta,
+      r.profile.recommendedResources.map((x) => RESOURCE_LABELS[x]).join("; "),
+      r.followUpStatus?.day30 ?? "pending",
+      r.followUpStatus?.day60 ?? "pending",
+      r.followUpStatus?.day90 ?? "pending",
+      r.isDemo ?? false,
+    ]
+      .map(escapeCsv)
+      .join(",");
+  });
+
+  const csv = [header.join(","), ...rows].join("\n");
+  return new NextResponse(csv, {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": 'attachment; filename="smartprobonoip-pilot-export.csv"',
+    },
+  });
+}

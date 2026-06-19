@@ -147,8 +147,8 @@ export default function ProfilePage({
           How clear are you now on your next IP step?
         </h2>
         <p className="mt-1 text-sm text-navy-500">
-          You rated your clarity {record.preClarity}/5 before. Let&rsquo;s see
-          where you are now.
+          Rate your clarity to help us measure pilot impact. You rated{" "}
+          {record.preClarity}/5 before.
         </p>
         <div className="mt-4">
           <ClarityScale

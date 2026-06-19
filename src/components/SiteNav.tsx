@@ -25,6 +25,12 @@ export function SiteNav() {
             Product
           </Link>
           <Link
+            href="/smartprobonoip/disclaimer?demo=1"
+            className="hidden rounded-md px-3 py-2 text-teal-700 transition hover:bg-teal-50 sm:inline-block"
+          >
+            Demo
+          </Link>
+          <Link
             href="/smartprobonoip/dashboard"
             className="hidden rounded-md px-3 py-2 text-navy-700 transition hover:bg-mist-100 sm:inline-block"
           >

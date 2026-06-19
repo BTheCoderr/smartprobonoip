@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { Card } from "@/components/ui/Card";
+import { DemoChecklist } from "@/components/DemoChecklist";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 
 const STEPS = [
@@ -46,6 +47,12 @@ export default function ProductLanding() {
               className="rounded-lg bg-teal-600 px-6 py-3 font-semibold text-white transition hover:bg-teal-700"
             >
               Start the readiness check
+            </Link>
+            <Link
+              href="/smartprobonoip/disclaimer?demo=1"
+              className="rounded-lg border border-teal-300 bg-teal-50 px-6 py-3 font-semibold text-teal-800 transition hover:bg-teal-100"
+            >
+              Try demo intake
             </Link>
             <Link
               href="/smartprobonoip/dashboard"
@@ -95,7 +102,10 @@ export default function ProductLanding() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+        <div className="mb-8">
+          <DemoChecklist />
+        </div>
         <DisclaimerNotice />
       </section>
     </div>

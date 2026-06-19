@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { ProgressIndicator } from "@/components/ui/ProgressIndicator";
 import {
@@ -11,6 +11,7 @@ import {
   SHARING_OPTIONS,
 } from "@/lib/labels";
 import { getStore } from "@/lib/store";
+import { activateDemoFromQuery, DEMO_INVENTION, isDemoMode } from "@/lib/demo";
 import type {
   AssetType,
   Goal,
@@ -61,10 +62,22 @@ function toggle<T>(list: T[], value: T): T[] {
 
 export function IntakeForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const demoFromUrl = searchParams.get("demo") === "1";
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<IntakeAnswers>(INITIAL);
+  const [answers, setAnswers] = useState<IntakeAnswers>(() => {
+    if (typeof window !== "undefined") {
+      const active = activateDemoFromQuery(`?${searchParams.toString()}`) || isDemoMode();
+      return active ? DEMO_INVENTION : INITIAL;
+    }
+    return demoFromUrl ? DEMO_INVENTION : INITIAL;
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const demoActive =
+    demoFromUrl ||
+    isDemoMode() ||
+    answers.whatCreated === DEMO_INVENTION.whatCreated;
 
   const last = STEP_LABELS.length - 1;
 
@@ -97,6 +110,7 @@ export function IntakeForm() {
         answers,
         profile: data.profile,
         preClarity: answers.preClarity,
+        isDemo: demoActive,
       });
       router.push(`/smartprobonoip/profile/${record.id}`);
     } catch {
@@ -109,6 +123,13 @@ export function IntakeForm() {
 
   return (
     <div>
+      {demoActive ? (
+        <div className="mb-4 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
+          <strong>Demo mode:</strong> Sample invention loaded — click through or
+          edit, then generate your profile.
+        </div>
+      ) : null}
+
       <ProgressIndicator steps={STEP_LABELS} current={step} />
 
       <Card className="mt-6">
@@ -264,7 +285,7 @@ export function IntakeForm() {
               disabled={submitting}
               className="rounded-lg bg-teal-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-mist-300"
             >
-              {submitting ? "Generating…" : "Generate my profile"}
+              {submitting ? "Generating…" : demoActive ? "Generate demo profile" : "Generate my profile"}
             </button>
           )}
         </div>

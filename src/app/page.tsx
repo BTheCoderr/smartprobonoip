@@ -46,6 +46,12 @@ export default function UmbrellaLanding() {
               Explore SmartProBonoIP
             </Link>
             <Link
+              href="/smartprobonoip/disclaimer?demo=1"
+              className="rounded-lg border border-teal-300 bg-teal-50 px-6 py-3 font-semibold text-teal-800 transition hover:bg-teal-100"
+            >
+              Try demo intake
+            </Link>
+            <Link
               href="/smartprobonoip/start"
               className="rounded-lg border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
             >

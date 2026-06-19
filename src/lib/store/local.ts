@@ -1,3 +1,4 @@
+import { DEFAULT_FOLLOW_UP } from "../records";
 import type { ProjectRecord, ReadinessProfile } from "../types";
 import type { SaveInput, Store } from "./types";
 
@@ -38,6 +39,8 @@ export const localStore: Store = {
       profile: input.profile,
       preClarity: input.preClarity,
       postClarity: null,
+      isDemo: input.isDemo ?? false,
+      followUpStatus: DEFAULT_FOLLOW_UP,
     };
     const all = readAll();
     all.unshift(record);

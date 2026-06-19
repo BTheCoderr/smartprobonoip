@@ -14,15 +14,7 @@ import type {
 const SIGNAL_KEYS = Object.keys(SIGNAL_LABELS) as IpSignal[];
 const RESOURCE_KEYS = Object.keys(RESOURCE_LABELS) as ResourceCategory[];
 
-const FORBIDDEN = [
-  /\byou\s+need\s+a\s+patent\b/i,
-  /\bis\s+patentable\b/i,
-  /\byour\s+idea\s+is\s+protectable\b/i,
-  /\byou\s+should\s+(file|patent|trademark|copyright)\b/i,
-  /\bwe\s+recommend\s+filing\b/i,
-  /\blegal\s+advice\b/i,
-  /\byou\s+have\s+a\s+(valid|strong)\s+(patent|trademark|claim)\b/i,
-];
+import { containsForbiddenLanguage } from "./safety";
 
 export function isAIConfigured(): boolean {
   return Boolean(process.env.OPENAI_API_KEY);
@@ -45,7 +37,7 @@ function asStringArray(value: unknown): string[] {
 }
 
 function containsForbidden(text: string): boolean {
-  return FORBIDDEN.some((re) => re.test(text));
+  return containsForbiddenLanguage(text);
 }
 
 const SYSTEM_PROMPT = `You are an assistant for SmartProBonoIP, an educational IP readiness tool for overlooked inventors and creators.

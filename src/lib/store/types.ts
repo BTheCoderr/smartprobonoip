@@ -4,6 +4,7 @@ export interface SaveInput {
   answers: IntakeAnswers;
   profile: ReadinessProfile;
   preClarity: number;
+  isDemo?: boolean;
 }
 
 export type StoreBackend = "supabase" | "local";

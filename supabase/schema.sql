@@ -30,6 +30,8 @@ create table if not exists partner_organizations (
 create table if not exists smartprobonoip_projects (
   id                uuid primary key default gen_random_uuid(),
   user_id           uuid references users(id) on delete set null,
+  pilot_session_id  uuid,
+  is_demo           boolean not null default false,
   title             text,
   idea_summary      text,
   item_type         text,
@@ -93,18 +95,21 @@ create index if not exists idx_spb_profiles_project on smartprobonoip_profiles(p
 create index if not exists idx_spb_referrals_project on smartprobonoip_referrals(project_id);
 create index if not exists idx_spb_metrics_project on smartprobonoip_impact_metrics(project_id);
 create index if not exists idx_spb_followups_project on followups(project_id);
+create index if not exists idx_spb_projects_session on smartprobonoip_projects(pilot_session_id);
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security
--- NOTE: These policies are intentionally permissive for the MVP so the anon
--- key can drive the demo end-to-end. Tighten them before any real deployment.
+-- For pilot: run supabase/migrations/002_pilot_rls.sql after this schema.
+-- Fresh installs: RLS is enabled below; migration removes permissive policies.
 -- ---------------------------------------------------------------------------
 alter table smartprobonoip_projects       enable row level security;
 alter table smartprobonoip_answers        enable row level security;
 alter table smartprobonoip_profiles       enable row level security;
 alter table smartprobonoip_referrals      enable row level security;
 alter table smartprobonoip_impact_metrics enable row level security;
+alter table followups                     enable row level security;
 
+-- MVP local dev only: permissive policies (removed by 002_pilot_rls.sql for production)
 do $$
 declare t text;
 begin

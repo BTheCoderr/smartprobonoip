@@ -37,62 +37,100 @@ npm run start
 
 ---
 
+## Try the demo (no setup)
+
+Click **Try demo intake** on the product landing or go to `/smartprobonoip/disclaimer?demo=1`.
+
+The demo loads a sample invention (HydroSeal), walks through disclaimer → intake → profile → PDF → dashboard metrics. Demo data is clearly marked and does not pollute live pilot reporting.
+
+---
+
 ## Routes
 
 | Route | Description |
 | --- | --- |
-| `/` | Umbrella **SmartProBono** landing that routes into the product |
-| `/smartprobonoip` | Product landing — tagline, positioning, core message, CTA |
-| `/smartprobonoip/disclaimer` | Legal disclaimer; must be acknowledged before intake |
-| `/smartprobonoip/start` | Guided multi-step intake form (with progress indicator) |
-| `/smartprobonoip/profile/[id]` | Generated IP Readiness Profile (editable, PDF export) |
-| `/smartprobonoip/dashboard` | Partner/admin dashboard with metrics |
-| `/api/generate` | API route that returns a readiness profile (AI if configured, else rule-based) |
+| `/` | Umbrella **SmartProBono** landing |
+| `/smartprobonoip` | Product landing — tagline, positioning, demo CTA |
+| `/smartprobonoip/disclaimer` | Legal disclaimer + privacy notice + dual consent |
+| `/smartprobonoip/start` | Guided multi-step intake form |
+| `/smartprobonoip/profile/[id]` | IP Readiness Profile (editable, PDF export) |
+| `/smartprobonoip/dashboard` | Partner dashboard — filters, demo toggle, CSV export |
+| `/smartprobonoip/privacy` | Privacy summary + data export/deletion placeholders |
+| `/api/generate` | Profile generation (AI if configured, else rule-based) |
+| `/api/records` | Session-scoped persistence (Supabase pilot) |
+| `/api/partner/metrics` | Partner metrics (requires secret) |
+| `/api/partner/export.csv` | Pilot CSV export (requires secret) |
 
 ---
 
-## How it was built (phases)
+## Deploy to Netlify
 
-1. **Phase 1** — Scaffold, all routes, brand UI shell, shared layout/nav/footer, progress indicator and card components.
-2. **Phase 2** — Full guided intake form + rule-based (mock) profile generation that works with **no** API keys. Wires start → generate → profile.
-3. **Phase 3** — Supabase persistence with graceful local fallback, plus the SQL schema (`supabase/schema.sql`).
-4. **Phase 4** — Client-side PDF export of the readiness profile, with the disclaimer embedded in the PDF.
-5. **Phase 5** — Partner/admin dashboard metrics.
-6. **Phase 6** — Optional AI profile generation when `OPENAI_API_KEY` exists; otherwise rule-based stays the default. AI output is editable and always includes the disclaimer.
+1. Push this repo to GitHub.
+2. In Netlify: **Add new site → Import from Git** → select the repo.
+3. Build settings (also in `netlify.toml`):
+   - Build command: `npm run build`
+   - Plugin: `@netlify/plugin-nextjs`
+4. Deploy. The app works with **no env vars** (local fallback).
+5. For pilot with Supabase, set env vars in Netlify UI (see table below).
+6. Follow [`docs/PRODUCTION_CHECKLIST.md`](./docs/PRODUCTION_CHECKLIST.md) before inviting inventors.
+
+### Alternative: Vercel
+
+Connect the same GitHub repo and set the same environment variables. Next.js 16 deploys with zero extra configuration.
 
 ---
 
-## Optional: Supabase
+## Environment variables
 
-Persistence is optional. To enable it:
+| Variable | Required | Used for |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Pilot only | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Pilot only | Client detects Supabase mode |
+| `SUPABASE_SERVICE_ROLE_KEY` | Pilot only | Server API routes (never public) |
+| `PARTNER_DASHBOARD_SECRET` | Pilot only | Protects `/api/partner/*` |
+| `OPENAI_API_KEY` | No | Optional AI profiles |
+| `OPENAI_MODEL` | No | AI model override |
+| `NEXT_PUBLIC_APP_URL` | No | Canonical URL in exports |
+
+Copy [`.env.example`](./.env.example) to `.env.local` for local development.
+
+---
+
+## Build phases
+
+1. **Phases 1–6** — MVP: routes, intake, rule-based/AI profiles, Supabase, PDF, dashboard, optional AI.
+2. **Phase 7** — Demo mode: sample invention, demo dashboard data, walkthrough checklist.
+3. **Phase 8** — Deployment: Netlify config, production checklist, env documentation.
+4. **Phase 9** — Pilot safety: tightened RLS, dual consent, privacy page, API-backed writes.
+5. **Phase 10** — Pilot workflow: clarity deltas, follow-up placeholders, dashboard filters, CSV export.
+
+---
+
+## Supabase (pilot)
 
 1. Create a Supabase project.
 2. Run [`supabase/schema.sql`](./supabase/schema.sql) in the SQL editor.
-3. Set in `.env.local`:
+3. Run [`supabase/migrations/002_pilot_rls.sql`](./supabase/migrations/002_pilot_rls.sql) before real inventor data.
+4. Set `NEXT_PUBLIC_SUPABASE_*`, `SUPABASE_SERVICE_ROLE_KEY`, and `PARTNER_DASHBOARD_SECRET`.
 
-   ```bash
-   NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR-ANON-KEY
-   ```
+With Supabase configured, inventor data is written via `/api/records` using session-scoped server routes. Partners unlock live metrics on the dashboard with the partner secret.
 
-If both are present the app writes to Supabase; otherwise it falls back to `localStorage`. The dashboard shows which data source is active.
+Without Supabase, the app falls back to `localStorage` on the user's device.
 
 ### Schema tables
 
 `users`, `partner_organizations`, `smartprobonoip_projects`, `smartprobonoip_answers`, `smartprobonoip_profiles`, `smartprobonoip_referrals`, `smartprobonoip_impact_metrics`, `followups`.
 
-> The bundled RLS policies are intentionally permissive so the anon key can drive the MVP demo. Tighten them before any real deployment.
+---
 
 ## Optional: AI generation
 
-AI is optional. To enable it set:
-
 ```bash
 OPENAI_API_KEY=sk-...
-# OPENAI_MODEL=gpt-4o-mini   # optional override
+# OPENAI_MODEL=gpt-4o-mini
 ```
 
-When set, `/api/generate` asks the model to draft the profile, grounded by the rule-based draft. The response is validated against an allow-list of IP signals/resources, the disclaimer is always re-attached, the public-disclosure flag is computed deterministically, and a safety filter rejects any forbidden legal-conclusion phrasing (falling back to rule-based if it trips).
+When set, `/api/generate` uses AI grounded by the rule-based draft, with safety validation and disclaimer always attached.
 
 ---
 
@@ -101,22 +139,29 @@ When set, `/api/generate` asks the model to draft the profile, grounded by the r
 ```
 src/
   app/
-    page.tsx                         # umbrella landing
-    smartprobonoip/                  # product routes
-    api/generate/route.ts            # profile generation endpoint
-  components/                        # UI shell, intake fields, profile view/editor
+    api/records/          # Session-scoped CRUD (pilot)
+    api/partner/          # Partner metrics + CSV export
+    smartprobonoip/       # Product routes
+  components/
   lib/
-    generateProfile.ts               # rule-based generator
-    generateProfileAI.ts             # optional OpenAI generator + safety filter
-    metrics.ts                       # dashboard metrics
-    pdf.ts                           # client-side PDF export
-    store/                           # storage abstraction (supabase | local)
-    types.ts                         # shared, fully-typed domain model
-supabase/schema.sql                  # database schema
+    demo.ts               # Demo invention + sample records
+    safety.ts             # Forbidden-phrase guardrails
+    store/                # local | API-backed Supabase
+supabase/
+  schema.sql
+  migrations/002_pilot_rls.sql
+docs/PRODUCTION_CHECKLIST.md
+netlify.toml
 ```
 
 ---
 
 ## Safety
 
-All generated copy avoids legal conclusions. The rule-based generator only emits safe-framing language, and the AI path enforces the same rules with a post-generation filter. The disclaimer appears on the product page, the intake gate, the profile page, and inside the exported PDF.
+All generated copy avoids legal conclusions. The rule-based generator and AI path share a safety filter. The disclaimer appears on the product page, intake gate, profile page, and exported PDF. Dual consent is required before intake, including a confidential-details acknowledgment.
+
+---
+
+## Pilot readiness
+
+Before testing with 10–25 inventors, complete [`docs/PRODUCTION_CHECKLIST.md`](./docs/PRODUCTION_CHECKLIST.md).

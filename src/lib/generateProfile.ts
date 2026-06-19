@@ -1,4 +1,5 @@
 import { DISCLAIMER } from "./disclaimer";
+import { assertSafeLanguage, collectProfileText } from "./safety";
 import { ITEM_TYPE_LABELS } from "./labels";
 import type {
   IntakeAnswers,
@@ -212,7 +213,7 @@ export function generateProfile(answers: IntakeAnswers): ReadinessProfile {
   const missingInfo = deriveMissing(answers);
   const publicDisclosure = isPubliclyShared(answers);
 
-  return {
+  const profile: ReadinessProfile = {
     ideaSummary: buildSummary(answers),
     signals,
     completeInfo,
@@ -227,4 +228,7 @@ export function generateProfile(answers: IntakeAnswers): ReadinessProfile {
     disclaimer: DISCLAIMER,
     generator: "rule",
   };
+
+  assertSafeLanguage(collectProfileText(profile), "rule-based profile");
+  return profile;
 }

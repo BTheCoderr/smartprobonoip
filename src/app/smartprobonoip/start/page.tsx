@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { IntakeForm } from "@/components/intake/IntakeForm";
 import { Card } from "@/components/ui/Card";
 import { hasAcknowledgedDisclaimer } from "@/lib/ack";
@@ -28,7 +29,9 @@ export default function StartPage() {
             <p className="text-sm text-navy-500">Loading…</p>
           </Card>
         ) : acknowledged ? (
-          <IntakeForm />
+          <Suspense fallback={<Card><p className="text-sm text-navy-500">Loading intake…</p></Card>}>
+            <IntakeForm />
+          </Suspense>
         ) : (
           <Card>
             <h2 className="text-lg font-semibold text-navy-900">

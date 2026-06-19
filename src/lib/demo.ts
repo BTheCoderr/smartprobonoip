@@ -1,0 +1,252 @@
+import { generateProfile } from "./generateProfile";
+import type { IntakeAnswers, ProjectRecord } from "./types";
+
+const DEMO_MODE_KEY = "smartprobonoip:demo-mode";
+
+export const DEMO_INVENTION: IntakeAnswers = {
+  whatCreated:
+    "HydroSeal — a portable water-filtration bottle for hikers that filters water as you drink through a replaceable carbon-and-ceramic cartridge.",
+  problemSolved:
+    "Backcountry hikers often run out of clean water or carry heavy purification gear. HydroSeal lets them refill from streams safely without extra equipment.",
+  whoFor:
+    "Outdoor enthusiasts, hikers, and campers who want lightweight gear on multi-day trips.",
+  howItWorks:
+    "Water enters through the mouthpiece, passes through a dual-layer filter (activated carbon + ceramic mesh), and flows out clean. The cartridge twists out for replacement after ~40 uses.",
+  mainParts:
+    "BPA-free bottle body, twist-lock filter cartridge, one-way intake valve, silicone mouthpiece cap, and volume markers on the side.",
+  whatDifferent:
+    "Unlike pump filters or UV pens, it filters inline while drinking — no stopping, no batteries, and the cartridge is compostable.",
+  itemType: "physical_product",
+  hasPrototype: true,
+  assets: ["drawings", "photos", "diagrams", "notes"],
+  sharedChannels: ["pitch", "social_media"],
+  hasBrandIdentity: true,
+  goals: ["protection", "expert_review"],
+  location: "Denver, Colorado, USA",
+  wantsProBono: true,
+  preClarity: 2,
+};
+
+export const DEMO_PROFILE_ID = "demo-hydroseal-profile";
+
+function daysAgo(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString();
+}
+
+function makeRecord(
+  id: string,
+  answers: Partial<IntakeAnswers> & Pick<IntakeAnswers, "whatCreated" | "itemType">,
+  days: number,
+  pre: number,
+  post: number,
+  followUp: ProjectRecord["followUpStatus"],
+): ProjectRecord {
+  const full: IntakeAnswers = {
+    ...DEMO_INVENTION,
+    ...answers,
+    preClarity: pre,
+  };
+  const profile = generateProfile(full);
+  return {
+    id,
+    createdAt: daysAgo(days),
+    answers: full,
+    profile,
+    preClarity: pre,
+    postClarity: post,
+    isDemo: true,
+    followUpStatus: followUp,
+  };
+}
+
+export const DEMO_RECORDS: ProjectRecord[] = [
+  makeRecord(
+    DEMO_PROFILE_ID,
+    DEMO_INVENTION,
+    1,
+    2,
+    4,
+    { day30: "pending", day60: "pending", day90: "pending" },
+  ),
+  makeRecord(
+    "demo-002",
+    {
+      whatCreated: "StudyBuddy AI — a flashcard app for nursing students",
+      itemType: "software",
+      sharedChannels: ["none"],
+      hasBrandIdentity: false,
+      goals: ["funding", "business_support"],
+      wantsProBono: false,
+      assets: ["code", "screenshots"],
+    },
+    3,
+    3,
+    4,
+    { day30: "pending", day60: "pending", day90: "pending" },
+  ),
+  makeRecord(
+    "demo-003",
+    {
+      whatCreated: "Bloom & Root — organic skincare line with custom botanical blends",
+      itemType: "brand",
+      hasBrandIdentity: true,
+      sharedChannels: ["online", "customers"],
+      goals: ["protection", "licensing"],
+      wantsProBono: false,
+      assets: ["photos", "notes"],
+    },
+    5,
+    2,
+    3,
+    { day30: "done", day60: "pending", day90: "pending" },
+  ),
+  makeRecord(
+    "demo-004",
+    {
+      whatCreated: "QuietCrate — sound-dampening panels made from recycled denim",
+      itemType: "physical_product",
+      sharedChannels: ["investors", "pitch"],
+      goals: ["funding", "expert_review"],
+      wantsProBono: true,
+      hasPrototype: true,
+      assets: ["diagrams", "photos"],
+    },
+    7,
+    1,
+    3,
+    { day30: "done", day60: "pending", day90: "pending" },
+  ),
+  makeRecord(
+    "demo-005",
+    {
+      whatCreated: "Recipe for low-sugar fermented hot sauce using local peppers",
+      itemType: "recipe",
+      sharedChannels: ["friends"],
+      goals: ["business_support"],
+      wantsProBono: false,
+      hasBrandIdentity: true,
+      assets: ["notes", "photos"],
+    },
+    10,
+    4,
+    4,
+    { day30: "done", day60: "done", day90: "pending" },
+  ),
+  makeRecord(
+    "demo-006",
+    {
+      whatCreated: "Confidential manufacturing process for biodegradable packaging film",
+      itemType: "process",
+      sharedChannels: ["none"],
+      goals: ["protection", "licensing"],
+      wantsProBono: false,
+      hasPrototype: true,
+      assets: ["diagrams", "notes"],
+    },
+    12,
+    2,
+    4,
+    { day30: "skipped", day60: "pending", day90: "pending" },
+  ),
+  makeRecord(
+    "demo-007",
+    {
+      whatCreated: "Original illustrated children's book about climate resilience",
+      itemType: "creative_work",
+      sharedChannels: ["social_media"],
+      goals: ["protection", "funding"],
+      wantsProBono: true,
+      assets: ["drawings", "notes"],
+    },
+    14,
+    3,
+    5,
+    { day30: "done", day60: "done", day90: "pending" },
+  ),
+  makeRecord(
+    "demo-008",
+    {
+      whatCreated: "Modular desk organizer with magnetic attachment system",
+      itemType: "design",
+      sharedChannels: ["event", "customers"],
+      goals: ["expert_review", "business_support"],
+      wantsProBono: false,
+      hasPrototype: false,
+      assets: ["wireframes", "diagrams"],
+    },
+    18,
+    2,
+    2,
+    { day30: "done", day60: "skipped", day90: "pending" },
+  ),
+  makeRecord(
+    "demo-009",
+    {
+      whatCreated: "NeighborhoodFix — app connecting homeowners with vetted repair mentors",
+      itemType: "software",
+      sharedChannels: ["pitch", "investors"],
+      goals: ["funding", "expert_review"],
+      wantsProBono: true,
+      assets: ["code", "wireframes", "screenshots"],
+    },
+    21,
+    1,
+    4,
+    { day30: "done", day60: "done", day90: "done" },
+  ),
+  makeRecord(
+    "demo-010",
+    {
+      whatCreated: "LumenTag — RFID inventory tags for small libraries",
+      itemType: "physical_product",
+      sharedChannels: ["none"],
+      goals: ["protection"],
+      wantsProBono: true,
+      hasPrototype: true,
+      assets: ["diagrams", "code", "notes"],
+    },
+    25,
+    2,
+    3,
+    { day30: "pending", day60: "pending", day90: "pending" },
+  ),
+];
+
+export function setDemoMode(active = true): void {
+  if (typeof window === "undefined") return;
+  if (active) {
+    sessionStorage.setItem(DEMO_MODE_KEY, "true");
+  } else {
+    sessionStorage.removeItem(DEMO_MODE_KEY);
+  }
+}
+
+export function isDemoMode(): boolean {
+  if (typeof window === "undefined") return false;
+  return sessionStorage.getItem(DEMO_MODE_KEY) === "true";
+}
+
+export function activateDemoFromQuery(search: string): boolean {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(search);
+  if (params.get("demo") === "1") {
+    setDemoMode(true);
+    return true;
+  }
+  return isDemoMode();
+}
+
+export function getDemoRecords(): ProjectRecord[] {
+  return DEMO_RECORDS;
+}
+
+export function mergeWithDemoRecords(
+  realRecords: ProjectRecord[],
+  includeDemo: boolean,
+): ProjectRecord[] {
+  const live = realRecords.filter((r) => !r.isDemo);
+  if (!includeDemo) return live;
+  return [...getDemoRecords(), ...live];
+}

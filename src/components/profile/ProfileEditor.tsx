@@ -60,7 +60,7 @@ export function ProfileEditor({
     <Card>
       <CardHeader
         title="Edit your profile"
-        subtitle="Refine the wording and selections. The disclaimer always stays attached."
+        subtitle="Refine the wording and selections. The disclaimer always stays attached. Do not add legal conclusions."
       />
       <div className="space-y-5">
         <label className="block">

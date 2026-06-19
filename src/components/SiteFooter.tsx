@@ -21,6 +21,9 @@ export function SiteFooter() {
             <Link href="/smartprobonoip/disclaimer" className="hover:text-teal-600">
               Disclaimer
             </Link>
+            <Link href="/smartprobonoip/privacy" className="hover:text-teal-600">
+              Privacy
+            </Link>
             <Link href="/smartprobonoip/dashboard" className="hover:text-teal-600">
               Dashboard
             </Link>
