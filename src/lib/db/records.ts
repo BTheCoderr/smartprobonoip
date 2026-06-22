@@ -1,3 +1,4 @@
+import "server-only";
 import { DEFAULT_FOLLOW_UP } from "@/lib/records";
 import { getSupabaseService } from "@/lib/supabaseServer";
 import type {

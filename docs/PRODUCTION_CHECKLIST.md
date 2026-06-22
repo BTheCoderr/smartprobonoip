@@ -44,7 +44,8 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 ## Pilot safety (Phase 9)
 
 - [ ] `supabase/migrations/002_pilot_rls.sql` applied (removes permissive anon policies)
-- [ ] Service role key is **not** in client bundle or `NEXT_PUBLIC_*`
+- [ ] Service role key is **not** in client bundle or `NEXT_PUBLIC_*` (enforced at build time via `server-only` import in `src/lib/supabaseServer.ts` and `src/lib/db/records.ts`)
+- [ ] Partner API routes (`/api/partner/*`) return 503 when Supabase is unconfigured and 401 without the secret
 - [ ] Disclaimer shows privacy notice + **two** consent checkboxes
 - [ ] Consent includes confidential-details language
 - [ ] `/smartprobonoip/privacy` export/deletion placeholders linked from footer

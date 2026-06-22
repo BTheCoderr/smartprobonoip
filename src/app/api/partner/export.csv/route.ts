@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { listLiveRecords, verifyPartnerSecret } from "@/lib/db/records";
 import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
+import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
 function readSecret(request: Request): string | null {
   return (
@@ -19,6 +20,10 @@ function escapeCsv(value: string | number | boolean | null | undefined): string 
 }
 
 export async function GET(request: Request) {
+  if (!isSupabaseServerConfigured()) {
+    return NextResponse.json({ error: "Not configured" }, { status: 503 });
+  }
+
   if (!verifyPartnerSecret(readSecret(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

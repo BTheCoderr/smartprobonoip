@@ -12,6 +12,20 @@ SmartProBonoIP does not provide legal advice, does not replace patent agents, at
 
 ---
 
+## Verification status (automated)
+
+Last verified locally:
+
+- `npm run build` passes (13 routes compile)
+- `npx tsc --noEmit` passes
+- `npx eslint .` passes (no errors/warnings)
+- Demo smoke test passes: all public routes return 200, `/api/generate` returns a safe rule-based profile with disclaimer, and unconfigured pilot/partner routes degrade gracefully (503/401)
+- Service-role key is restricted to the server via `server-only` import guards
+
+The remaining unchecked boxes below require manual Supabase/Netlify setup (live pilot path) and human spot-checks.
+
+---
+
 ## 100% Demo-Ready Definition
 
 Demo-ready means the app can be shown live to class, advisors, Scott, Emily, RIHub, AS220, URI, SEG, libraries, or funders without needing Supabase, OpenAI, or real user data.
