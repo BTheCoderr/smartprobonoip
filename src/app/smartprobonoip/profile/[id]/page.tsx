@@ -7,7 +7,7 @@ import { ProfileEditor } from "@/components/profile/ProfileEditor";
 import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
-import { downloadProfilePdf } from "@/lib/pdf";
+import { downloadPacketPdf } from "@/lib/pdf";
 import { BRAND } from "@/lib/brand";
 import type { ProjectRecord, ReadinessProfile } from "@/lib/types";
 
@@ -99,7 +99,7 @@ export default function ProfilePage({
             {BRAND.product}
           </p>
           <h1 className="text-3xl font-bold text-navy-900">
-            Your IP Readiness Profile
+            Your IP Readiness Packet
           </h1>
           <p className="mt-1 text-sm text-navy-500">
             Generated {new Date(record.createdAt).toLocaleString()} ·{" "}
@@ -121,10 +121,10 @@ export default function ProfilePage({
           ) : null}
           <button
             type="button"
-            onClick={() => downloadProfilePdf(record)}
+            onClick={() => downloadPacketPdf(record)}
             className="inline-flex items-center gap-2 rounded-lg border border-navy-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:bg-mist-100"
           >
-            <span aria-hidden>⬇</span> Download PDF
+            <span aria-hidden>⬇</span> Download IP Readiness Packet
           </button>
         </div>
       </div>
@@ -138,7 +138,7 @@ export default function ProfilePage({
             saving={savingProfile}
           />
         ) : (
-          <ProfileView profile={record.profile} />
+          <ProfileView record={record} />
         )}
       </div>
 

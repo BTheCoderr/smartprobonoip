@@ -53,11 +53,20 @@ Demo-ready means the app can be shown live to class, advisors, Scott, Emily, RIH
 2. Click **Try demo intake**.
 3. Acknowledge disclaimer.
 4. Review pre-filled demo answers.
-5. Generate profile.
-6. Download PDF.
+5. Generate profile (presented as the **IP Readiness Packet**).
+6. Click **Download IP Readiness Packet** and confirm the PDF downloads.
 7. Rate post-clarity.
 8. Open dashboard with demo data.
 9. Confirm metrics look presentable.
+
+### IP Readiness Packet smoke test
+
+1. From a generated profile, confirm the page is titled **Your IP Readiness Packet**.
+2. Confirm the on-screen packet includes the readiness snapshot and the 30/60/90 day follow-up plan.
+3. Click **Download IP Readiness Packet**.
+4. Open the PDF and confirm all sections are present: cover page, plain-language summary, readiness snapshot, missing-info checklist, public-sharing/disclosure note, expert conversation prep, suggested next resources, 30/60/90 day plan, and full disclaimer.
+5. Confirm the cover page shows the idea label, the date, and "Educational readiness tool. Not legal advice."
+6. Confirm no forbidden legal-advice language appears anywhere in the packet.
 
 ### Demo-ready score
 

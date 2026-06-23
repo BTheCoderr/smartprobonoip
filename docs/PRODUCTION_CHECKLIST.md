@@ -11,9 +11,19 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 ## Demo readiness (Phase 7)
 
 - [ ] **Try demo intake** works from product landing and umbrella `/`
-- [ ] Demo flow: disclaimer → pre-filled intake → profile → PDF → dashboard
+- [ ] Demo flow: disclaimer → pre-filled intake → IP Readiness Packet → packet PDF → dashboard
 - [ ] Demo data toggle shows realistic metrics without live pilot data
 - [ ] Demo records marked `is_demo` and excluded from live CSV export
+
+## IP Readiness Packet
+
+- [ ] Profile page is titled **Your IP Readiness Packet**
+- [ ] Button reads **Download IP Readiness Packet**
+- [ ] Packet PDF downloads successfully (filename `smartprobonoip-ip-readiness-packet-*.pdf`)
+- [ ] Packet PDF includes: cover page, plain-language summary, readiness snapshot, missing-info checklist, public-sharing/disclosure note, expert conversation prep, suggested next resources, 30/60/90 day plan, and full disclaimer
+- [ ] Cover page shows idea label, date, and "Educational readiness tool. Not legal advice."
+- [ ] On-screen packet shows readiness snapshot and 30/60/90 day plan
+- [ ] No forbidden legal-advice phrases appear in the packet (no "need a patent", "patentable", "you should file", "protectable")
 
 ## Deployment (Phase 8)
 

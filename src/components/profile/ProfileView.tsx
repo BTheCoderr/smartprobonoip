@@ -7,30 +7,77 @@ import {
   SIGNAL_DESCRIPTIONS,
   SIGNAL_LABELS,
 } from "@/lib/labels";
-import type { ReadinessProfile } from "@/lib/types";
+import {
+  buildFollowUpPlan,
+  buildIdeaSummaryFields,
+  buildReadinessSnapshot,
+} from "@/lib/packet";
+import type { ProjectRecord } from "@/lib/types";
 
-export function ProfileView({ profile }: { profile: ReadinessProfile }) {
+export function ProfileView({ record }: { record: ProjectRecord }) {
+  const { profile } = record;
+  const summaryFields = buildIdeaSummaryFields(record.answers);
+  const snapshot = buildReadinessSnapshot(record);
+  const followUpPlan = buildFollowUpPlan();
+
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader title="Plain-language summary" />
+        <CardHeader title="Plain-language idea summary" />
         <p className="text-navy-700">{profile.ideaSummary}</p>
+        {summaryFields.length > 0 ? (
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+            {summaryFields.map((field) => (
+              <div
+                key={field.label}
+                className="rounded-lg border border-mist-200 bg-mist-50 p-3"
+              >
+                <dt className="text-xs font-semibold uppercase tracking-wide text-navy-500">
+                  {field.label}
+                </dt>
+                <dd className="mt-1 text-sm text-navy-700">{field.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
       </Card>
 
-      <Card
-        className={
-          profile.publicDisclosure ? "border-amber-300 bg-amber-50" : undefined
-        }
-      >
+      <Card>
         <CardHeader
-          title="Public sharing / disclosure flag"
-          subtitle={
-            profile.publicDisclosure
-              ? "Possible public disclosure detected"
-              : "No public disclosure indicated"
-          }
+          title="Readiness snapshot"
+          subtitle="A quick view of where your idea stands today."
         />
-        <p className="text-sm text-navy-700">{profile.publicDisclosureNote}</p>
+        {profile.signals.length > 0 ? (
+          <div className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">
+              Possible IP signals
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {profile.signals.map((s) => (
+                <Badge key={s} tone="navy">
+                  {SIGNAL_LABELS[s]}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        ) : null}
+        <dl className="grid gap-3 sm:grid-cols-2">
+          {snapshot.map((item) => (
+            <div
+              key={item.label}
+              className={`rounded-lg border p-3 ${
+                item.flagged
+                  ? "border-amber-300 bg-amber-50"
+                  : "border-mist-200 bg-mist-50"
+              }`}
+            >
+              <dt className="text-xs font-semibold uppercase tracking-wide text-navy-500">
+                {item.label}
+              </dt>
+              <dd className="mt-1 text-sm text-navy-700">{item.value}</dd>
+            </div>
+          ))}
+        </dl>
       </Card>
 
       <Card>
@@ -38,13 +85,6 @@ export function ProfileView({ profile }: { profile: ReadinessProfile }) {
           title="Possible IP category signals"
           subtitle="These are starting points, not conclusions."
         />
-        <div className="mb-4 flex flex-wrap gap-2">
-          {profile.signals.map((s) => (
-            <Badge key={s} tone="navy">
-              {SIGNAL_LABELS[s]}
-            </Badge>
-          ))}
-        </div>
         <ul className="space-y-2">
           {profile.signals.map((s) => (
             <li key={s} className="text-sm text-navy-600">
@@ -74,7 +114,7 @@ export function ProfileView({ profile }: { profile: ReadinessProfile }) {
           )}
         </Card>
         <Card>
-          <CardHeader title="What information is missing" />
+          <CardHeader title="Missing information checklist" />
           {profile.missingInfo.length ? (
             <ul className="space-y-1.5 text-sm text-navy-700">
               {profile.missingInfo.map((item) => (
@@ -92,13 +132,29 @@ export function ProfileView({ profile }: { profile: ReadinessProfile }) {
         </Card>
       </div>
 
+      <Card
+        className={
+          profile.publicDisclosure ? "border-amber-300 bg-amber-50" : undefined
+        }
+      >
+        <CardHeader
+          title="Public sharing / disclosure note"
+          subtitle={
+            profile.publicDisclosure
+              ? "Possible public disclosure detected"
+              : "No public disclosure indicated"
+          }
+        />
+        <p className="text-sm text-navy-700">{profile.publicDisclosureNote}</p>
+      </Card>
+
       <Card className="border-teal-200 bg-teal-50">
         <CardHeader title="Suggested next step" />
         <p className="text-navy-800">{profile.suggestedNextStep}</p>
       </Card>
 
       <Card>
-        <CardHeader title="Questions to bring to an expert" />
+        <CardHeader title="Expert conversation prep" subtitle="Questions to bring to an expert." />
         <ul className="space-y-2 text-sm text-navy-700">
           {profile.expertQuestions.map((q) => (
             <li key={q} className="flex gap-2">
@@ -111,7 +167,7 @@ export function ProfileView({ profile }: { profile: ReadinessProfile }) {
 
       <Card>
         <CardHeader
-          title="Recommended resource categories"
+          title="Suggested next resources"
           subtitle="Consider exploring these to prepare."
         />
         <div className="grid gap-3 sm:grid-cols-2">
@@ -126,6 +182,34 @@ export function ProfileView({ profile }: { profile: ReadinessProfile }) {
               <p className="mt-1 text-xs text-navy-500">
                 {RESOURCE_DESCRIPTIONS[r]}
               </p>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="30 / 60 / 90 day follow-up plan"
+          subtitle="A simple, educational plan to keep preparing."
+        />
+        <div className="grid gap-4 sm:grid-cols-3">
+          {followUpPlan.map((step) => (
+            <div
+              key={step.window}
+              className="rounded-lg border border-mist-200 bg-mist-50 p-4"
+            >
+              <p className="text-sm font-semibold text-teal-700">
+                {step.window}
+              </p>
+              <p className="text-sm font-medium text-navy-800">{step.title}</p>
+              <ul className="mt-2 space-y-1.5 text-xs text-navy-600">
+                {step.actions.map((action) => (
+                  <li key={action} className="flex gap-2">
+                    <span className="text-teal-600">•</span>
+                    {action}
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
