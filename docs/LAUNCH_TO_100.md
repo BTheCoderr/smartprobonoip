@@ -68,6 +68,26 @@ Demo-ready means the app can be shown live to class, advisors, Scott, Emily, RIH
 5. Confirm the cover page shows the idea label, the date, and "Educational readiness tool. Not legal advice."
 6. Confirm no forbidden legal-advice language appears anywhere in the packet.
 
+### Patent Prep Mode smoke test
+
+1. From a generated packet, scroll to the **Patent Prep Mode** section.
+2. Confirm the patent prep checklist reflects the intake answers (checked vs. to-gather).
+3. Confirm the development timeline shows fillable date placeholders.
+4. Confirm the possible difference map renders with its "user-described differences only" note.
+5. Confirm the drawings and materials checklist marks available materials.
+6. Confirm the expert handoff summary appears as the final prep section before the disclaimer.
+7. Download the packet PDF and confirm all five Patent Prep Mode sections are present and use safe framing only.
+
+### AI Packet Coach smoke test
+
+1. From a generated packet (view mode), scroll to the **AI Packet Coach** section.
+2. Click each quick-action button and confirm a packet-specific prep response appears.
+3. Type a custom prep question and confirm a response appears.
+4. With no `OPENAI_API_KEY`, confirm responses are tagged "Prep guide" (rule-based fallback).
+5. With `OPENAI_API_KEY` set, confirm responses are tagged "AI-assisted".
+6. Confirm no response contains legal-advice language or legal conclusions.
+7. Refresh the page and confirm the coach conversation resets (stateless MVP).
+
 ### Demo-ready score
 
 The demo is 100% ready when a person can complete the above flow in under 5 minutes with no help.
