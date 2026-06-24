@@ -6,6 +6,11 @@ import {
   DEVELOPMENT_TIMELINE_FIELDS,
   getIdeaLabel,
 } from "./packet";
+import {
+  buildPatentSearchPrep,
+  PATENT_SEARCH_PREP_DISCLAIMER,
+  WORKSHEET_HEADERS,
+} from "./patentSearchPrep";
 import { containsForbiddenLanguage } from "./safety";
 import type { ProjectRecord } from "./types";
 
@@ -16,7 +21,12 @@ export type CoachMode =
   | "difference_map"
   | "timeline_prep"
   | "materials_checklist"
-  | "expert_handoff";
+  | "expert_handoff"
+  | "search_terms"
+  | "compare_reference"
+  | "similar_ref_questions"
+  | "user_differences"
+  | "prior_art_checklist";
 
 export interface CoachAction {
   mode: CoachMode;
@@ -37,6 +47,20 @@ export const COACH_ACTIONS: CoachAction[] = [
     label: "Help me organize drawings and materials",
   },
   { mode: "expert_handoff", label: "Create a short expert handoff summary" },
+  { mode: "search_terms", label: "Generate patent search terms" },
+  {
+    mode: "compare_reference",
+    label: "Help me compare my idea to a similar patent",
+  },
+  {
+    mode: "similar_ref_questions",
+    label: "What should I ask an expert about similar references?",
+  },
+  {
+    mode: "user_differences",
+    label: "Help me describe user-stated differences",
+  },
+  { mode: "prior_art_checklist", label: "Create a prior art prep checklist" },
 ];
 
 export const COACH_INTRO =
@@ -64,6 +88,11 @@ const MODE_TITLES: Record<CoachMode, string> = {
   timeline_prep: "Preparing your development timeline",
   materials_checklist: "Organizing your drawings and materials",
   expert_handoff: "A short expert handoff summary",
+  search_terms: "Patent search terms to try",
+  compare_reference: "Comparing your idea to a similar reference",
+  similar_ref_questions: "Questions about similar references",
+  user_differences: "Describing user-stated differences for comparison",
+  prior_art_checklist: "Prior art prep checklist",
 };
 
 function text(v: string | undefined): string {
@@ -194,6 +223,72 @@ function ruleExpertHandoff(record: ProjectRecord): string[] {
   return bullets;
 }
 
+function ruleSearchTerms(record: ProjectRecord): string[] {
+  const prep = buildPatentSearchPrep(record);
+  const bullets = [
+    `Search keywords from your packet: ${prep.searchKeywords.slice(0, 12).join(", ") || "(add more detail to your packet first)"}.`,
+    "Suggested search queries to try:",
+    ...prep.suggestedQueries.map((q) => `• ${q}`),
+    "Try these on Google Patents or USPTO Patent Public Search — possible similar references only, not a legal conclusion.",
+  ];
+  return bullets;
+}
+
+function ruleCompareReference(record: ProjectRecord): string[] {
+  const different = text(record.answers.whatDifferent);
+  const bullets = [
+    "When you find a possible similar reference, use your Similar Reference Worksheet:",
+    ...WORKSHEET_HEADERS.map((h) => `• ${h}`),
+    "Note what looks similar and what seems different — user-described differences only.",
+  ];
+  if (different.length > 0) {
+    bullets.push(`Your user-stated difference to highlight: "${different}".`);
+  }
+  bullets.push(
+    "A professional may want to review how you explain the comparison — this may help prepare your expert conversation.",
+  );
+  return bullets;
+}
+
+function ruleSimilarRefQuestions(record: ProjectRecord): string[] {
+  return buildPatentSearchPrep(record).expertPrepQuestions;
+}
+
+function ruleUserDifferences(record: ProjectRecord): string[] {
+  const described = text(record.answers.whatDifferent);
+  const bullets: string[] = [];
+  if (described.length > 0) {
+    bullets.push(`You described: "${described}".`);
+  } else {
+    bullets.push(
+      "You may want to clarify what your idea does differently from existing options.",
+    );
+  }
+  bullets.push(
+    "When comparing to a possible similar reference, describe:",
+    "• The existing option or current way people solve this",
+    "• What your idea does differently (user-described only)",
+    "• Why that difference matters to you or your customer",
+    "These are user-described differences only — a professional would need to review whether they matter legally.",
+    PATENT_SEARCH_PREP_DISCLAIMER,
+  );
+  return bullets;
+}
+
+function rulePriorArtChecklist(record: ProjectRecord): string[] {
+  const prep = buildPatentSearchPrep(record);
+  return [
+    "Consider preparing the following before searching for possible similar references:",
+    "☐ Review your search keywords and suggested queries in your packet",
+    "☐ Try 2–3 searches on Google Patents or USPTO Patent Public Search",
+    "☐ Fill in your Similar Reference Worksheet for each reference you find",
+    "☐ Note user-described differences — not a legal conclusion",
+    "☐ Bring your worksheet and materials to your expert conversation",
+    `Suggested queries to start: ${prep.suggestedQueries.slice(0, 3).join(" / ")}`,
+    "A professional may want to review any possible similar references with you.",
+  ];
+}
+
 const RULE_BUILDERS: Record<CoachMode, (r: ProjectRecord) => string[]> = {
   missing_info: ruleMissingInfo,
   expert_questions: ruleExpertQuestions,
@@ -202,6 +297,11 @@ const RULE_BUILDERS: Record<CoachMode, (r: ProjectRecord) => string[]> = {
   timeline_prep: ruleTimelinePrep,
   materials_checklist: ruleMaterialsChecklist,
   expert_handoff: ruleExpertHandoff,
+  search_terms: ruleSearchTerms,
+  compare_reference: ruleCompareReference,
+  similar_ref_questions: ruleSimilarRefQuestions,
+  user_differences: ruleUserDifferences,
+  prior_art_checklist: rulePriorArtChecklist,
 };
 
 export function buildRuleCoachResponse(

@@ -38,13 +38,25 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 ### AI Packet Coach
 
 - [ ] Packet page shows an **AI Packet Coach** section after the generated packet (view mode)
-- [ ] All 7 quick-action buttons return a helpful, packet-specific prep response
+- [ ] All quick-action buttons (including patent search prep) return a helpful, packet-specific prep response
 - [ ] Typing a custom prep question returns a response
 - [ ] Responses reference the user's actual answers (not generic chatbot output)
 - [ ] Rule-based fallback works with no `OPENAI_API_KEY` set (response tagged "Prep guide")
 - [ ] When `OPENAI_API_KEY` is set, responses are tagged "AI-assisted" and still safe
 - [ ] No forbidden legal-advice phrases appear in any coach response
 - [ ] Coach is stateless — refreshing the page clears the conversation
+
+### Similar Patent Discovery Prep
+
+- [ ] Packet page shows **Similar Patent Discovery Prep** after Patent Prep Mode
+- [ ] Search keywords are generated from intake answers and IP signals
+- [ ] 3–5 suggested search queries appear with safe educational framing
+- [ ] Google Patents and USPTO Patent Public Search links are present (with suggested query text)
+- [ ] Similar reference worksheet table renders on-screen and in PDF
+- [ ] Expert prep questions for similar references are present
+- [ ] AI Packet Coach includes 5 patent search prep quick actions
+- [ ] No patentability, novelty, clearance, or infringement conclusions appear
+- [ ] Safe framing only: "possible similar references", "search terms to try", "not a legal conclusion"
 
 ## Deployment (Phase 8)
 

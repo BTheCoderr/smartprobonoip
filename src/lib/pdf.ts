@@ -20,6 +20,11 @@ import {
   PATENT_PREP_INTRO,
   TIMELINE_NOTE,
 } from "./packet";
+import {
+  buildPatentSearchPrep,
+  PATENT_SEARCH_PREP_INTRO,
+  WORKSHEET_HEADERS,
+} from "./patentSearchPrep";
 import type { ProjectRecord } from "./types";
 
 const MARGIN = 48;
@@ -291,6 +296,43 @@ export function buildPacketPdf(record: ProjectRecord): jsPDF {
   labeledBlock("Materials available", handoff.materialsAvailable);
   text("Questions for expert review", { size: 10, bold: true, gap: 2 });
   bullets(handoff.expertQuestions, "?");
+
+  // Similar Patent Discovery Prep
+  const searchPrep = buildPatentSearchPrep(record);
+  doc.addPage();
+  y = MARGIN;
+  text("Similar Patent Discovery Prep", { size: 14, color: NAVY, bold: true, gap: 2 });
+  text(PATENT_SEARCH_PREP_INTRO, { size: 9, color: GRAY, gap: 6 });
+
+  heading("Search keywords");
+  text(searchPrep.searchKeywords.join(", ") || "Add more detail to your packet to generate keywords.", {
+    size: 10,
+    gap: 6,
+  });
+
+  heading("Suggested search queries");
+  bullets(searchPrep.suggestedQueries, "•");
+
+  heading("External search links");
+  for (const link of searchPrep.externalSearchLinks) {
+    text(`${link.label}: ${link.url}`, { size: 10, gap: 1 });
+    text(`Suggested query: ${link.queryHint}`, { size: 9, color: GRAY, gap: 6 });
+  }
+
+  heading("Similar reference worksheet");
+  searchPrep.worksheetRows.forEach((row, idx) => {
+    text(`Reference ${idx + 1}`, { size: 10, bold: true, color: TEAL, gap: 1 });
+    labeledBlock(WORKSHEET_HEADERS[0], row.searchQueryUsed);
+    labeledBlock(WORKSHEET_HEADERS[1], row.referenceFound);
+    labeledBlock(WORKSHEET_HEADERS[2], row.looksSimilar);
+    labeledBlock(WORKSHEET_HEADERS[3], row.seemsDifferent);
+    labeledBlock(WORKSHEET_HEADERS[4], row.questionsForExpert);
+  });
+
+  heading("Expert prep questions");
+  bullets(searchPrep.expertPrepQuestions, "?");
+
+  text(searchPrep.safeDisclaimer, { size: 9, color: AMBER, gap: 6 });
 
   // Optional clarity check
   if (record.postClarity) {

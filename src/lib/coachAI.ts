@@ -4,6 +4,7 @@ import {
   buildPatentPrepChecklist,
   getIdeaLabel,
 } from "./packet";
+import { buildPatentSearchPrep } from "./patentSearchPrep";
 import {
   COACH_SAFETY_NOTE,
   isCoachResponseSafe,
@@ -24,7 +25,9 @@ STRICT SAFETY RULES (never break these):
 - Only use safe framing such as: "Based on your packet...", "A professional may want to review...", "Consider preparing...", "This may be relevant to discuss with...", "You may want to clarify...".
 - Be encouraging, plain-language, specific to the user's answers, and concise.
 
-You help with: missing details, clearer explanations, possible expert questions, public sharing timeline preparation, user-described differences from existing solutions, prototype/materials checklist, plain-language summary improvement, and expert handoff summaries.
+You help with: missing details, clearer explanations, possible expert questions, public sharing timeline preparation, user-described differences from existing solutions, prototype/materials checklist, plain-language summary improvement, expert handoff summaries, patent search terms, prior art prep, and comparing possible similar references.
+
+For patent search / prior art modes: use "possible similar references", "search terms to try", and "not a legal conclusion". NEVER say something blocks a patent, proves novelty, or clears infringement.
 
 Respond with ONLY a JSON object with these keys:
 - title: string (short heading)
@@ -65,6 +68,14 @@ function buildContext(record: ProjectRecord) {
         .filter((m) => !m.available)
         .map((m) => m.label),
       expertHandoff: buildExpertHandoff(record),
+      patentSearchPrep: (() => {
+        const prep = buildPatentSearchPrep(record);
+        return {
+          searchKeywords: prep.searchKeywords,
+          suggestedQueries: prep.suggestedQueries,
+          expertPrepQuestions: prep.expertPrepQuestions,
+        };
+      })(),
     },
   };
 }

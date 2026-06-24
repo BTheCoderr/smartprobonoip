@@ -1,4 +1,5 @@
 import { ASSET_LABELS, SHARING_LABELS } from "./labels";
+import { assertPatentSearchPrepSafe } from "./patentSearchPrep";
 import { containsForbiddenLanguage } from "./safety";
 import type { AssetType, IntakeAnswers, ProjectRecord } from "./types";
 
@@ -300,4 +301,5 @@ export function assertPacketContentSafe(): void {
   if (containsForbiddenLanguage(text)) {
     throw new Error("Patent prep content contains forbidden language");
   }
+  assertPatentSearchPrepSafe();
 }

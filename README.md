@@ -139,10 +139,24 @@ When set, `/api/generate` uses AI grounded by the rule-based draft, with safety 
 
 On the IP Readiness Packet page, the **AI Packet Coach** helps users clarify their answers, find missing information, and prepare for an expert conversation. It uses the user's actual packet/intake/profile as context — it is not a general chatbot.
 
-- Quick actions: missing information, expert questions, explain my idea, describe differences, development timeline, organize materials, expert handoff summary.
+- Quick actions: missing information, expert questions, explain my idea, describe differences, development timeline, organize materials, expert handoff summary, patent search terms, compare similar references, prior art prep, and more.
 - Users can also type a custom prep question.
 - `/api/coach` uses OpenAI when `OPENAI_API_KEY` is set, with a strict safety system prompt and forbidden-language validation; otherwise it returns a rule-based prep response.
 - The coach never gives legal advice or legal conclusions, and is stateless (messages are not stored).
+
+---
+
+## Similar Patent Discovery Prep
+
+Helps users prepare for prior art and similar patent research **before** meeting an expert — without building a patent database or making legal conclusions.
+
+- **Search keywords** derived from intake answers and IP signals
+- **Suggested search queries** (3–5 plain-language queries)
+- **External links** to Google Patents and USPTO Patent Public Search (with suggested query text)
+- **Similar reference worksheet** (fillable table for comparisons)
+- **Expert prep questions** for discussing possible similar references
+- Included on-screen in the packet, in the downloadable PDF, and as AI Packet Coach quick actions
+- Does not determine patentability, novelty, clearance, or infringement
 
 ---
 

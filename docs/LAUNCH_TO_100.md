@@ -88,6 +88,17 @@ Demo-ready means the app can be shown live to class, advisors, Scott, Emily, RIH
 6. Confirm no response contains legal-advice language or legal conclusions.
 7. Refresh the page and confirm the coach conversation resets (stateless MVP).
 
+### Similar Patent Discovery Prep smoke test
+
+1. From a generated packet, scroll to **Similar Patent Discovery Prep** (after Patent Prep Mode).
+2. Confirm search keywords reflect the user's intake answers.
+3. Confirm 3–5 suggested search queries appear.
+4. Confirm Google Patents and USPTO Patent Public Search links open (with suggested query text).
+5. Confirm the similar reference worksheet table is present.
+6. Confirm expert prep questions use safe framing only.
+7. Download the PDF and confirm the section appears with keywords, queries, links, worksheet, and disclaimer.
+8. In AI Packet Coach, click the 5 patent search prep quick actions and confirm helpful responses.
+
 ### Demo-ready score
 
 The demo is 100% ready when a person can complete the above flow in under 5 minutes with no help.

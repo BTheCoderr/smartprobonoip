@@ -20,6 +20,11 @@ import {
   PATENT_PREP_INTRO,
   TIMELINE_NOTE,
 } from "@/lib/packet";
+import {
+  buildPatentSearchPrep,
+  PATENT_SEARCH_PREP_INTRO,
+  WORKSHEET_HEADERS,
+} from "@/lib/patentSearchPrep";
 import type { ProjectRecord } from "@/lib/types";
 
 export function ProfileView({ record }: { record: ProjectRecord }) {
@@ -31,6 +36,7 @@ export function ProfileView({ record }: { record: ProjectRecord }) {
   const differenceMap = buildDifferenceMap(record);
   const materials = buildMaterialsChecklist(record);
   const handoff = buildExpertHandoff(record);
+  const searchPrep = buildPatentSearchPrep(record);
 
   return (
     <div className="space-y-6">
@@ -366,6 +372,128 @@ export function ProfileView({ record }: { record: ProjectRecord }) {
                 ))}
               </ul>
             </div>
+          </Card>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-teal-200 bg-teal-50/20 p-1">
+        <div className="px-3 py-2">
+          <h2 className="text-lg font-bold text-navy-900">
+            Similar Patent Discovery Prep
+          </h2>
+          <p className="mt-1 text-sm text-navy-600">
+            {PATENT_SEARCH_PREP_INTRO}
+          </p>
+        </div>
+
+        <div className="space-y-6 p-2">
+          <Card>
+            <CardHeader title="Search keywords" />
+            <div className="flex flex-wrap gap-2">
+              {searchPrep.searchKeywords.length > 0 ? (
+                searchPrep.searchKeywords.map((kw) => (
+                  <span
+                    key={kw}
+                    className="rounded-full bg-mist-100 px-3 py-1 text-sm text-navy-700"
+                  >
+                    {kw}
+                  </span>
+                ))
+              ) : (
+                <p className="text-sm text-navy-500">
+                  Add more detail to your packet to generate keywords.
+                </p>
+              )}
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="Suggested search queries"
+              subtitle="Search terms to try — possible similar references only, not a legal conclusion."
+            />
+            <ul className="space-y-2 text-sm text-navy-700">
+              {searchPrep.suggestedQueries.map((q) => (
+                <li key={q} className="flex gap-2">
+                  <span className="text-teal-600">•</span>
+                  {q}
+                </li>
+              ))}
+            </ul>
+          </Card>
+
+          <Card>
+            <CardHeader title="External search links" />
+            <ul className="space-y-3">
+              {searchPrep.externalSearchLinks.map((link) => (
+                <li key={link.label} className="text-sm">
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-teal-700 underline hover:text-teal-900"
+                  >
+                    {link.label}
+                  </a>
+                  <p className="mt-0.5 text-xs text-navy-500">
+                    Suggested query: {link.queryHint}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </Card>
+
+          <Card>
+            <CardHeader title="Similar reference worksheet" />
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-mist-200 text-xs uppercase text-navy-500">
+                    {WORKSHEET_HEADERS.map((h) => (
+                      <th key={h} className="py-2 pr-3">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {searchPrep.worksheetRows.map((row, idx) => (
+                    <tr key={idx} className="border-b border-mist-100 align-top">
+                      <td className="py-2 pr-3 text-navy-700">
+                        {row.searchQueryUsed}
+                      </td>
+                      <td className="py-2 pr-3 text-navy-600">
+                        {row.referenceFound}
+                      </td>
+                      <td className="py-2 pr-3 text-navy-600">
+                        {row.looksSimilar}
+                      </td>
+                      <td className="py-2 pr-3 text-navy-600">
+                        {row.seemsDifferent}
+                      </td>
+                      <td className="py-2 text-navy-600">
+                        {row.questionsForExpert}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader title="Expert prep questions" />
+            <ul className="space-y-1.5 text-sm text-navy-700">
+              {searchPrep.expertPrepQuestions.map((q) => (
+                <li key={q} className="flex gap-2">
+                  <span className="text-navy-400">?</span>
+                  {q}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 border-t border-mist-100 pt-2 text-xs text-amber-700">
+              {searchPrep.safeDisclaimer}
+            </p>
           </Card>
         </div>
       </div>
