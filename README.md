@@ -57,6 +57,7 @@ The demo loads a sample invention (HydroSeal), walks through disclaimer → inta
 | `/smartprobonoip/dashboard` | Partner dashboard — filters, demo toggle, CSV export |
 | `/smartprobonoip/privacy` | Privacy summary + data export/deletion placeholders |
 | `/api/generate` | Profile generation (AI if configured, else rule-based) |
+| `/api/coach` | AI Packet Coach prep responses (AI if configured, else rule-based) |
 | `/api/records` | Session-scoped persistence (Supabase pilot) |
 | `/api/partner/metrics` | Partner metrics (requires secret) |
 | `/api/partner/export.csv` | Pilot CSV export (requires secret) |
@@ -131,6 +132,17 @@ OPENAI_API_KEY=sk-...
 ```
 
 When set, `/api/generate` uses AI grounded by the rule-based draft, with safety validation and disclaimer always attached.
+
+---
+
+## AI Packet Coach
+
+On the IP Readiness Packet page, the **AI Packet Coach** helps users clarify their answers, find missing information, and prepare for an expert conversation. It uses the user's actual packet/intake/profile as context — it is not a general chatbot.
+
+- Quick actions: missing information, expert questions, explain my idea, describe differences, development timeline, organize materials, expert handoff summary.
+- Users can also type a custom prep question.
+- `/api/coach` uses OpenAI when `OPENAI_API_KEY` is set, with a strict safety system prompt and forbidden-language validation; otherwise it returns a rule-based prep response.
+- The coach never gives legal advice or legal conclusions, and is stateless (messages are not stored).
 
 ---
 

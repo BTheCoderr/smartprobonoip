@@ -7,10 +7,18 @@ import {
   SIGNAL_LABELS,
 } from "./labels";
 import {
+  buildDifferenceMap,
+  buildExpertHandoff,
   buildFollowUpPlan,
   buildIdeaSummaryFields,
+  buildMaterialsChecklist,
+  buildPatentPrepChecklist,
   buildReadinessSnapshot,
+  DEVELOPMENT_TIMELINE_FIELDS,
+  DIFFERENCE_MAP_NOTE,
   getIdeaLabel,
+  PATENT_PREP_INTRO,
+  TIMELINE_NOTE,
 } from "./packet";
 import type { ProjectRecord } from "./types";
 
@@ -220,6 +228,69 @@ export function buildPacketPdf(record: ProjectRecord): jsPDF {
     text(`${step.window} — ${step.title}`, { bold: true, color: TEAL, gap: 2 });
     bullets(step.actions, "•");
   }
+
+  // ---------------------------------------------------------------------------
+  // Patent Prep Mode
+  // ---------------------------------------------------------------------------
+  doc.addPage();
+  y = MARGIN;
+  text("Patent Prep Mode", { size: 14, color: NAVY, bold: true, gap: 2 });
+  text(PATENT_PREP_INTRO, { size: 9, color: GRAY, gap: 6 });
+
+  // Patent prep checklist
+  heading("Patent prep checklist");
+  for (const row of buildPatentPrepChecklist(record)) {
+    text(`${row.complete ? "[x]" : "[ ]"} ${row.label}`, {
+      size: 10,
+      bold: true,
+      gap: 1,
+    });
+    if (row.value) text(row.value, { size: 10, color: GRAY, gap: 6 });
+  }
+
+  // Development timeline (fillable)
+  heading("Development timeline");
+  text(TIMELINE_NOTE, { size: 9, color: GRAY, gap: 6 });
+  for (const field of DEVELOPMENT_TIMELINE_FIELDS) {
+    text(`${field}:`, { size: 10, bold: true, gap: 1 });
+    text("________________________________", { size: 10, color: GRAY, gap: 6 });
+  }
+
+  // Possible difference map
+  heading("Possible difference map");
+  buildDifferenceMap(record).forEach((row, idx) => {
+    text(`Row ${idx + 1}`, { size: 10, bold: true, color: TEAL, gap: 1 });
+    labeledBlock("Existing option / current approach", row.existing);
+    labeledBlock("What my idea does differently", row.difference);
+    labeledBlock("Why that difference matters", row.whyItMatters);
+  });
+  text(DIFFERENCE_MAP_NOTE, { size: 9, color: AMBER, gap: 6 });
+
+  // Drawings and materials checklist
+  heading("Drawings and materials checklist");
+  for (const item of buildMaterialsChecklist(record)) {
+    text(`${item.available ? "[x]" : "[ ]"} ${item.label}`, {
+      size: 10,
+      gap: 2,
+    });
+  }
+
+  // Expert handoff summary
+  const handoff = buildExpertHandoff(record);
+  heading("Expert handoff summary");
+  text(
+    "For review by a patent agent, patent attorney, clinic, mentor, or innovation partner.",
+    { size: 9, color: GRAY, gap: 6 },
+  );
+  labeledBlock("Idea summary", handoff.ideaSummary);
+  labeledBlock("Main components", handoff.mainComponents);
+  labeledBlock("How it works", handoff.howItWorks);
+  labeledBlock("User-described differences", handoff.differences);
+  labeledBlock("Prototype status", handoff.prototypeStatus);
+  labeledBlock("Public sharing timeline", handoff.publicSharingTimeline);
+  labeledBlock("Materials available", handoff.materialsAvailable);
+  text("Questions for expert review", { size: 10, bold: true, gap: 2 });
+  bullets(handoff.expertQuestions, "?");
 
   // Optional clarity check
   if (record.postClarity) {

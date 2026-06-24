@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
+import { PacketCoach } from "@/components/profile/PacketCoach";
 import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
@@ -141,6 +142,12 @@ export default function ProfilePage({
           <ProfileView record={record} />
         )}
       </div>
+
+      {!editing ? (
+        <div className="mt-6">
+          <PacketCoach record={record} />
+        </div>
+      ) : null}
 
       <Card className="mt-6">
         <h2 className="text-base font-semibold text-navy-900">

@@ -25,6 +25,27 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 - [ ] On-screen packet shows readiness snapshot and 30/60/90 day plan
 - [ ] No forbidden legal-advice phrases appear in the packet (no "need a patent", "patentable", "you should file", "protectable")
 
+### Patent Prep Mode
+
+- [ ] Packet (screen + PDF) includes a **Patent Prep Mode** section
+- [ ] Patent prep checklist lists: what created, problem, main parts, how parts work together, process/workflow, prototype status, supporting materials, public sharing status, user-described differences
+- [ ] Development timeline shows fillable date placeholders (idea started, first written/sketched, first prototype, first shared, first pitched/sold/demoed, major improvements)
+- [ ] Possible difference map table renders with the note "These are user-described differences only. A professional would need to review whether they matter legally."
+- [ ] Drawings and materials checklist renders (sketches, diagrams, flowcharts, wireframes, screenshots, prototype photos, code/technical notes, testing notes, customer/pitch notes)
+- [ ] Expert handoff summary renders as the final prep section before the disclaimer
+- [ ] Patent Prep Mode uses safe framing only ("If patent protection may be relevant…", "Consider organizing…", "A professional may want to review…") — no legal conclusions
+
+### AI Packet Coach
+
+- [ ] Packet page shows an **AI Packet Coach** section after the generated packet (view mode)
+- [ ] All 7 quick-action buttons return a helpful, packet-specific prep response
+- [ ] Typing a custom prep question returns a response
+- [ ] Responses reference the user's actual answers (not generic chatbot output)
+- [ ] Rule-based fallback works with no `OPENAI_API_KEY` set (response tagged "Prep guide")
+- [ ] When `OPENAI_API_KEY` is set, responses are tagged "AI-assisted" and still safe
+- [ ] No forbidden legal-advice phrases appear in any coach response
+- [ ] Coach is stateless — refreshing the page clears the conversation
+
 ## Deployment (Phase 8)
 
 - [ ] Repo pushed to GitHub (`BTheCoderr/smartprobonoip`)
