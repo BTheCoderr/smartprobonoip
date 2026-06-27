@@ -31,6 +31,85 @@ const AUDIENCE_HINTS =
 const WORKFLOW_HINTS =
   /\b(uploads?|uploaded|generates?|generating|click(s|ed|ing)?|steps?|workflow|process(es)?|then|after|before|creates?|creating|builds?|building|runs?|running|calculates?|stores?|sends?|exports?|imports?|checklist|pdf|database|api|module|feature|algorithm|analyzes?|parses?|transforms?|displays?|outputs?|inputs?|photos?|images?|data|automatically|system)\b/i;
 
+const PAIN_POINT_HINTS =
+  /\b(problem|frustrat|frustration|pain|struggle|difficult|hard|expensive|cost|costly|risk|danger|unsafe|lack|missing|without|need(s|ed|ing)?|can't|cannot|unable|waste|wasted|slow|heavy|burden|gap|challenge|issue|barrier|obstacle|annoy|inconvenien|inefficien|fail(s|ed|ure|ures)?|break(s|ing)?|damage|lose|lost|run\s+out|shortage|scarce|limited|poor|bad|worse|worst|unreliable|confus|complex|overwhelm|stress|time-consuming|money|afford|pay|spend|hazard|harm|injur|theft|steal|messy|clutter|tangle|tangled|forget|forgot|forgetting|forgets)\b/i;
+
+const COMPARISON_STOP_WORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "that",
+  "this",
+  "with",
+  "from",
+  "your",
+  "you",
+  "are",
+  "was",
+  "were",
+  "has",
+  "have",
+  "had",
+  "its",
+  "our",
+  "their",
+  "they",
+  "them",
+  "who",
+  "what",
+  "when",
+  "where",
+  "how",
+  "why",
+  "can",
+  "may",
+  "will",
+  "would",
+  "could",
+  "should",
+  "into",
+  "through",
+  "about",
+  "also",
+  "just",
+  "very",
+  "more",
+  "most",
+  "some",
+  "any",
+  "all",
+  "each",
+  "other",
+  "than",
+  "then",
+  "there",
+  "here",
+  "such",
+  "using",
+  "used",
+  "uses",
+  "use",
+  "idea",
+  "product",
+  "device",
+  "system",
+  "app",
+  "tool",
+  "solution",
+  "new",
+  "simple",
+  "helps",
+  "help",
+  "make",
+  "makes",
+  "made",
+  "keeps",
+  "keep",
+  "lets",
+  "let",
+  "using",
+]);
+
 export interface FieldValidationError {
   field: keyof IntakeAnswers;
   message: string;
@@ -176,6 +255,119 @@ export function normalizeAnswersForPacket(
   };
 }
 
+function normalizeComparisonText(text: string): string {
+  return sanitizeFieldText(text)
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function comparisonTokens(text: string): Set<string> {
+  return new Set(
+    normalizeComparisonText(text)
+      .split(" ")
+      .filter(
+        (word) =>
+          word.length >= 3 &&
+          !COMPARISON_STOP_WORDS.has(word) &&
+          !isBlockedToken(word),
+      ),
+  );
+}
+
+function tokenJaccardSimilarity(a: string, b: string): number {
+  const setA = comparisonTokens(a);
+  const setB = comparisonTokens(b);
+  if (setA.size === 0 || setB.size === 0) return 0;
+
+  let intersection = 0;
+  for (const word of setA) {
+    if (setB.has(word)) intersection += 1;
+  }
+  const union = setA.size + setB.size - intersection;
+  return union === 0 ? 0 : intersection / union;
+}
+
+export function areProblemAndCreatedNearlyIdentical(
+  whatCreated: string,
+  problemSolved: string,
+): boolean {
+  const created = normalizeComparisonText(whatCreated);
+  const problem = normalizeComparisonText(problemSolved);
+  if (!created || !problem) return false;
+  if (created === problem) return true;
+
+  const shorter = created.length <= problem.length ? created : problem;
+  const longer = created.length <= problem.length ? problem : created;
+  if (shorter.length >= 24 && longer.includes(shorter)) return true;
+
+  const setA = comparisonTokens(whatCreated);
+  const setB = comparisonTokens(problemSolved);
+  if (setA.size === 0 || setB.size === 0) return false;
+
+  let intersection = 0;
+  for (const word of setA) {
+    if (setB.has(word)) intersection += 1;
+  }
+
+  const jaccard = tokenJaccardSimilarity(whatCreated, problemSolved);
+  if (jaccard >= 0.72) return true;
+  if (setB.size >= 3 && intersection / setB.size >= 0.85) return true;
+
+  return false;
+}
+
+export function problemMostlyRepeatsProductWithoutPainPoint(
+  whatCreated: string,
+  problemSolved: string,
+): boolean {
+  const created = sanitizeFieldText(whatCreated).trim();
+  const problem = sanitizeFieldText(problemSolved).trim();
+  if (!created || !problem) return false;
+  if (PAIN_POINT_HINTS.test(problem)) return false;
+
+  const jaccard = tokenJaccardSimilarity(created, problem);
+  if (jaccard >= 0.5) return true;
+
+  const setCreated = comparisonTokens(created);
+  const setProblem = comparisonTokens(problem);
+  if (setProblem.size === 0) return false;
+
+  let overlap = 0;
+  for (const word of setProblem) {
+    if (setCreated.has(word)) overlap += 1;
+  }
+
+  return overlap / setProblem.size >= 0.7;
+}
+
+export function validateProblemField(
+  answers: IntakeAnswers,
+): FieldValidationError | null {
+  const created = answers.whatCreated.trim();
+  const problem = answers.problemSolved.trim();
+  if (!created || !problem) return null;
+
+  if (areProblemAndCreatedNearlyIdentical(created, problem)) {
+    return {
+      field: "problemSolved",
+      message:
+        "Your problem answer looks the same as your idea description. Please describe the problem your idea solves.",
+    };
+  }
+
+  if (problemMostlyRepeatsProductWithoutPainPoint(created, problem)) {
+    return {
+      field: "problemSolved",
+      message:
+        "Please describe the problem, frustration, cost, risk, or gap this idea addresses.",
+    };
+  }
+
+  return null;
+}
+
 export function validateIntakeStep(
   step: number,
   answers: IntakeAnswers,
@@ -202,6 +394,8 @@ export function validateIntakeStep(
           "This sounds like how the idea works. Please describe who the idea is for.",
       };
     }
+    const problemError = validateProblemField(answers);
+    if (problemError) return problemError;
   }
 
   if (step === 1 && answers.howItWorks.trim().length > 0) {
