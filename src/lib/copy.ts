@@ -148,3 +148,50 @@ export const LANDING_COPY = {
     },
   ],
 } as const;
+
+export const PILOT_KIT_COPY = {
+  title: "Pilot demo kit",
+  lead: "Everything you need to show SmartProBonoIP to partners, clinics, funders, and innovation programs in about two minutes.",
+  sampleBanner:
+    "Sample packet — fictional HydroSeal invention for demos only. Preparation help, not legal advice.",
+  pilotPitch:
+    "SmartProBonoIP is looking for 10–25 pilot users through a Rhode Island partner. The goal is to test whether IP Readiness Packets help inventors and creators show up more prepared before meeting a professional, clinic, mentor, or innovation partner.",
+  partnerValue: [
+    "Cleaner intake before referrals",
+    "Better-prepared inventors and creators",
+    "Readiness and clarity data for pilots",
+    "Visibility into common support gaps",
+    "PDF handoff packets for mentors and clinics",
+  ],
+  demoSteps: [
+    {
+      title: "Open the sample packet",
+      body: "Show a finished IP Readiness Packet — idea summary, signals, questions, and next step — without completing intake.",
+      href: "/smartprobonoip/sample",
+    },
+    {
+      title: "Run demo intake",
+      body: "Walk through the Packet Builder with the pre-loaded HydroSeal example, then generate a demo packet.",
+      href: "/smartprobonoip/disclaimer?demo=1",
+    },
+    {
+      title: "Download the PDF",
+      body: "From the sample or demo packet page, download the handoff PDF a clinic or mentor could review.",
+      href: "/smartprobonoip/sample",
+    },
+    {
+      title: "Show the Partner Impact Desk",
+      body: "Open the dashboard with demo data to show readiness signals, clarity trends, and CSV export.",
+      href: "/smartprobonoip/dashboard?demo=1",
+    },
+  ],
+  recoveryNote:
+    "Non-demo packets can save a private recovery link (hashed server-side) so inventors can return from another browser. Demo packets do not create recovery records.",
+  qrLinks: [
+    { label: "Homepage", path: "/smartprobonoip" },
+    { label: "Start a packet", path: "/smartprobonoip/disclaimer" },
+    { label: "Demo mode", path: "/smartprobonoip/disclaimer?demo=1" },
+    { label: "Sample packet", path: "/smartprobonoip/sample" },
+    { label: "Partner dashboard", path: "/smartprobonoip/dashboard" },
+  ],
+} as const;

@@ -28,10 +28,7 @@ export default function ProductLanding() {
           <Link href="/smartprobonoip/disclaimer" className="btn-primary">
             Start your packet
           </Link>
-          <Link
-            href="/smartprobonoip/disclaimer?demo=1"
-            className="btn-secondary"
-          >
+          <Link href="/smartprobonoip/sample" className="btn-secondary">
             View sample packet
           </Link>
         </div>
@@ -110,6 +107,12 @@ export default function ProductLanding() {
             lead={LANDING_COPY.partnerCallout}
           />
           <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/smartprobonoip/pilot"
+              className="btn-secondary border-white/20 bg-white/10 text-white hover:bg-white/20"
+            >
+              Pilot demo kit
+            </Link>
             <Link
               href="/smartprobonoip/dashboard"
               className="btn-secondary border-white/20 bg-white/10 text-white hover:bg-white/20"

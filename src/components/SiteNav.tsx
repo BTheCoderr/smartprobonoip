@@ -31,6 +31,18 @@ export function SiteNav() {
             Demo
           </Link>
           <Link
+            href="/smartprobonoip/sample"
+            className="hidden rounded-xl px-3 py-2 font-medium text-navy-700 transition hover:bg-mist-100 sm:inline-block"
+          >
+            Sample
+          </Link>
+          <Link
+            href="/smartprobonoip/pilot"
+            className="hidden rounded-xl px-3 py-2 font-medium text-navy-700 transition hover:bg-mist-100 sm:inline-block"
+          >
+            Pilot
+          </Link>
+          <Link
             href="/smartprobonoip/dashboard"
             className="hidden rounded-xl px-3 py-2 font-medium text-navy-700 transition hover:bg-mist-100 sm:inline-block"
           >

@@ -18,6 +18,12 @@ export function SiteFooter() {
             <Link href="/smartprobonoip" className="hover:text-teal-600">
               Product
             </Link>
+            <Link href="/smartprobonoip/sample" className="hover:text-teal-600">
+              Sample
+            </Link>
+            <Link href="/smartprobonoip/pilot" className="hover:text-teal-600">
+              Pilot kit
+            </Link>
             <Link href="/smartprobonoip/disclaimer" className="hover:text-teal-600">
               Disclaimer
             </Link>

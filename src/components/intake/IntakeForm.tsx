@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Card } from "@/components/ui/Card";
 import { PaperCard, StampLabel } from "@/components/ui/design";
 import { ProgressIndicator } from "@/components/ui/ProgressIndicator";
 import {

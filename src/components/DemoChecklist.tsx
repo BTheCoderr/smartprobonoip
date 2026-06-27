@@ -1,14 +1,35 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 
 const ITEMS = [
-  { step: 1, label: "Disclaimer acknowledged", href: "/smartprobonoip/disclaimer?demo=1" },
-  { step: 2, label: "Guided intake (sample invention)", href: "/smartprobonoip/start?demo=1" },
-  { step: 3, label: "Generated IP Readiness Profile", href: "/smartprobonoip/start?demo=1" },
-  { step: 4, label: "PDF export from profile page", href: "/smartprobonoip/start?demo=1" },
-  { step: 5, label: "Dashboard metrics", href: "/smartprobonoip/dashboard?demo=1" },
+  {
+    step: 1,
+    label: "View sample packet (no intake)",
+    href: "/smartprobonoip/sample",
+  },
+  {
+    step: 2,
+    label: "Pilot demo kit & QR links",
+    href: "/smartprobonoip/pilot",
+  },
+  {
+    step: 3,
+    label: "Demo intake (sample invention)",
+    href: "/smartprobonoip/disclaimer?demo=1",
+  },
+  {
+    step: 4,
+    label: "Download PDF from sample or demo packet",
+    href: "/smartprobonoip/sample",
+  },
+  {
+    step: 5,
+    label: "Partner Impact Desk",
+    href: "/smartprobonoip/dashboard?demo=1",
+  },
 ];
 
 export function DemoChecklist() {
@@ -39,9 +60,9 @@ export function DemoChecklist() {
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-600 text-xs font-semibold text-white">
               {item.step}
             </span>
-            <a href={item.href} className="hover:text-teal-700 hover:underline">
+            <Link href={item.href} className="hover:text-teal-700 hover:underline">
               {item.label}
-            </a>
+            </Link>
           </li>
         ))}
       </ol>
