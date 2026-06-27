@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { trackServerEvent } from "@/lib/analytics/server";
 import { listLiveRecords, verifyPartnerSecret } from "@/lib/db/records";
+import { getProjectEventFlags } from "@/lib/db/analytics";
 import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
@@ -29,6 +31,7 @@ export async function GET(request: Request) {
   }
 
   const records = await listLiveRecords();
+  const eventFlags = await getProjectEventFlags(records.map((r) => r.id));
   const header = [
     "id",
     "created_at",
@@ -47,11 +50,14 @@ export async function GET(request: Request) {
     "followup_60",
     "followup_90",
     "is_demo",
+    "pdf_downloaded",
+    "recovery_link_created",
   ];
 
   const rows = records.map((r) => {
     const delta =
       typeof r.postClarity === "number" ? r.postClarity - r.preClarity : "";
+    const flags = eventFlags.get(r.id);
     return [
       r.id,
       r.createdAt,
@@ -70,12 +76,19 @@ export async function GET(request: Request) {
       r.followUpStatus?.day60 ?? "pending",
       r.followUpStatus?.day90 ?? "pending",
       r.isDemo ?? false,
+      flags?.pdfDownloaded ?? false,
+      flags?.recoveryCreated ?? false,
     ]
       .map(escapeCsv)
       .join(",");
   });
 
   const csv = [header.join(","), ...rows].join("\n");
+
+  await trackServerEvent("csv_exported", {
+    metadata: { eventCount: records.length },
+  });
+
   return new NextResponse(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",

@@ -198,25 +198,39 @@ export const PILOT_KIT_COPY = {
     {
       label: "General start",
       path: "/smartprobonoip/disclaimer",
-      query: {},
+      query: { source: "qr", campaign: "pilot-2026" },
     },
     {
       label: "SmartProBonoIP RI Pilot",
       path: "/smartprobonoip/disclaimer",
       query: {
         partner: "smartprobonoip-ri-pilot",
+        source: "qr",
         campaign: "pilot-2026",
       },
     },
     {
-      label: "Demo mode",
+      label: "RIHub",
       path: "/smartprobonoip/disclaimer",
-      query: { demo: "1", source: "demo" },
+      query: {
+        partner: "rihub",
+        source: "qr",
+        campaign: "pilot-2026",
+      },
+    },
+    {
+      label: "Community IP",
+      path: "/smartprobonoip/disclaimer",
+      query: {
+        partner: "communityip",
+        source: "qr",
+        campaign: "pilot-2026",
+      },
     },
     {
       label: "Sample packet",
       path: "/smartprobonoip/sample",
-      query: {},
+      query: { source: "qr", campaign: "pilot-2026" },
     },
     {
       label: "Partner dashboard",

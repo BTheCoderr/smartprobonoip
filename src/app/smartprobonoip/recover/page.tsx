@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { RecoveryCard } from "@/components/ui/design";
 import { Card } from "@/components/ui/Card";
+import { trackEvent } from "@/lib/analytics/client";
 import { pilotSessionHeaders } from "@/lib/pilotSession";
 import { isApiStoreAvailable } from "@/lib/store/api";
 import { BRAND } from "@/lib/brand";
@@ -23,6 +24,7 @@ function RecoverForm() {
 
     setLoading(true);
     setError(null);
+    trackEvent("recovery_claim_started");
     try {
       const res = await fetch("/api/recovery/claim", {
         method: "POST",

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { RecoveryCard } from "@/components/ui/design";
 import { RECOVERY_COPY } from "@/lib/copy";
+import { trackEvent } from "@/lib/analytics/client";
 import { pilotSessionHeaders } from "@/lib/pilotSession";
 import { isApiStoreAvailable } from "@/lib/store/api";
 import type { ProjectRecord } from "@/lib/types";
@@ -70,6 +71,7 @@ export function PacketRecoveryCard({ record }: { record: ProjectRecord }) {
   async function copyLink() {
     if (!recoveryUrl) return;
     await navigator.clipboard.writeText(recoveryUrl);
+    trackEvent("recovery_link_copied", { projectId: record.id });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }

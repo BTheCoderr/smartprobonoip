@@ -11,6 +11,7 @@ import {
 import { BRAND } from "@/lib/brand";
 import { Card } from "@/components/ui/Card";
 import { acknowledgeDisclaimer } from "@/lib/ack";
+import { trackEvent, trackStartClicked } from "@/lib/analytics/client";
 import { activateDemoFromQuery } from "@/lib/demo";
 
 export default function DisclaimerClient() {
@@ -30,6 +31,8 @@ export default function DisclaimerClient() {
   function handleContinue() {
     if (!canContinue) return;
     acknowledgeDisclaimer();
+    trackEvent("disclaimer_accepted", { metadata: { demo: isDemo } });
+    trackStartClicked(isDemo);
     router.push(isDemo ? "/smartprobonoip/start?demo=1" : "/smartprobonoip/start");
   }
 

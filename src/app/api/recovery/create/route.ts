@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { trackServerEvent } from "@/lib/analytics/server";
 import { createRecoveryLink } from "@/lib/db/recovery";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
@@ -27,6 +28,20 @@ export async function POST(request: Request) {
       pilotSessionId: pilotSession,
       email: body.email,
     });
+
+    await trackServerEvent("recovery_link_created", {
+      projectId: body.projectId.trim(),
+      pilotSessionId: pilotSession,
+      anonymousId: request.headers.get("x-anonymous-id"),
+      metadata: { recoveryCreated: true },
+    });
+    if (body.email?.trim()) {
+      await trackServerEvent("recovery_email_requested", {
+        projectId: body.projectId.trim(),
+        pilotSessionId: pilotSession,
+        anonymousId: request.headers.get("x-anonymous-id"),
+      });
+    }
 
     return NextResponse.json(result);
   } catch (err) {

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { trackServerEvent } from "@/lib/analytics/server";
 import { claimRecoveryToken } from "@/lib/db/recovery";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
@@ -24,8 +25,23 @@ export async function POST(request: Request) {
       pilotSessionId: pilotSession,
     });
 
+    await trackServerEvent("recovery_claim_succeeded", {
+      projectId: record.id,
+      pilotSessionId: pilotSession,
+      anonymousId: request.headers.get("x-anonymous-id"),
+      partnerSlug: record.partnerSlug,
+      partnerName: record.partnerName,
+      source: record.source,
+      campaign: record.campaign,
+    });
+
     return NextResponse.json({ record });
   } catch {
+    await trackServerEvent("recovery_claim_failed", {
+      pilotSessionId: pilotSession,
+      anonymousId: request.headers.get("x-anonymous-id"),
+      metadata: { errorCode: "claim_failed" },
+    });
     return NextResponse.json(
       { error: "Invalid or expired recovery link" },
       { status: 400 },

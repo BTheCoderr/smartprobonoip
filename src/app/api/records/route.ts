@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { trackServerEvent } from "@/lib/analytics/server";
 import { createRecord } from "@/lib/db/records";
 import { validateForGeneration } from "@/lib/intakeValidation";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
@@ -47,6 +48,25 @@ export async function POST(request: Request) {
       isDemo: body.isDemo ?? false,
       tracking: body.tracking ?? null,
     });
+
+    const tracking = body.tracking ?? null;
+    const analyticsContext = {
+      projectId: record.id,
+      pilotSessionId: pilotSession,
+      anonymousId: request.headers.get("x-anonymous-id"),
+      partnerSlug: tracking?.partnerSlug ?? record.partnerSlug,
+      partnerName: tracking?.partnerName ?? record.partnerName,
+      source: tracking?.source ?? record.source,
+      campaign: tracking?.campaign ?? record.campaign,
+      metadata: {
+        demo: body.isDemo ?? false,
+        clarityRating: body.preClarity,
+        signalKeys: body.profile.signals,
+      },
+    };
+    await trackServerEvent("packet_generated", analyticsContext);
+    await trackServerEvent("intake_completed", analyticsContext);
+    await trackServerEvent("clarity_before_recorded", analyticsContext);
 
     return NextResponse.json({ record });
   } catch (err) {

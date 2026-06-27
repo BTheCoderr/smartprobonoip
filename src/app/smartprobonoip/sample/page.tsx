@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PageEvent } from "@/components/analytics/PageEvent";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { CoachPreview } from "@/components/pilot/CoachPreview";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
@@ -8,6 +9,7 @@ import { StampLabel } from "@/components/ui/design";
 import { downloadPacketPdf } from "@/lib/pdf";
 import { getIdeaLabel } from "@/lib/packet";
 import { PILOT_KIT_COPY } from "@/lib/copy";
+import { trackEvent } from "@/lib/analytics/client";
 import { SAMPLE_RECORD } from "@/lib/samplePacket";
 
 export default function SamplePacketPage() {
@@ -15,6 +17,7 @@ export default function SamplePacketPage() {
 
   return (
     <div className="pb-16">
+      <PageEvent event="sample_packet_viewed" />
       <div className="border-b border-amber-200/80 bg-gradient-to-r from-amber-50/80 via-cream to-teal-50/40">
         <div className="page-shell-packet py-4">
           <p className="text-sm leading-relaxed text-navy-700">
@@ -60,7 +63,12 @@ export default function SamplePacketPage() {
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
                   type="button"
-                  onClick={() => downloadPacketPdf(SAMPLE_RECORD)}
+                  onClick={() => {
+                    downloadPacketPdf(SAMPLE_RECORD);
+                    trackEvent("sample_pdf_downloaded", {
+                      metadata: { pdfDownloaded: true, demo: true },
+                    });
+                  }}
                   className="btn-primary w-full sm:w-auto"
                 >
                   Download sample PDF

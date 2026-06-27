@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Card, CardHeader } from "@/components/ui/Card";
@@ -9,6 +9,11 @@ import { EmptyStateCard, StampLabel } from "@/components/ui/design";
 import { Badge } from "@/components/ui/Badge";
 import { DemoChecklist } from "@/components/DemoChecklist";
 import { DASHBOARD_COPY } from "@/lib/copy";
+import { trackEvent } from "@/lib/analytics/client";
+import {
+  computePilotImpactFromRecords,
+  type AnalyticsDashboardData,
+} from "@/lib/analyticsMetrics";
 import { DEFAULT_FILTERS, filterRecords } from "@/lib/dashboardFilters";
 import { mergeWithDemoRecords } from "@/lib/demo";
 import { clarityDelta, computeMetrics } from "@/lib/metrics";
@@ -88,6 +93,25 @@ export default function DashboardClient() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [partnerSecret, setPartnerSecretState] = useState("");
   const [secretSaved, setSecretSaved] = useState(false);
+  const [analytics, setAnalytics] = useState<AnalyticsDashboardData | null>(null);
+  const filterTracked = useRef(false);
+
+  useEffect(() => {
+    trackEvent("dashboard_viewed");
+  }, []);
+
+  useEffect(() => {
+    if (!filterTracked.current) {
+      filterTracked.current = true;
+      return;
+    }
+    trackEvent("dashboard_filter_changed", {
+      metadata: {
+        filterName: "dashboard",
+        filterValue: `${filters.partner}|${filters.source}|${filters.campaign}|${filters.demoMode}`,
+      },
+    });
+  }, [filters]);
 
   useEffect(() => {
     let active = true;
@@ -161,6 +185,47 @@ export default function DashboardClient() {
     () => uniqueFilterValues(displayRecords, "campaign"),
     [displayRecords],
   );
+  const analyticsEnabled =
+    isApiStoreAvailable() && Boolean(getPartnerSecret() ?? partnerSecret);
+  const pilotImpact = useMemo(
+    () => computePilotImpactFromRecords(filteredRecords),
+    [filteredRecords],
+  );
+
+  useEffect(() => {
+    if (!analyticsEnabled) return;
+    const secret = getPartnerSecret() ?? partnerSecret;
+    if (!secret) return;
+
+    const params = new URLSearchParams({
+      secret,
+      partner: filters.partner,
+      source: filters.source,
+      campaign: filters.campaign,
+    });
+    if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
+    if (filters.dateTo) params.set("dateTo", filters.dateTo);
+
+    let active = true;
+    fetch(`/api/partner/analytics?${params.toString()}`, {
+      headers: partnerSecretHeaders(secret),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active) {
+          setAnalytics(
+            (data as { analytics?: AnalyticsDashboardData } | null)?.analytics ??
+              null,
+          );
+        }
+      })
+      .catch(() => {
+        if (active) setAnalytics(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [analyticsEnabled, filters, secretSaved, partnerSecret]);
 
   function toggleSignal(signal: IpSignal) {
     setFilters((prev) => ({
@@ -207,6 +272,7 @@ export default function DashboardClient() {
     a.download = "smartprobonoip-pilot-export.csv";
     a.click();
     URL.revokeObjectURL(url);
+    trackEvent("csv_exported");
   }
 
   return (
@@ -519,6 +585,151 @@ export default function DashboardClient() {
               hint={`${metrics.clarityResponses} post-packet responses`}
             />
           </div>
+
+          {analyticsEnabled && analytics ? (
+            <Card>
+              <CardHeader
+                title="Usage funnel"
+                subtitle="First-party analytics from Supabase events (filtered view)."
+              />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <MetricCard label="Landing views" value={analytics.funnel.landingViewed} />
+                <MetricCard
+                  label="Start / demo clicks"
+                  value={analytics.funnel.startClicked + analytics.funnel.demoStarted}
+                  accent="teal"
+                />
+                <MetricCard label="Intake started" value={analytics.funnel.intakeStarted} />
+                <MetricCard label="Intake completed" value={analytics.funnel.intakeCompleted} />
+                <MetricCard label="Packets generated" value={analytics.funnel.packetGenerated} />
+                <MetricCard label="PDF downloads" value={analytics.funnel.pdfDownloaded} />
+                <MetricCard
+                  label="Recovery links"
+                  value={analytics.funnel.recoveryLinkCreated}
+                  accent="warm"
+                />
+                <MetricCard
+                  label="Disclaimer accepted"
+                  value={analytics.funnel.disclaimerAccepted}
+                  accent="navy"
+                />
+              </div>
+            </Card>
+          ) : null}
+
+          <Card>
+            <CardHeader
+              title="Pilot impact"
+              subtitle="Clarity lift and referral readiness from packet records."
+            />
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <MetricCard
+                label="Avg. clarity before"
+                value={pilotImpact.avgPreClarity ?? "—"}
+              />
+              <MetricCard
+                label="Avg. clarity after"
+                value={pilotImpact.avgPostClarity ?? "—"}
+                accent="teal"
+              />
+              <MetricCard
+                label="Clarity lift"
+                value={pilotImpact.clarityLift ?? "—"}
+                accent="navy"
+              />
+              <MetricCard
+                label="Strong referral readiness"
+                value={pilotImpact.strongReferralReadiness}
+                hint="2+ recommended resources"
+                accent="warm"
+              />
+            </div>
+          </Card>
+
+          {analyticsEnabled && analytics && analytics.dropOff.lastCompletedStep.length > 0 ? (
+            <Card>
+              <CardHeader
+                title="Intake drop-off"
+                subtitle="Last completed intake step counts from analytics events."
+              />
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[480px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-mist-200 text-xs uppercase text-navy-500">
+                      <th className="py-2 pr-4">Step completed</th>
+                      <th className="py-2">Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.dropOff.lastCompletedStep.map((row) => (
+                      <tr key={row.step} className="border-b border-mist-100">
+                        <td className="py-2 pr-4 text-navy-700">Step {row.step}</td>
+                        <td className="py-2">{row.count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {analytics.dropOff.validationErrors.length > 0 ? (
+                <div className="mt-6 overflow-x-auto">
+                  <p className="mb-2 text-xs font-semibold uppercase text-navy-500">
+                    Validation errors by field
+                  </p>
+                  <table className="w-full min-w-[480px] text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-mist-200 text-xs uppercase text-navy-500">
+                        <th className="py-2 pr-4">Field</th>
+                        <th className="py-2">Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analytics.dropOff.validationErrors.map((row) => (
+                        <tr key={row.field} className="border-b border-mist-100">
+                          <td className="py-2 pr-4 text-navy-700">{row.field}</td>
+                          <td className="py-2">{row.count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </Card>
+          ) : null}
+
+          {analyticsEnabled && analytics && analytics.partnerPerformance.length > 0 ? (
+            <Card>
+              <CardHeader
+                title="Partner performance (analytics)"
+                subtitle="Completion, PDF downloads, and recovery usage by partner."
+              />
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-mist-200 text-xs uppercase text-navy-500">
+                      <th className="py-2 pr-4">Partner</th>
+                      <th className="py-2 pr-4">Packets</th>
+                      <th className="py-2 pr-4">Completed</th>
+                      <th className="py-2 pr-4">PDFs</th>
+                      <th className="py-2">Recovery</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.partnerPerformance.map((row) => (
+                      <tr key={row.partnerSlug} className="border-b border-mist-100">
+                        <td className="py-2 pr-4 font-medium text-navy-800">
+                          {row.partnerName}
+                        </td>
+                        <td className="py-2 pr-4">{row.packets}</td>
+                        <td className="py-2 pr-4">{row.intakeCompleted}</td>
+                        <td className="py-2 pr-4">{row.pdfDownloads}</td>
+                        <td className="py-2">{row.recoveryCreated}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          ) : null}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <MetricCard

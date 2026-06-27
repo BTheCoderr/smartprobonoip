@@ -1,3 +1,4 @@
+import { TrackedExternalLink } from "@/components/analytics/TrackedExternalLink";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
@@ -521,14 +522,15 @@ export function ProfileView({
             <ul className="space-y-3">
               {searchPrep.externalSearchLinks.map((link) => (
                 <li key={link.label} className="text-sm">
-                  <a
+                  <TrackedExternalLink
                     href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    event="similar_reference_link_clicked"
+                    linkLabel={link.label}
+                    linkType="patent_search"
                     className="font-medium text-teal-700 underline hover:text-teal-900"
                   >
                     {link.label}
-                  </a>
+                  </TrackedExternalLink>
                   <p className="mt-0.5 text-xs text-navy-500">
                     Suggested query: {link.queryHint}
                   </p>

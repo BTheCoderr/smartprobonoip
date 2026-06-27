@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageEvent } from "@/components/analytics/PageEvent";
 import { BRAND } from "@/lib/brand";
 import { PILOT_KIT_COPY } from "@/lib/copy";
 import { appPath } from "@/lib/appUrl";
@@ -28,6 +29,7 @@ export default function PilotKitPage() {
 
   return (
     <div>
+      <PageEvent event="pilot_page_viewed" />
       <Section className="paper-grid border-b border-mist-200/70 !py-12 sm:!py-16">
         <PageShell>
           <StampLabel tone="teal">PILOT DEMO KIT</StampLabel>

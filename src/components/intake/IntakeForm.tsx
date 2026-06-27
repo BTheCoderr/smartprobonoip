@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PaperCard, StampLabel } from "@/components/ui/design";
 import { ProgressIndicator } from "@/components/ui/ProgressIndicator";
@@ -14,6 +14,7 @@ import {
 import { suggestIdeaIncludes } from "@/lib/signals";
 import { getStore } from "@/lib/store";
 import { getStoredTracking } from "@/lib/partnerTracking";
+import { trackEvent } from "@/lib/analytics/client";
 import { activateDemoFromQuery, DEMO_INVENTION, isDemoMode } from "@/lib/demo";
 import { INTAKE_COPY } from "@/lib/copy";
 import {
@@ -163,6 +164,26 @@ export function IntakeForm() {
 
   const last = STEP_LABELS.length - 1;
   const stepHint = STEP_HINTS[step];
+  const intakeStarted = useRef(false);
+
+  useEffect(() => {
+    if (intakeStarted.current) return;
+    intakeStarted.current = true;
+    trackEvent("intake_started", { metadata: { demo: demoActive } });
+  }, [demoActive]);
+
+  useEffect(() => {
+    trackEvent("intake_step_viewed", {
+      metadata: {
+        stepNumber: step + 1,
+        completionPercent: Math.round(((step + 1) / STEP_LABELS.length) * 100),
+        demo: demoActive,
+      },
+    });
+    if (step === 5) {
+      trackEvent("intake_review_viewed", { metadata: { demo: demoActive } });
+    }
+  }, [step, demoActive]);
 
   function update<K extends keyof IntakeAnswers>(
     key: K,
@@ -189,12 +210,24 @@ export function IntakeForm() {
       const validationErrors = validateForGeneration(answers);
       if (validationErrors.length > 0) {
         setFieldError(validationErrors[0].message);
+        trackEvent("intake_validation_error", {
+          metadata: {
+            validationField: validationErrors[0].field,
+            demo: demoActive,
+          },
+        });
         return;
       }
     } else {
       const validation = validateIntakeStep(step, answers);
       if (validation) {
         setFieldError(validation.message);
+        trackEvent("intake_validation_error", {
+          metadata: {
+            validationField: validation.field,
+            demo: demoActive,
+          },
+        });
         return;
       }
     }
@@ -209,6 +242,13 @@ export function IntakeForm() {
       }));
     }
     setStep((s) => Math.min(last, s + 1));
+    trackEvent("intake_step_completed", {
+      metadata: {
+        stepNumber: step + 1,
+        completionPercent: Math.round(((step + 2) / STEP_LABELS.length) * 100),
+        demo: demoActive,
+      },
+    });
   }
 
   const canProceed = step !== 0 || answers.whatCreated.trim().length > 0;
@@ -245,6 +285,16 @@ export function IntakeForm() {
         isDemo: demoActive,
         tracking: demoActive ? null : getStoredTracking(),
       });
+      if (demoActive) {
+        trackEvent("intake_completed", {
+          projectId: record.id,
+          metadata: {
+            demo: true,
+            clarityRating: answers.preClarity,
+            signalKeys: data.profile.signals.join(","),
+          },
+        });
+      }
       router.push(`/smartprobonoip/profile/${record.id}`);
     } catch (err) {
       setError(

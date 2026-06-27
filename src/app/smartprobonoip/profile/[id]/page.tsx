@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
@@ -13,6 +13,7 @@ import { getStore } from "@/lib/store";
 import { downloadPacketPdf } from "@/lib/pdf";
 import { getIdeaLabel } from "@/lib/packet";
 import { getPilotSourceLabel } from "@/lib/partnerTracking";
+import { trackEvent } from "@/lib/analytics/client";
 import type { ProjectRecord, ReadinessProfile } from "@/lib/types";
 
 type LoadState = "loading" | "found" | "missing";
@@ -29,6 +30,7 @@ export default function ProfilePage({
   const [saved, setSaved] = useState(false);
   const [editing, setEditing] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
+  const packetViewTracked = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -40,6 +42,17 @@ export default function ProfilePage({
           setRecord(r);
           setPostClarity(r.postClarity ?? 0);
           setState("found");
+          if (!packetViewTracked.current) {
+            packetViewTracked.current = true;
+            trackEvent("packet_viewed", {
+              projectId: r.id,
+              metadata: { demo: r.isDemo ?? false },
+            });
+            trackEvent("next_step_viewed", {
+              projectId: r.id,
+              metadata: { demo: r.isDemo ?? false },
+            });
+          }
         } else {
           setState("missing");
         }
@@ -52,6 +65,10 @@ export default function ProfilePage({
   async function saveClarity(value: number) {
     setPostClarity(value);
     await getStore().updatePostClarity(id, value);
+    trackEvent("clarity_after_recorded", {
+      projectId: id,
+      metadata: { clarityRating: value },
+    });
     setSaved(true);
   }
 
@@ -148,7 +165,16 @@ export default function ProfilePage({
                 ) : null}
                 <button
                   type="button"
-                  onClick={() => downloadPacketPdf(record)}
+                  onClick={() => {
+                    downloadPacketPdf(record);
+                    trackEvent("pdf_downloaded", {
+                      projectId: record.id,
+                      metadata: {
+                        demo: record.isDemo ?? false,
+                        pdfDownloaded: true,
+                      },
+                    });
+                  }}
                   className="btn-primary w-full sm:w-auto"
                 >
                   Download PDF

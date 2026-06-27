@@ -1,5 +1,6 @@
 const SESSION_KEY = "smartprobonoip:pilot-session";
 const PARTNER_SECRET_KEY = "smartprobonoip:partner-secret";
+const ANONYMOUS_ID_KEY = "smartprobonoip:anonymous-id";
 
 function newId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -14,6 +15,16 @@ export function getPilotSessionId(): string {
   if (!id) {
     id = newId();
     window.localStorage.setItem(SESSION_KEY, id);
+  }
+  return id;
+}
+
+export function getAnonymousId(): string {
+  if (typeof window === "undefined") return "";
+  let id = window.localStorage.getItem(ANONYMOUS_ID_KEY);
+  if (!id) {
+    id = newId();
+    window.localStorage.setItem(ANONYMOUS_ID_KEY, id);
   }
   return id;
 }

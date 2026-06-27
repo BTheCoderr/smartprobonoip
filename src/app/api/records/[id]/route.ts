@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { trackServerEvent } from "@/lib/analytics/server";
 import { getRecordById, updatePostClarity, updateProfile } from "@/lib/db/records";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 import type { ReadinessProfile } from "@/lib/types";
@@ -47,6 +48,17 @@ export async function PATCH(
 
     if (typeof body.postClarity === "number") {
       await updatePostClarity(id, pilotSession, body.postClarity);
+      const existing = await getRecordById(id, pilotSession);
+      await trackServerEvent("clarity_after_recorded", {
+        projectId: id,
+        pilotSessionId: pilotSession,
+        anonymousId: request.headers.get("x-anonymous-id"),
+        partnerSlug: existing?.partnerSlug,
+        partnerName: existing?.partnerName,
+        source: existing?.source,
+        campaign: existing?.campaign,
+        metadata: { clarityRating: body.postClarity },
+      });
     }
     if (body.profile) {
       await updateProfile(id, pilotSession, body.profile);

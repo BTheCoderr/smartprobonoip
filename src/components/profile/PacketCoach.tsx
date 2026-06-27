@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PacketSection } from "@/components/ui/design";
+import { trackEvent } from "@/lib/analytics/client";
 import {
   COACH_ACTIONS,
   COACH_INTRO,
@@ -24,10 +25,33 @@ export function PacketCoach({ record }: { record: ProjectRecord }) {
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [opened, setOpened] = useState(false);
+
+  function markOpened() {
+    if (!opened) {
+      setOpened(true);
+      trackEvent("coach_opened", {
+        projectId: record.id,
+        metadata: { demo: record.isDemo ?? false },
+      });
+    }
+  }
 
   async function ask(mode: CoachMode | "custom", prompt: string, q?: string) {
+    markOpened();
     setLoading(prompt);
     setError(null);
+    if (mode === "custom") {
+      trackEvent("coach_message_sent", {
+        projectId: record.id,
+        metadata: { mode: "custom" },
+      });
+    } else {
+      trackEvent("coach_quick_action_clicked", {
+        projectId: record.id,
+        metadata: { quickAction: mode, action: prompt },
+      });
+    }
     try {
       const res = await fetch("/api/coach", {
         method: "POST",
@@ -38,6 +62,10 @@ export function PacketCoach({ record }: { record: ProjectRecord }) {
         throw new Error("Request failed");
       }
       const data = (await res.json()) as { response: CoachResponse };
+      trackEvent("coach_response_generated", {
+        projectId: record.id,
+        metadata: { mode: mode === "custom" ? "custom" : mode },
+      });
       setEntries((prev) => [
         {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -47,6 +75,10 @@ export function PacketCoach({ record }: { record: ProjectRecord }) {
         ...prev,
       ]);
     } catch {
+      trackEvent("coach_error", {
+        projectId: record.id,
+        metadata: { errorCode: "coach_request_failed" },
+      });
       setError(
         "Sorry — the coach could not respond right now. Please try again.",
       );

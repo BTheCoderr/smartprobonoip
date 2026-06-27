@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { PageEvent } from "@/components/analytics/PageEvent";
+import { TrackedNavLink } from "@/components/analytics/TrackedNavLink";
 import { BRAND } from "@/lib/brand";
 import { LANDING_COPY } from "@/lib/copy";
 import {
@@ -17,6 +19,7 @@ import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 export default function ProductLanding() {
   return (
     <div>
+      <PageEvent event="landing_viewed" />
       <CreativeHeroSection
         stamp={LANDING_COPY.heroStamp}
         title={BRAND.tagline}
@@ -25,12 +28,20 @@ export default function ProductLanding() {
         safetyLine={LANDING_COPY.heroSafety}
       >
         <div className="flex flex-wrap gap-3">
-          <Link href="/smartprobonoip/disclaimer" className="btn-primary">
+          <TrackedNavLink
+            href="/smartprobonoip/disclaimer"
+            event="start_clicked"
+            className="btn-primary"
+          >
             Start your packet
-          </Link>
-          <Link href="/smartprobonoip/sample" className="btn-secondary">
+          </TrackedNavLink>
+          <TrackedNavLink
+            href="/smartprobonoip/sample"
+            event="sample_packet_viewed"
+            className="btn-secondary"
+          >
             View sample packet
-          </Link>
+          </TrackedNavLink>
         </div>
       </CreativeHeroSection>
 
