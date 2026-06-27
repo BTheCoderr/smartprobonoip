@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/design";
 import { DemoChecklist } from "@/components/DemoChecklist";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
+import { InterestForm } from "@/components/contact/InterestForm";
 
 export default function ProductLanding() {
   return (
@@ -133,8 +134,9 @@ export default function ProductLanding() {
         </div>
       </AccessBand>
 
-      <Section>
+      <Section soft>
         <PaperShell className="pb-8">
+          <InterestForm id="interest" />
           <DemoChecklist />
           <div className="mt-8">
             <DisclaimerNotice />

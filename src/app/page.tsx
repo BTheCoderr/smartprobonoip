@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { Card } from "@/components/ui/Card";
+import { InterestForm } from "@/components/contact/InterestForm";
 
 const PRODUCTS = [
   {
@@ -99,6 +100,10 @@ export default function UmbrellaLanding() {
             </Card>
           ))}
         </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <InterestForm />
       </section>
     </div>
   );

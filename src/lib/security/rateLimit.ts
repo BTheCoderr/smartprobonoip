@@ -82,4 +82,5 @@ export const RATE_LIMITS = {
   research: { limit: 80, windowMs: 60 * 60_000 },
   analytics: { limit: 150, windowMs: 15 * 60_000 },
   partner: { limit: 40, windowMs: 15 * 60_000 },
+  interest: { limit: 6, windowMs: 60 * 60_000 },
 } as const;

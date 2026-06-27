@@ -15,6 +15,7 @@ import {
   ValueCard,
 } from "@/components/ui/design";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
+import { InterestForm } from "@/components/contact/InterestForm";
 
 function trackedLinks(
   links: readonly {
@@ -294,6 +295,7 @@ export default function PilotKitPage() {
 
       <Section soft>
         <PaperShell className="pb-8">
+          <InterestForm />
           <CalloutCard
             tone="warm"
             title={`About ${BRAND.product}`}
