@@ -86,7 +86,7 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 
 ## Pilot safety (Phase 9)
 
-- [ ] `supabase/migrations/002_pilot_rls.sql` applied (removes permissive anon policies)
+- [ ] `supabase/umbrella_schema.sql` applied on project `smartprobono-platform` (RLS enabled; no anon policies on inventor data)
 - [ ] Service role key is **not** in client bundle or `NEXT_PUBLIC_*` (enforced at build time via `server-only` import in `src/lib/supabaseServer.ts` and `src/lib/db/records.ts`)
 - [ ] Partner API routes (`/api/partner/*`) return 503 when Supabase is unconfigured and 401 without the secret
 - [ ] Disclaimer shows privacy notice + **two** consent checkboxes
@@ -102,6 +102,18 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 - [ ] Follow-up 30/60/90 placeholders visible in metrics
 - [ ] Partner can unlock live data with `PARTNER_DASHBOARD_SECRET`
 - [ ] CSV export downloads from dashboard (`/api/partner/export.csv`)
+
+## Supabase persistence (pilot)
+
+- [ ] Non-demo intake (no `?demo=1`) creates rows in `smartprobonoip_projects`, `smartprobonoip_answers`, `smartprobonoip_profiles`, and `smartprobonoip_impact_metrics`
+- [ ] `pilot_sessions` row created for browser session (`x-pilot-session` header)
+- [ ] Post-clarity score saves via `PATCH /api/records/[id]`
+- [ ] Packet PDF still downloads after Supabase save
+- [ ] Partner dashboard shows live non-demo records when secret is entered
+- [ ] CSV export includes live non-demo records only (`is_demo = false`)
+- [ ] Demo records stay separate (`is_demo = true` or localStorage demo mode)
+- [ ] Another browser/incognito session cannot read a private packet (`GET /api/records/[id]` returns 404 without matching session)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` is not in client bundle (grep build output / source for `NEXT_PUBLIC_*SERVICE*`)
 
 ## Smoke test script
 

@@ -115,8 +115,8 @@ Pilot-ready means the app can safely collect and store real submissions from 10â
 - [ ] `npx tsc --noEmit` passes
 - [ ] `npx eslint .` passes with no blocking errors
 - [ ] Supabase project created
-- [ ] `supabase/schema.sql` applied
-- [ ] `supabase/migrations/002_pilot_rls.sql` applied
+- [ ] `supabase/umbrella_schema.sql` applied (or `migrations/003_umbrella_platform_schema.sql`)
+- [ ] `ventures` table seeded with `smartprobonoip` active
 - [ ] Netlify/Vercel environment variables set:
   - [ ] `NEXT_PUBLIC_SUPABASE_URL`
   - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`

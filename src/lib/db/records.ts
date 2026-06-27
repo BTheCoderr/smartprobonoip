@@ -1,4 +1,6 @@
 import "server-only";
+import { RESOURCE_LABELS } from "@/lib/labels";
+import { getIdeaLabel } from "@/lib/packet";
 import { DEFAULT_FOLLOW_UP } from "@/lib/records";
 import { getSupabaseService } from "@/lib/supabaseServer";
 import type {
@@ -7,43 +9,124 @@ import type {
   ProjectRecord,
   ReadinessProfile,
 } from "@/lib/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+const SMARTPROBONOIP_VENTURE_SLUG = "smartprobonoip";
 
 interface ProjectRow {
   id: string;
-  idea_summary: string | null;
+  title: string | null;
   item_type: string | null;
   public_disclosure: boolean;
   location: string | null;
   generator: string;
   created_at: string;
-  pilot_session_id: string | null;
+  pilot_session_id: string;
   is_demo: boolean;
-  smartprobonoip_answers: { payload: IntakeAnswers }[];
-  smartprobonoip_profiles: { payload: ReadinessProfile }[];
+  smartprobonoip_answers: {
+    payload: IntakeAnswers | null;
+    pre_clarity_score: number | null;
+  }[];
+  smartprobonoip_profiles: { payload: ReadinessProfile | null }[];
   smartprobonoip_impact_metrics: {
-    pre_clarity: number | null;
-    post_clarity: number | null;
+    pre_clarity_score: number | null;
+    post_clarity_score: number | null;
   }[];
-  followups: {
-    interval_days: number | null;
-    status: string;
-  }[];
+  followups: { followup_type: string; status: string }[];
 }
 
 const NESTED_SELECT =
-  "id, idea_summary, item_type, public_disclosure, location, generator, created_at, pilot_session_id, is_demo, " +
-  "smartprobonoip_answers(payload), smartprobonoip_profiles(payload), " +
-  "smartprobonoip_impact_metrics(pre_clarity, post_clarity), " +
-  "followups(interval_days, status)";
+  "id, title, item_type, public_disclosure, location, generator, created_at, pilot_session_id, is_demo, " +
+  "smartprobonoip_answers(payload, pre_clarity_score), smartprobonoip_profiles(payload), " +
+  "smartprobonoip_impact_metrics(pre_clarity_score, post_clarity_score), " +
+  "followups(followup_type, status)";
+
+let cachedVentureId: string | null = null;
+
+async function getSmartProBonoIpVentureId(
+  sb: SupabaseClient,
+): Promise<string> {
+  if (cachedVentureId) return cachedVentureId;
+  const { data, error } = await sb
+    .from("ventures")
+    .select("id")
+    .eq("slug", SMARTPROBONOIP_VENTURE_SLUG)
+    .maybeSingle();
+  if (error || !data?.id) {
+    throw new Error(
+      "SmartProBonoIP venture not found. Run supabase/umbrella_schema.sql on your Supabase project.",
+    );
+  }
+  cachedVentureId = data.id as string;
+  return cachedVentureId;
+}
+
+async function ensurePilotSession(
+  sb: SupabaseClient,
+  ventureId: string,
+  pilotSessionId: string,
+  isDemo: boolean,
+): Promise<void> {
+  await sb.from("pilot_sessions").upsert(
+    {
+      venture_id: ventureId,
+      pilot_session_id: pilotSessionId,
+      is_demo: isDemo,
+      status: "active",
+    },
+    { onConflict: "pilot_session_id" },
+  );
+}
+
+function answersToColumns(answers: IntakeAnswers) {
+  const shared = answers.sharedChannels.filter((c) => c !== "none");
+  return {
+    what_created: answers.whatCreated,
+    problem_solved: answers.problemSolved,
+    who_for: answers.whoFor,
+    how_it_works: answers.howItWorks,
+    main_parts: answers.mainParts,
+    what_different: answers.whatDifferent,
+    prototype_status: answers.hasPrototype ? "yes" : "no",
+    brand_name_status: answers.hasBrandIdentity ? "yes" : "no",
+    public_sharing_status:
+      shared.length > 0 ? shared.join(",") : "none",
+    public_sharing_notes:
+      shared.length > 0 ? "Reported via intake channels" : null,
+    materials_available: answers.assets.join(","),
+    goals_support_needed: answers.goals.join(","),
+    pro_bono_interest: answers.wantsProBono,
+    location: answers.location || null,
+    pre_clarity_score: answers.preClarity,
+    payload: answers,
+  };
+}
+
+function profileToColumns(profile: ReadinessProfile) {
+  return {
+    plain_language_summary: profile.ideaSummary,
+    possible_ip_signals: profile.signals,
+    missing_information: profile.missingInfo,
+    recommended_resources: profile.recommendedResources,
+    expert_questions: profile.expertQuestions,
+    public_disclosure_note: profile.publicDisclosureNote,
+    patent_prep: {},
+    similar_patent_discovery_prep: {},
+    ai_provider: profile.generator,
+    disclaimer: profile.disclaimer,
+    payload: profile,
+  };
+}
 
 function followUpFromRows(
-  rows: { interval_days: number | null; status: string }[],
+  rows: { followup_type: string; status: string }[],
 ): FollowUpStatus {
   const status: FollowUpStatus = { ...DEFAULT_FOLLOW_UP };
   for (const row of rows) {
-    if (row.interval_days === 30) status.day30 = row.status as FollowUpStatus["day30"];
-    if (row.interval_days === 60) status.day60 = row.status as FollowUpStatus["day60"];
-    if (row.interval_days === 90) status.day90 = row.status as FollowUpStatus["day90"];
+    const state = row.status as FollowUpStatus["day30"];
+    if (row.followup_type === "30") status.day30 = state;
+    if (row.followup_type === "60") status.day60 = state;
+    if (row.followup_type === "90") status.day90 = state;
   }
   return status;
 }
@@ -58,8 +141,12 @@ export function rowToRecord(row: ProjectRow): ProjectRecord | null {
     createdAt: row.created_at,
     answers,
     profile,
-    preClarity: metrics?.pre_clarity ?? answers.preClarity ?? 0,
-    postClarity: metrics?.post_clarity ?? null,
+    preClarity:
+      metrics?.pre_clarity_score ??
+      row.smartprobonoip_answers[0]?.pre_clarity_score ??
+      answers.preClarity ??
+      0,
+    postClarity: metrics?.post_clarity_score ?? null,
     isDemo: row.is_demo,
     followUpStatus: followUpFromRows(row.followups ?? []),
   };
@@ -73,18 +160,23 @@ export async function createRecord(input: {
   isDemo?: boolean;
 }): Promise<ProjectRecord> {
   const sb = getSupabaseService();
-  const { answers, profile, preClarity, pilotSessionId, isDemo = false } = input;
+  const { answers, profile, preClarity, pilotSessionId, isDemo = false } =
+    input;
+  const ventureId = await getSmartProBonoIpVentureId(sb);
+  await ensurePilotSession(sb, ventureId, pilotSessionId, isDemo);
 
   const { data: project, error: projectError } = await sb
     .from("smartprobonoip_projects")
     .insert({
-      idea_summary: profile.ideaSummary,
+      venture_id: ventureId,
+      pilot_session_id: pilotSessionId,
+      title: getIdeaLabel(answers),
       item_type: answers.itemType,
       public_disclosure: profile.publicDisclosure,
       location: answers.location || null,
       generator: profile.generator,
-      pilot_session_id: pilotSessionId,
       is_demo: isDemo,
+      status: "packet_generated",
     })
     .select("id, created_at")
     .single();
@@ -98,18 +190,16 @@ export async function createRecord(input: {
   const [answersRes, profileRes, metricsRes] = await Promise.all([
     sb.from("smartprobonoip_answers").insert({
       project_id: projectId,
-      payload: answers,
+      ...answersToColumns(answers),
     }),
     sb.from("smartprobonoip_profiles").insert({
       project_id: projectId,
-      payload: profile,
-      signals: profile.signals,
-      recommended_resources: profile.recommendedResources,
-      generator: profile.generator,
+      ...profileToColumns(profile),
     }),
     sb.from("smartprobonoip_impact_metrics").insert({
       project_id: projectId,
-      pre_clarity: preClarity,
+      pre_clarity_score: preClarity,
+      packet_completed: true,
     }),
   ]);
 
@@ -118,11 +208,12 @@ export async function createRecord(input: {
 
   if (profile.recommendedResources.length > 0) {
     await sb.from("smartprobonoip_referrals").insert(
-      profile.recommendedResources.map((resource) => ({
+      profile.recommendedResources.map((resource, index) => ({
         project_id: projectId,
-        resource_category: resource,
-        referral_type: resource,
-        status: "suggested",
+        resource_type: resource,
+        resource_label: RESOURCE_LABELS[resource],
+        priority: index + 1,
+        rationale: "Suggested from IP Readiness Packet",
       })),
     );
   }
@@ -134,8 +225,8 @@ export async function createRecord(input: {
       due.setDate(due.getDate() + days);
       return {
         project_id: projectId,
-        interval_days: days,
-        due_at: due.toISOString(),
+        followup_type: String(days),
+        due_date: due.toISOString().slice(0, 10),
         status: "pending",
       };
     }),
@@ -191,7 +282,10 @@ export async function updatePostClarity(
 
   const { error } = await sb
     .from("smartprobonoip_impact_metrics")
-    .update({ post_clarity: postClarity, updated_at: new Date().toISOString() })
+    .update({
+      post_clarity_score: postClarity,
+      updated_at: new Date().toISOString(),
+    })
     .eq("project_id", id);
   if (error) throw new Error(error.message);
 }
@@ -209,18 +303,17 @@ export async function updateProfile(
     sb
       .from("smartprobonoip_profiles")
       .update({
-        payload: profile,
-        signals: profile.signals,
-        recommended_resources: profile.recommendedResources,
-        generator: profile.generator,
+        ...profileToColumns(profile),
+        updated_at: new Date().toISOString(),
       })
       .eq("project_id", id),
     sb
       .from("smartprobonoip_projects")
       .update({
-        idea_summary: profile.ideaSummary,
+        title: getIdeaLabel(owned.answers),
         public_disclosure: profile.publicDisclosure,
         generator: profile.generator,
+        updated_at: new Date().toISOString(),
       })
       .eq("id", id)
       .eq("pilot_session_id", pilotSessionId),

@@ -109,18 +109,60 @@ Copy [`.env.example`](./.env.example) to `.env.local` for local development.
 
 ## Supabase (pilot)
 
-1. Create a Supabase project.
-2. Run [`supabase/schema.sql`](./supabase/schema.sql) in the SQL editor.
-3. Run [`supabase/migrations/002_pilot_rls.sql`](./supabase/migrations/002_pilot_rls.sql) before real inventor data.
-4. Set `NEXT_PUBLIC_SUPABASE_*`, `SUPABASE_SERVICE_ROLE_KEY`, and `PARTNER_DASHBOARD_SECRET`.
+Recommended project name: **`smartprobono-platform`**
 
-With Supabase configured, inventor data is written via `/api/records` using session-scoped server routes. Partners unlock live metrics on the dashboard with the partner secret.
+### Fresh database setup
 
-Without Supabase, the app falls back to `localStorage` on the user's device.
+1. Create a new Supabase project (e.g. `smartprobono-platform`).
+2. In the Supabase SQL editor, run **[`supabase/umbrella_schema.sql`](./supabase/umbrella_schema.sql)** in full.
+   - Alternative: run **[`supabase/migrations/003_umbrella_platform_schema.sql`](./supabase/migrations/003_umbrella_platform_schema.sql)** (same schema).
+3. Optional: re-run **[`supabase/seed_ventures.sql`](./supabase/seed_ventures.sql)** to refresh venture seeds.
+4. Set Netlify (or local) environment variables:
 
-### Schema tables
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key   # server-only — never NEXT_PUBLIC_
+PARTNER_DASHBOARD_SECRET=your-partner-secret
+NEXT_PUBLIC_APP_URL=https://smartprobonoip.netlify.app
+```
 
-`users`, `partner_organizations`, `smartprobonoip_projects`, `smartprobonoip_answers`, `smartprobonoip_profiles`, `smartprobonoip_referrals`, `smartprobonoip_impact_metrics`, `followups`.
+5. Deploy/restart the app.
+6. **Test real (non-demo) intake:** complete intake without `?demo=1`, generate a packet, confirm rows appear in Supabase (`smartprobonoip_projects`, `smartprobonoip_answers`, `smartprobonoip_profiles`).
+7. **Test dashboard:** open `/smartprobonoip/dashboard`, enter `PARTNER_DASHBOARD_SECRET`, confirm live metrics load.
+8. **Test CSV export:** download from dashboard or `GET /api/partner/export.csv?secret=...`.
+
+With Supabase configured, inventor data is written via `/api/records` using session-scoped server routes and the **service role** (never exposed to the browser). Partners unlock live metrics with the partner secret.
+
+Without Supabase, the app falls back to `localStorage` on the user's device (demo mode still works).
+
+### Umbrella schema tables
+
+| Table | Purpose |
+| --- | --- |
+| `ventures` | SmartProBono umbrella products (SmartProBonoIP is `active`) |
+| `partner_organizations` | Pilot partners linked to ventures |
+| `pilot_sessions` | Browser session registry (`pilot_session_id`) |
+| `smartprobonoip_projects` | Intake projects |
+| `smartprobonoip_answers` | Normalized intake + `payload` JSON |
+| `smartprobonoip_profiles` | IP Readiness Packet + `payload` JSON |
+| `smartprobonoip_referrals` | Suggested resource routing |
+| `smartprobonoip_impact_metrics` | Clarity scores and pilot impact flags |
+| `followups` | 30/60/90-day follow-up tracking |
+| `venture_documents` | Future venture document registry |
+
+Legacy files (`supabase/schema.sql`, `002_pilot_rls.sql`) are **deprecated** for new projects.
+
+### Backup and restore
+
+- **Source of truth:** keep all SQL in this repo (`umbrella_schema.sql`, migrations, seeds).
+- **After major schema changes:** export from Supabase → **Database** → **Schema** (or `pg_dump --schema-only`) and commit or archive the export.
+- **Restore to a new project:**
+  1. Create a new Supabase project.
+  2. Run `supabase/umbrella_schema.sql`.
+  3. Update Netlify env vars to the new project URL and keys.
+  4. Redeploy and run the pilot smoke test.
+- **Data backup:** use Supabase scheduled backups (Pro plan) or periodic `pg_dump` of pilot data before large migrations.
 
 ---
 
@@ -174,8 +216,10 @@ src/
     safety.ts             # Forbidden-phrase guardrails
     store/                # local | API-backed Supabase
 supabase/
-  schema.sql
-  migrations/002_pilot_rls.sql
+  umbrella_schema.sql
+  seed_ventures.sql
+  schema.sql                      # legacy — do not use on new projects
+  migrations/003_umbrella_platform_schema.sql
 docs/PRODUCTION_CHECKLIST.md
 netlify.toml
 ```
