@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { trackEvent } from "@/lib/analytics/client";
 import { PACKET_COPY } from "@/lib/copy";
@@ -9,6 +9,7 @@ import {
   buildUsptoSearchUrl,
 } from "@/lib/research/buildLinks";
 import {
+  buildInitialWorkspace,
   compareReference,
   loadWorkspace,
   removeReference,
@@ -40,8 +41,11 @@ export function ResearchPrepWorkspace({
   record: ProjectRecord;
   onReferencesChange?: (refs: SavedReference[]) => void;
 }) {
-  const [workspace, setWorkspace] = useState<ResearchWorkspaceData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [workspace, setWorkspace] = useState<ResearchWorkspaceData>(() =>
+    buildInitialWorkspace(record),
+  );
+  const [refsLoading, setRefsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -49,45 +53,42 @@ export function ResearchPrepWorkspace({
   const [editingId, setEditingId] = useState<string | null>(null);
   const viewedTracked = useRef(false);
 
-  async function refreshWorkspace() {
-    setLoading(true);
-    setError(null);
+  const syncReferences = useCallback(
+    (refs: SavedReference[]) => {
+      setWorkspace((current) => ({ ...current, savedReferences: refs }));
+      onReferencesChange?.(refs);
+    },
+    [onReferencesChange],
+  );
+
+  const refreshSavedReferences = useCallback(async () => {
+    setRefsLoading(true);
+    setLoadError(null);
     try {
       const data = await loadWorkspace(record);
-      setWorkspace(data);
-      onReferencesChange?.(data.savedReferences);
+      syncReferences(data.savedReferences);
+      if (data.loadError) {
+        setLoadError(data.loadError);
+      }
     } catch {
-      setError("Could not load research prep workspace.");
+      setLoadError("Could not load saved references. You can still save new ones.");
+      syncReferences([]);
     } finally {
-      setLoading(false);
+      setRefsLoading(false);
     }
-  }
+  }, [record, syncReferences]);
 
   useEffect(() => {
-    let active = true;
-    void (async () => {
-      try {
-        const data = await loadWorkspace(record);
-        if (!active) return;
-        setWorkspace(data);
-        onReferencesChange?.(data.savedReferences);
-        if (!viewedTracked.current) {
-          viewedTracked.current = true;
-          trackEvent("research_workspace_viewed", {
-            projectId: record.id,
-            metadata: { demo: record.isDemo ?? false },
-          });
-        }
-      } catch {
-        if (active) setError("Could not load research prep workspace.");
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [record, onReferencesChange]);
+    setWorkspace(buildInitialWorkspace(record));
+    if (!viewedTracked.current) {
+      viewedTracked.current = true;
+      trackEvent("research_workspace_viewed", {
+        projectId: record.id,
+        metadata: { demo: record.isDemo ?? false, routeName: "packet" },
+      });
+    }
+    void refreshSavedReferences();
+  }, [record, refreshSavedReferences]);
 
   function prefillFromQuery(query: string) {
     setForm((current) => ({
@@ -153,7 +154,7 @@ export function ResearchPrepWorkspace({
 
       setForm(EMPTY_FORM);
       setEditingId(null);
-      await refreshWorkspace();
+      await refreshSavedReferences();
     } catch {
       setError("Could not save reference.");
     } finally {
@@ -197,7 +198,7 @@ export function ResearchPrepWorkspace({
         projectId: record.id,
         metadata: { demo: record.isDemo ?? false },
       });
-      await refreshWorkspace();
+      await refreshSavedReferences();
     } catch {
       setError("Comparison could not complete.");
     } finally {
@@ -212,7 +213,7 @@ export function ResearchPrepWorkspace({
         projectId: record.id,
         metadata: { demo: record.isDemo ?? false },
       });
-      await refreshWorkspace();
+      await refreshSavedReferences();
     } catch {
       setError("Could not delete reference.");
     }
@@ -232,27 +233,24 @@ export function ResearchPrepWorkspace({
     });
   }
 
-  if (loading) {
-    return (
-      <Card>
-        <p className="text-sm text-navy-500">Loading research prep workspace…</p>
-      </Card>
-    );
-  }
-
-  if (!workspace) {
-    return (
-      <Card>
-        <p className="text-sm text-amber-700">{error ?? "Workspace unavailable."}</p>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
         {PACKET_COPY.researchPrepDisclaimer}
       </p>
+
+      {loadError ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          <span>{loadError}</span>
+          <button
+            type="button"
+            onClick={() => void refreshSavedReferences()}
+            className="rounded border border-amber-300 px-3 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+          >
+            Retry
+          </button>
+        </div>
+      ) : null}
 
       {error ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -434,9 +432,15 @@ export function ResearchPrepWorkspace({
       <Card>
         <CardHeader
           title="Saved references"
-          subtitle={`${workspace.savedReferences.length} saved — included in your PDF when you download.`}
+          subtitle={
+            refsLoading
+              ? "Loading saved references…"
+              : `${workspace.savedReferences.length} saved — included in your PDF when you download.`
+          }
         />
-        {workspace.savedReferences.length === 0 ? (
+        {refsLoading ? (
+          <p className="text-sm text-navy-500">Loading saved references…</p>
+        ) : workspace.savedReferences.length === 0 ? (
           <p className="text-sm text-navy-500">
             No saved references yet. Try a query card or save one manually.
           </p>

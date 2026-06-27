@@ -52,6 +52,7 @@ export interface ResearchWorkspaceData {
   searchKeywords: string[];
   suggestedQueries: SuggestedQueryCard[];
   savedReferences: SavedReference[];
+  loadError?: string;
 }
 
 export interface SaveReferenceInput {

@@ -17,6 +17,9 @@ export const PACKET_COPY = {
     "These mini-sections appear only when relevant to your answers. One packet, modular sections — preparation only, not legal advice.",
   researchPrepDisclaimer:
     "Research Prep Workspace helps you organize possible references and questions. It does not determine patentability, novelty, clearance, infringement, or legal rights.",
+  similarReferenceSearchPrepTitle: "Similar Reference Search Prep",
+  similarReferenceSearchPrepIntro:
+    "Use this workspace to collect possible similar references before talking with a patent professional, clinic, mentor, or PTRC resource. This does not determine patentability, novelty, clearance, infringement, or legal rights.",
   coreCompleteOptionalGaps:
     "You gave enough to create a first packet. These extra details could make your next conversation stronger.",
   coreComplete: "Core intake is complete.",

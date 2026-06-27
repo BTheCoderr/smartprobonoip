@@ -1,4 +1,5 @@
 import { Card, CardHeader } from "@/components/ui/Card";
+import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import {
@@ -493,17 +494,26 @@ export function ProfileView({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-teal-200/80 bg-gradient-to-br from-teal-50/40 to-white p-2 shadow-[var(--shadow-soft)]">
+      <div
+        id="similar-reference-search-prep"
+        className="overflow-hidden rounded-3xl border border-teal-200/80 bg-gradient-to-br from-teal-50/40 to-white p-2 shadow-[var(--shadow-soft)]"
+      >
         <div className="rounded-2xl bg-white/70 px-5 py-5 sm:px-6">
           <p className="text-xs font-semibold uppercase tracking-wide text-teal-600">
             Reference prep
           </p>
           <h2 className="mt-1 text-xl font-bold text-navy-900 sm:text-2xl">
-            Research Prep Workspace
+            {PACKET_COPY.similarReferenceSearchPrepTitle}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-navy-600">
-            {PATENT_SEARCH_PREP_INTRO}
+            {PACKET_COPY.similarReferenceSearchPrepIntro}
           </p>
+          <Link
+            href={`/smartprobonoip/profile/${record.id}/research`}
+            className="mt-3 inline-block text-sm font-medium text-teal-700 hover:text-teal-900"
+          >
+            Open full-screen workspace →
+          </Link>
         </div>
 
         <div className="space-y-6 p-2">
@@ -532,43 +542,48 @@ export function ProfileView({
             onReferencesChange={onReferencesChange}
           />
 
-          <Card>
-            <CardHeader title="Similar reference worksheet" />
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-mist-200 text-xs uppercase text-navy-500">
-                    {WORKSHEET_HEADERS.map((h) => (
-                      <th key={h} className="py-2 pr-3">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {searchPrep.worksheetRows.map((row, idx) => (
-                    <tr key={idx} className="border-b border-mist-100 align-top">
-                      <td className="py-2 pr-3 text-navy-700">
-                        {row.searchQueryUsed}
-                      </td>
-                      <td className="py-2 pr-3 text-navy-600">
-                        {row.referenceFound}
-                      </td>
-                      <td className="py-2 pr-3 text-navy-600">
-                        {row.looksSimilar}
-                      </td>
-                      <td className="py-2 pr-3 text-navy-600">
-                        {row.seemsDifferent}
-                      </td>
-                      <td className="py-2 text-navy-600">
-                        {row.questionsForExpert}
-                      </td>
+          <details className="group">
+            <summary className="cursor-pointer list-none rounded-2xl border border-mist-200 bg-white px-4 py-3 text-sm font-medium text-navy-800 hover:bg-mist-50 [&::-webkit-details-marker]:hidden">
+              Optional printable worksheet template
+            </summary>
+            <Card className="mt-3">
+              <CardHeader title="Similar reference worksheet" />
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-mist-200 text-xs uppercase text-navy-500">
+                      {WORKSHEET_HEADERS.map((h) => (
+                        <th key={h} className="py-2 pr-3">
+                          {h}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+                  </thead>
+                  <tbody>
+                    {searchPrep.worksheetRows.map((row, idx) => (
+                      <tr key={idx} className="border-b border-mist-100 align-top">
+                        <td className="py-2 pr-3 text-navy-700">
+                          {row.searchQueryUsed}
+                        </td>
+                        <td className="py-2 pr-3 text-navy-600">
+                          {row.referenceFound}
+                        </td>
+                        <td className="py-2 pr-3 text-navy-600">
+                          {row.looksSimilar}
+                        </td>
+                        <td className="py-2 pr-3 text-navy-600">
+                          {row.seemsDifferent}
+                        </td>
+                        <td className="py-2 text-navy-600">
+                          {row.questionsForExpert}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </details>
 
           <Card>
             <CardHeader title="Expert prep questions" />

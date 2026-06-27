@@ -44,10 +44,7 @@ function mapReference(row: {
   };
 }
 
-async function loadReferencesForProject(
-  projectId: string,
-  pilotSessionId: string,
-): Promise<SavedReference[]> {
+async function loadReferencesForProject(projectId: string): Promise<SavedReference[]> {
   const sb = getSupabaseService();
   const { data, error } = await sb
     .from("smartprobonoip_saved_references")
@@ -55,7 +52,6 @@ async function loadReferencesForProject(
       "id, reference_title, reference_url, reference_type, search_query_used, what_looks_similar, what_seems_different, expert_questions, notes, comparison_notes, created_at, updated_at",
     )
     .eq("project_id", projectId)
-    .eq("pilot_session_id", pilotSessionId)
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -70,7 +66,7 @@ export async function getResearchWorkspace(
   if (!record) return null;
 
   const prep = buildResearchPrepFromRecord(record);
-  const savedReferences = await loadReferencesForProject(projectId, pilotSessionId);
+  const savedReferences = await loadReferencesForProject(projectId);
 
   return {
     projectId,
@@ -120,7 +116,10 @@ export async function updateResearchReference(
   pilotSessionId: string,
   input: UpdateReferenceInput,
 ): Promise<SavedReference> {
-  const existing = await loadReferencesForProject(projectId, pilotSessionId);
+  const record = await getRecordById(projectId, pilotSessionId);
+  if (!record) throw new Error("Record not found");
+
+  const existing = await loadReferencesForProject(projectId);
   const owned = existing.find((ref) => ref.id === input.id);
   if (!owned) throw new Error("Reference not found");
 
@@ -128,6 +127,7 @@ export async function updateResearchReference(
   const { data, error } = await sb
     .from("smartprobonoip_saved_references")
     .update({
+      pilot_session_id: pilotSessionId,
       reference_title: input.title ?? owned.title,
       reference_url: input.url ?? owned.url,
       reference_type: input.referenceType ?? owned.referenceType,
@@ -141,7 +141,6 @@ export async function updateResearchReference(
     })
     .eq("id", input.id)
     .eq("project_id", projectId)
-    .eq("pilot_session_id", pilotSessionId)
     .select(
       "id, reference_title, reference_url, reference_type, search_query_used, what_looks_similar, what_seems_different, expert_questions, notes, comparison_notes, created_at, updated_at",
     )
@@ -156,13 +155,20 @@ export async function deleteResearchReference(
   pilotSessionId: string,
   refId: string,
 ): Promise<void> {
+  const record = await getRecordById(projectId, pilotSessionId);
+  if (!record) throw new Error("Record not found");
+
+  const existing = await loadReferencesForProject(projectId);
+  if (!existing.some((ref) => ref.id === refId)) {
+    throw new Error("Reference not found");
+  }
+
   const sb = getSupabaseService();
   const { error } = await sb
     .from("smartprobonoip_saved_references")
     .delete()
     .eq("id", refId)
-    .eq("project_id", projectId)
-    .eq("pilot_session_id", pilotSessionId);
+    .eq("project_id", projectId);
 
   if (error) throw new Error(error.message);
 }
@@ -172,7 +178,9 @@ export async function getSavedReferencesForPdf(
   pilotSessionId?: string,
 ): Promise<SavedReference[]> {
   if (!pilotSessionId) return [];
-  return loadReferencesForProject(projectId, pilotSessionId);
+  const record = await getRecordById(projectId, pilotSessionId);
+  if (!record) return [];
+  return loadReferencesForProject(projectId);
 }
 
 export async function getResearchPrepStartedProjectIds(

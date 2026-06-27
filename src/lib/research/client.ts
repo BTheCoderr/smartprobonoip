@@ -17,6 +17,16 @@ import type {
 } from "@/lib/research/types";
 import type { ProjectRecord } from "@/lib/types";
 
+export function buildInitialWorkspace(record: ProjectRecord): ResearchWorkspaceData {
+  const prep = buildResearchPrepFromRecord(record);
+  return {
+    projectId: record.id,
+    searchKeywords: prep.searchKeywords,
+    suggestedQueries: prep.suggestedQueries,
+    savedReferences: [],
+  };
+}
+
 export function initLocalWorkspace(record: ProjectRecord): ResearchWorkspaceData {
   const prep = buildResearchPrepFromRecord(record);
   return mergeLocalResearch(record.id, {
@@ -28,15 +38,13 @@ export function initLocalWorkspace(record: ProjectRecord): ResearchWorkspaceData
 export async function loadWorkspace(
   record: ProjectRecord,
 ): Promise<ResearchWorkspaceData> {
-  const prep = buildResearchPrepFromRecord(record);
+  const base = buildInitialWorkspace(record);
 
   if (record.isDemo || !isSupabaseConfigured()) {
     const local = readLocalResearch(record.id);
     return {
-      ...local,
-      projectId: record.id,
-      searchKeywords: prep.searchKeywords,
-      suggestedQueries: prep.suggestedQueries,
+      ...base,
+      savedReferences: local.savedReferences,
     };
   }
 
@@ -45,11 +53,19 @@ export async function loadWorkspace(
   });
 
   if (res.status === 503) {
-    return initLocalWorkspace(record);
+    const local = initLocalWorkspace(record);
+    return { ...base, savedReferences: local.savedReferences };
+  }
+
+  if (res.status === 401 || res.status === 404) {
+    throw new Error("Failed to load research workspace");
   }
 
   if (!res.ok) {
-    throw new Error("Failed to load research workspace");
+    return {
+      ...base,
+      loadError: "Could not load saved references. You can still save new ones.",
+    };
   }
 
   const data = (await res.json()) as { workspace: ResearchWorkspaceData };
@@ -136,8 +152,12 @@ export async function compareReference(input: {
     input;
   const res = await fetch("/api/compare-reference", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...pilotSessionHeaders(),
+    },
     body: JSON.stringify({
+      projectId: record.id,
       problemSolved: record.answers.problemSolved,
       howItWorks: record.answers.howItWorks,
       mainParts: record.answers.mainParts,
