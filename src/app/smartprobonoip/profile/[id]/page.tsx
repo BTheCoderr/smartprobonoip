@@ -6,6 +6,8 @@ import { ProfileView } from "@/components/profile/ProfileView";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
 import { PacketCoach } from "@/components/profile/PacketCoach";
 import { PacketRecoveryCard } from "@/components/profile/PacketRecoveryCard";
+import { PilotFeedbackCard } from "@/components/profile/PilotFeedbackCard";
+import { ResourceRoutingCards } from "@/components/profile/ResourceRoutingCards";
 import { StampLabel } from "@/components/ui/design";
 import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
@@ -14,6 +16,7 @@ import { downloadPacketPdf } from "@/lib/pdf";
 import { getIdeaLabel } from "@/lib/packet";
 import { getPilotSourceLabel } from "@/lib/partnerTracking";
 import { trackEvent } from "@/lib/analytics/client";
+import type { PilotFeedbackInput } from "@/lib/feedback";
 import type { ProjectRecord, ReadinessProfile } from "@/lib/types";
 
 type LoadState = "loading" | "found" | "missing";
@@ -30,6 +33,7 @@ export default function ProfilePage({
   const [saved, setSaved] = useState(false);
   const [editing, setEditing] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [feedbackInput, setFeedbackInput] = useState<PilotFeedbackInput | null>(null);
   const packetViewTracked = useRef(false);
 
   useEffect(() => {
@@ -221,6 +225,19 @@ export default function ProfilePage({
             </p>
           ) : null}
         </Card>
+
+        {!editing ? (
+          <>
+            <PilotFeedbackCard
+              record={record}
+              onSubmitted={setFeedbackInput}
+            />
+          </>
+        ) : null}
+
+        {!editing ? (
+          <ResourceRoutingCards record={record} feedback={feedbackInput} />
+        ) : null}
       </div>
     </div>
   );

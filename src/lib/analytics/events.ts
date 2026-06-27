@@ -34,6 +34,10 @@ export const ANALYTICS_EVENTS = [
   "csv_exported",
   "resource_link_clicked",
   "similar_reference_link_clicked",
+  "feedback_viewed",
+  "feedback_submitted",
+  "followup_requested",
+  "resource_type_selected",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];

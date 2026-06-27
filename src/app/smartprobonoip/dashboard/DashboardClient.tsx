@@ -14,6 +14,7 @@ import {
   computePilotImpactFromRecords,
   type AnalyticsDashboardData,
 } from "@/lib/analyticsMetrics";
+import { type FeedbackMetrics } from "@/lib/feedbackMetrics";
 import { DEFAULT_FILTERS, filterRecords } from "@/lib/dashboardFilters";
 import { mergeWithDemoRecords } from "@/lib/demo";
 import { clarityDelta, computeMetrics } from "@/lib/metrics";
@@ -94,6 +95,9 @@ export default function DashboardClient() {
   const [partnerSecret, setPartnerSecretState] = useState("");
   const [secretSaved, setSecretSaved] = useState(false);
   const [analytics, setAnalytics] = useState<AnalyticsDashboardData | null>(null);
+  const [feedbackMetrics, setFeedbackMetrics] = useState<FeedbackMetrics | null>(
+    null,
+  );
   const filterTracked = useRef(false);
 
   useEffect(() => {
@@ -226,6 +230,31 @@ export default function DashboardClient() {
       active = false;
     };
   }, [analyticsEnabled, filters, secretSaved, partnerSecret]);
+
+  useEffect(() => {
+    if (!analyticsEnabled) return;
+    const secret = getPartnerSecret() ?? partnerSecret;
+    if (!secret) return;
+
+    let active = true;
+    fetch(`/api/partner/feedback?secret=${encodeURIComponent(secret)}`, {
+      headers: partnerSecretHeaders(secret),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active) {
+          setFeedbackMetrics(
+            (data as { metrics?: FeedbackMetrics } | null)?.metrics ?? null,
+          );
+        }
+      })
+      .catch(() => {
+        if (active) setFeedbackMetrics(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [analyticsEnabled, secretSaved, partnerSecret]);
 
   function toggleSignal(signal: IpSignal) {
     setFilters((prev) => ({
@@ -645,6 +674,85 @@ export default function DashboardClient() {
               />
             </div>
           </Card>
+
+          {analyticsEnabled && feedbackMetrics ? (
+            <Card>
+              <CardHeader
+                title="Pilot feedback"
+                subtitle="User-reported usefulness and support needs."
+              />
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <MetricCard
+                  label="Feedback submitted"
+                  value={feedbackMetrics.submittedCount}
+                />
+                <MetricCard
+                  label="Said packet helped clarity"
+                  value={
+                    feedbackMetrics.clarityHelpedYesPercent === null
+                      ? "—"
+                      : `${feedbackMetrics.clarityHelpedYesPercent}%`
+                  }
+                  accent="teal"
+                />
+                <MetricCard
+                  label="Would bring to expert"
+                  value={
+                    feedbackMetrics.wouldBringYesPercent === null
+                      ? "—"
+                      : `${feedbackMetrics.wouldBringYesPercent}%`
+                  }
+                  accent="navy"
+                />
+                <MetricCard
+                  label="Follow-up requested"
+                  value={feedbackMetrics.followUpRequestedCount}
+                  accent="warm"
+                />
+              </div>
+              {feedbackMetrics.topSupportNeeds.length > 0 ? (
+                <ul className="mt-6 space-y-3">
+                  {feedbackMetrics.topSupportNeeds.map((item) => (
+                    <li key={item.label}>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-navy-700">{item.label}</span>
+                        <span className="font-medium text-navy-900">{item.count}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {feedbackMetrics.supportNeedsByPartner.length > 0 ? (
+                <div className="mt-6 overflow-x-auto">
+                  <p className="mb-2 text-xs font-semibold uppercase text-navy-500">
+                    Support needs by partner
+                  </p>
+                  <table className="w-full min-w-[720px] text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-mist-200 text-xs uppercase text-navy-500">
+                        <th className="py-2 pr-4">Partner</th>
+                        <th className="py-2">Top needs</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {feedbackMetrics.supportNeedsByPartner.map((row) => (
+                        <tr key={row.partnerSlug} className="border-b border-mist-100">
+                          <td className="py-2 pr-4 font-medium text-navy-800">
+                            {row.partnerName}
+                          </td>
+                          <td className="py-2 text-navy-600">
+                            {row.needs
+                              .map((need) => `${need.label} (${need.count})`)
+                              .join(" · ") || "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </Card>
+          ) : null}
 
           {analyticsEnabled && analytics && analytics.dropOff.lastCompletedStep.length > 0 ? (
             <Card>

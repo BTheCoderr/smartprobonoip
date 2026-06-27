@@ -22,6 +22,7 @@ const ALLOWED_KEYS = new Set([
   "resourceKey",
   "validationField",
   "eventCount",
+  "clarityHelped",
 ]);
 
 const BLOCKED_KEY_PATTERN =

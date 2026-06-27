@@ -238,4 +238,42 @@ export const PILOT_KIT_COPY = {
       query: {},
     },
   ],
+  pilotMetrics: {
+    title: "What we measure in the pilot",
+    lead: "SmartProBonoIP tracks preparation outcomes — not legal conclusions — to help partners improve access to IP support.",
+    items: [
+      "Packet completion",
+      "Clarity lift before and after the packet",
+      "PDF downloads",
+      "Recovery link usage",
+      "Support needs selected by users",
+      "Partner referral readiness signals",
+      "Pilot feedback from users",
+    ],
+  },
+} as const;
+
+export const FEEDBACK_COPY = {
+  title: "Help us improve the pilot",
+  subtitle:
+    "Your answers help partners understand whether IP Readiness Packets are useful. This is not legal advice.",
+  clarityQuestion: "Did this packet make your idea clearer?",
+  expertQuestion:
+    "Would you bring this packet to a patent professional, clinic, mentor, or innovation partner?",
+  supportQuestion: "What support do you think you need next?",
+  confusionQuestion: "What was confusing?",
+  followUpQuestion:
+    "Do you want someone from a pilot partner to follow up? (We may not be able to follow up in every case.)",
+  demoNote:
+    "Demo mode: feedback is shown for walkthroughs only and is not saved to the pilot database.",
+  submit: "Submit pilot feedback",
+  thanks: "Thanks — your feedback helps improve the pilot.",
+} as const;
+
+export const ROUTING_COPY = {
+  title: "Resource types that may help next",
+  subtitle:
+    "Based on your packet, goals, and support needs — starting points only.",
+  safety:
+    "These suggestions do not mean you qualify for any program. Consider asking a partner or professional about options that may fit your situation.",
 } as const;

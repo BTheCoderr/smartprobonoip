@@ -172,6 +172,26 @@ export default function PilotKitPage() {
       </Section>
 
       <Section>
+        <PageShell>
+          <SectionHeader
+            kicker="Pilot measurement"
+            title={PILOT_KIT_COPY.pilotMetrics.title}
+            lead={PILOT_KIT_COPY.pilotMetrics.lead}
+          />
+          <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {PILOT_KIT_COPY.pilotMetrics.items.map((item) => (
+              <li
+                key={item}
+                className="paper-card px-4 py-4 text-sm leading-relaxed text-navy-700"
+              >
+                {item}
+              </li>
+            ))}
+          </ul>
+        </PageShell>
+      </Section>
+
+      <Section>
         <PageShell className="pb-8">
           <CalloutCard
             tone="warm"

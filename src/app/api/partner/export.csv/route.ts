@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { listLiveRecords, verifyPartnerSecret } from "@/lib/db/records";
+import { getFeedbackMapByProjectIds } from "@/lib/db/feedback";
 import { getProjectEventFlags } from "@/lib/db/analytics";
+import { SUPPORT_NEED_OPTIONS } from "@/lib/feedback";
 import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
@@ -52,12 +54,27 @@ export async function GET(request: Request) {
     "is_demo",
     "pdf_downloaded",
     "recovery_link_created",
+    "feedback_submitted",
+    "clarity_helped",
+    "would_bring_to_expert",
+    "support_needed",
+    "follow_up_requested",
   ];
+
+  const feedbackMap = await getFeedbackMapByProjectIds(records.map((r) => r.id));
 
   const rows = records.map((r) => {
     const delta =
       typeof r.postClarity === "number" ? r.postClarity - r.preClarity : "";
     const flags = eventFlags.get(r.id);
+    const feedback = feedbackMap.get(r.id);
+    const supportLabels = feedback?.supportNeeded
+      .map(
+        (need) =>
+          SUPPORT_NEED_OPTIONS.find((option) => option.value === need)?.label ??
+          need,
+      )
+      .join("; ");
     return [
       r.id,
       r.createdAt,
@@ -78,6 +95,11 @@ export async function GET(request: Request) {
       r.isDemo ?? false,
       flags?.pdfDownloaded ?? false,
       flags?.recoveryCreated ?? false,
+      Boolean(feedback),
+      feedback?.clarityHelped ?? "",
+      feedback?.wouldBringToExpert ?? "",
+      supportLabels ?? "",
+      feedback?.followUpRequested ?? false,
     ]
       .map(escapeCsv)
       .join(",");
