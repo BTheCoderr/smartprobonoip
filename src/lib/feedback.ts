@@ -9,6 +9,7 @@ export type SupportNeed =
   | "funding_accelerator"
   | "prototype_product_dev"
   | "similar_reference_research"
+  | "ownership_agreement_review"
   | "not_sure";
 
 export interface PilotFeedbackInput {
@@ -48,6 +49,10 @@ export const SUPPORT_NEED_OPTIONS: { value: SupportNeed; label: string }[] = [
     label: "Prototype or product development support",
   },
   { value: "similar_reference_research", label: "Similar reference research" },
+  {
+    value: "ownership_agreement_review",
+    label: "Ownership or agreement review",
+  },
   { value: "not_sure", label: "Not sure yet" },
 ];
 

@@ -1,5 +1,6 @@
 import "server-only";
 import { RESOURCE_LABELS } from "@/lib/labels";
+import { shouldTriggerOwnershipSignal } from "@/lib/ownership";
 import { getIdeaLabel } from "@/lib/packet";
 import { DEFAULT_FOLLOW_UP } from "@/lib/records";
 import { normalizeProfileSignals } from "@/lib/signals";
@@ -111,6 +112,12 @@ function answersToColumns(answers: IntakeAnswers) {
     location: answers.location || null,
     pre_clarity_score: answers.preClarity,
     payload: answers,
+    ownership_signal: shouldTriggerOwnershipSignal(answers),
+    contributors_involved: answers.contributorsInvolved ?? null,
+    contributor_types: (answers.contributorHelpTypes ?? []).join(",") || null,
+    agreement_status: answers.agreementStatus ?? null,
+    agreement_types: (answers.agreementTypes ?? []).join(",") || null,
+    employer_school_grant_flag: answers.institutionRelationship ?? null,
   };
 }
 

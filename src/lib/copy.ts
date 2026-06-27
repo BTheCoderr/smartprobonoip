@@ -9,6 +9,9 @@ export const PACKET_COPY = {
   similarRefPrepTitle: "Similar reference prep",
   readinessSnapshotTitle: "Readiness snapshot",
   nextBestStepTitle: "Your next best step",
+  ownershipPrepTitle: "Ownership and agreement prep",
+  ownershipPrepSubtitle:
+    "What to gather before ownership or agreement conversations — preparation only, not an ownership determination.",
   coreCompleteOptionalGaps:
     "You gave enough to create a first packet. These extra details could make your next conversation stronger.",
   coreComplete: "Core intake is complete.",
@@ -33,6 +36,9 @@ export const INTAKE_COPY = {
     "Make sure the basics look right. You can edit anything before generating your IP Readiness Packet.",
   safetyLine:
     "SmartProBonoIP is preparation only and does not create an attorney-client relationship.",
+  ownershipSectionTitle: "People and ownership",
+  ownershipSectionHint:
+    "Help organize who helped and what agreements may exist. This is preparation only — not an ownership determination.",
 } as const;
 
 export const RECOVERY_COPY = {

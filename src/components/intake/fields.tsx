@@ -114,6 +114,50 @@ export function YesNoField({
   );
 }
 
+export function RadioGroup<T extends string>({
+  label,
+  hint,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  options: Option<T>[];
+  value?: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div>
+      <span className="text-sm font-semibold text-navy-900">{label}</span>
+      {hint ? (
+        <span className="mt-1 block text-sm leading-relaxed text-navy-500">
+          {hint}
+        </span>
+      ) : null}
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {options.map((o) => {
+          const active = value === o.value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => onChange(o.value)}
+              className={`rounded-xl border px-4 py-3.5 text-left text-sm transition ${
+                active
+                  ? "border-teal-500 bg-teal-50/80 text-teal-900 shadow-sm ring-1 ring-teal-200"
+                  : "border-mist-200 bg-white text-navy-700 hover:border-teal-200 hover:bg-teal-50/30"
+              }`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function CheckboxGroup<T extends string>({
   label,
   hint,

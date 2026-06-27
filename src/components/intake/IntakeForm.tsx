@@ -5,13 +5,19 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { PaperCard, StampLabel } from "@/components/ui/design";
 import { ProgressIndicator } from "@/components/ui/ProgressIndicator";
 import {
+  AGREEMENT_STATUS_OPTIONS,
+  AGREEMENT_TYPE_OPTIONS,
   ASSET_OPTIONS,
+  CONTRIBUTOR_HELP_OPTIONS,
+  CONTRIBUTOR_INVOLVEMENT_OPTIONS,
   GOAL_OPTIONS,
   IDEA_INCLUDE_OPTIONS,
+  INSTITUTION_RELATIONSHIP_OPTIONS,
   ITEM_TYPE_OPTIONS,
   SHARING_OPTIONS,
 } from "@/lib/labels";
 import { suggestIdeaIncludes } from "@/lib/signals";
+import { ownershipInfoCompleted } from "@/lib/ownership";
 import { getStore } from "@/lib/store";
 import { getStoredTracking } from "@/lib/partnerTracking";
 import { trackEvent } from "@/lib/analytics/client";
@@ -23,9 +29,14 @@ import {
   validateIntakeStep,
 } from "@/lib/intakeValidation";
 import type {
+  AgreementStatus,
+  AgreementType,
   AssetType,
+  ContributorHelpType,
+  ContributorInvolvement,
   Goal,
   IdeaInclude,
+  InstitutionRelationship,
   IntakeAnswers,
   ReadinessProfile,
   SharingChannel,
@@ -33,6 +44,7 @@ import type {
 import {
   CheckboxGroup,
   ClarityScale,
+  RadioGroup,
   ReviewFieldCard,
   SelectField,
   TextField,
@@ -53,7 +65,7 @@ const STEP_HINTS: Record<number, string | undefined> = {
   0: "Start with plain language. You can refine the details later.",
   1: "Describe how it works and what makes it different from what already exists.",
   2: "Help us understand the shape of your idea and what it includes.",
-  3: "Materials and sharing history help prepare your packet.",
+  3: "Materials, sharing history, and people who helped prepare your packet.",
   4: "Tell us what kind of support you are looking for.",
   6: "One last check before we build your packet.",
 };
@@ -74,6 +86,12 @@ const INITIAL: IntakeAnswers = {
   location: "",
   wantsProBono: false,
   preClarity: 3,
+  contributorsInvolved: undefined,
+  contributorHelpTypes: [],
+  agreementStatus: undefined,
+  agreementTypes: [],
+  institutionRelationship: undefined,
+  ownershipNotes: "",
 };
 
 function toggle<T>(list: T[], value: T): T[] {
@@ -165,6 +183,14 @@ export function IntakeForm() {
   const last = STEP_LABELS.length - 1;
   const stepHint = STEP_HINTS[step];
   const intakeStarted = useRef(false);
+  const ownershipStepTracked = useRef(false);
+
+  useEffect(() => {
+    if (step === 3 && !ownershipStepTracked.current) {
+      ownershipStepTracked.current = true;
+      trackEvent("ownership_step_viewed", { metadata: { demo: demoActive } });
+    }
+  }, [step, demoActive]);
 
   useEffect(() => {
     if (intakeStarted.current) return;
@@ -232,6 +258,9 @@ export function IntakeForm() {
       }
     }
     setFieldError(null);
+    if (step === 3 && ownershipInfoCompleted(answers)) {
+      trackEvent("ownership_info_completed", { metadata: { demo: demoActive } });
+    }
     if (
       step === 1 &&
       (!answers.ideaIncludes || answers.ideaIncludes.length === 0)
@@ -293,6 +322,12 @@ export function IntakeForm() {
             clarityRating: answers.preClarity,
             signalKeys: data.profile.signals.join(","),
           },
+        });
+      }
+      if (data.profile.signals.includes("ownership_collaborator")) {
+        trackEvent("ownership_signal_triggered", {
+          projectId: record.id,
+          metadata: { demo: demoActive },
         });
       }
       router.push(`/smartprobonoip/profile/${record.id}`);
@@ -436,6 +471,70 @@ export function IntakeForm() {
               selected={answers.sharedChannels}
               onToggle={toggleSharing}
             />
+
+            <div className="rounded-2xl border border-dashed border-mist-200 bg-cream/50 p-5">
+              <p className="section-kicker text-teal-700">
+                {INTAKE_COPY.ownershipSectionTitle}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-navy-600">
+                {INTAKE_COPY.ownershipSectionHint}
+              </p>
+              <div className="mt-6 space-y-8">
+                <RadioGroup<ContributorInvolvement>
+                  label="Did anyone else help create, design, build, code, test, fund, or document this idea?"
+                  options={CONTRIBUTOR_INVOLVEMENT_OPTIONS}
+                  value={answers.contributorsInvolved}
+                  onChange={(v) => update("contributorsInvolved", v)}
+                />
+                {answers.contributorsInvolved &&
+                answers.contributorsInvolved !== "solo" ? (
+                  <CheckboxGroup<ContributorHelpType>
+                    label="What did they help with?"
+                    options={CONTRIBUTOR_HELP_OPTIONS}
+                    selected={answers.contributorHelpTypes ?? []}
+                    onToggle={(v) =>
+                      update(
+                        "contributorHelpTypes",
+                        toggle(answers.contributorHelpTypes ?? [], v),
+                      )
+                    }
+                  />
+                ) : null}
+                <RadioGroup<AgreementStatus>
+                  label="Do you have written agreements with anyone who helped?"
+                  options={AGREEMENT_STATUS_OPTIONS}
+                  value={answers.agreementStatus}
+                  onChange={(v) => update("agreementStatus", v)}
+                />
+                {answers.agreementStatus === "yes" ||
+                answers.agreementStatus === "not_sure" ? (
+                  <CheckboxGroup<AgreementType>
+                    label="What agreement types might exist?"
+                    options={AGREEMENT_TYPE_OPTIONS}
+                    selected={answers.agreementTypes ?? []}
+                    onToggle={(v) =>
+                      update(
+                        "agreementTypes",
+                        toggle(answers.agreementTypes ?? [], v),
+                      )
+                    }
+                  />
+                ) : null}
+                <RadioGroup<InstitutionRelationship>
+                  label="Was any part created through an employer, school, grant, client project, or paid contractor relationship?"
+                  options={INSTITUTION_RELATIONSHIP_OPTIONS}
+                  value={answers.institutionRelationship}
+                  onChange={(v) => update("institutionRelationship", v)}
+                />
+                <TextField
+                  label="Anything you want to remember about who helped or what agreements exist?"
+                  hint="Optional — for your own notes in the packet."
+                  value={answers.ownershipNotes ?? ""}
+                  onChange={(v) => update("ownershipNotes", v)}
+                  rows={3}
+                />
+              </div>
+            </div>
           </div>
         )}
 

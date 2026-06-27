@@ -28,6 +28,10 @@ import {
   PATENT_SEARCH_PREP_INTRO,
   WORKSHEET_HEADERS,
 } from "./patentSearchPrep";
+import {
+  buildOwnershipAgreementPrep,
+  hasOwnershipPrepSection,
+} from "./ownership";
 import type { ProjectRecord } from "./types";
 
 const MARGIN = 48;
@@ -293,6 +297,25 @@ export function buildPacketPdf(
   // 6. Expert conversation prep
   heading(PACKET_COPY.expertPrepTitle);
   bullets(profile.expertQuestions, "?");
+
+  if (hasOwnershipPrepSection(record)) {
+    const ownershipPrep = buildOwnershipAgreementPrep(record);
+    heading(PACKET_COPY.ownershipPrepTitle);
+    text(PACKET_COPY.ownershipPrepSubtitle, { size: 9, color: GRAY, gap: 4 });
+    labeledBlock("Contributors / helpers", ownershipPrep.contributorsSummary);
+    labeledBlock("What they helped with", ownershipPrep.helpSummary);
+    labeledBlock("Agreements you noted", ownershipPrep.agreementsSummary);
+    labeledBlock(
+      "Employer / school / grant / contractor flag",
+      ownershipPrep.institutionFlag,
+    );
+    if (ownershipPrep.optionalNote) {
+      labeledBlock("Your notes", ownershipPrep.optionalNote);
+    }
+    text("Questions to ask an expert", { size: 10, bold: true, gap: 2 });
+    bullets(ownershipPrep.expertQuestions, "?");
+    text(ownershipPrep.disclaimer, { size: 9, color: GRAY, gap: 6 });
+  }
 
   // 7. Suggested next resources
   heading(PACKET_COPY.resourcesTitle);

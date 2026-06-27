@@ -46,6 +46,48 @@ export type IdeaInclude =
   | "look_and_design"
   | "online_identity";
 
+export type ContributorInvolvement =
+  | "solo"
+  | "cofounder_team"
+  | "freelancer_contractor"
+  | "employee_employer"
+  | "school_grant"
+  | "manufacturer_agency"
+  | "not_sure";
+
+export type ContributorHelpType =
+  | "name_branding"
+  | "logo_visual"
+  | "product_design"
+  | "software_code"
+  | "prototype"
+  | "drawings_diagrams"
+  | "written_content"
+  | "manufacturing_engineering"
+  | "funding_planning"
+  | "testing_feedback"
+  | "other";
+
+export type AgreementStatus =
+  | "yes"
+  | "no"
+  | "not_sure"
+  | "not_applicable";
+
+export type AgreementType =
+  | "nda"
+  | "contractor"
+  | "work_for_hire"
+  | "founder"
+  | "assignment"
+  | "employment"
+  | "school_university"
+  | "grant_funding"
+  | "manufacturing_design"
+  | "not_sure";
+
+export type InstitutionRelationship = "no" | "yes" | "not_sure";
+
 export interface IntakeAnswers {
   whatCreated: string;
   problemSolved: string;
@@ -63,6 +105,12 @@ export interface IntakeAnswers {
   location: string;
   wantsProBono: boolean;
   preClarity: number;
+  contributorsInvolved?: ContributorInvolvement;
+  contributorHelpTypes?: ContributorHelpType[];
+  agreementStatus?: AgreementStatus;
+  agreementTypes?: AgreementType[];
+  institutionRelationship?: InstitutionRelationship;
+  ownershipNotes?: string;
 }
 
 export type IpSignal =
@@ -78,7 +126,8 @@ export type IpSignal =
   | "domain_digital_identity"
   | "design_appearance"
   | "prior_art_search"
-  | "expert_review";
+  | "expert_review"
+  | "ownership_collaborator";
 
 export type ResourceCategory =
   | "education"

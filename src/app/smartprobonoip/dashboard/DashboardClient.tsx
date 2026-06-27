@@ -25,6 +25,7 @@ import {
   selectedPartnerSummary,
   uniqueFilterValues,
 } from "@/lib/partnerMetrics";
+import { computeOwnershipMetrics } from "@/lib/ownership";
 import { PARTNER_CATALOG } from "@/lib/partnerTracking";
 import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
 import { getBackendName, getStore } from "@/lib/store";
@@ -169,6 +170,10 @@ export default function DashboardClient() {
   const metrics: DashboardMetrics | null = loading
     ? null
     : computeMetrics(filteredRecords);
+  const ownershipMetrics = useMemo(
+    () => (loading ? null : computeOwnershipMetrics(filteredRecords)),
+    [filteredRecords, loading],
+  );
   const partnerSummaries = useMemo(
     () => computePartnerSummaries(filteredRecords),
     [filteredRecords],
@@ -616,6 +621,35 @@ export default function DashboardClient() {
               hint={`${metrics.clarityResponses} post-packet responses`}
             />
           </div>
+
+          {ownershipMetrics ? (
+            <Card>
+              <CardHeader
+                title="Ownership and agreement readiness"
+                subtitle="Preparation signals from intake — not ownership determinations."
+              />
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <MetricCard
+                  label="Ownership / collaborator signal"
+                  value={ownershipMetrics.packetsWithOwnershipSignal}
+                />
+                <MetricCard
+                  label="Contractor or co-founder noted"
+                  value={ownershipMetrics.contractorFreelancerInvolvement}
+                  accent="warm"
+                />
+                <MetricCard
+                  label="No written agreements"
+                  value={ownershipMetrics.noWrittenAgreements}
+                />
+                <MetricCard
+                  label="Not sure on ownership answers"
+                  value={ownershipMetrics.notSureOwnershipAnswers}
+                  accent="navy"
+                />
+              </div>
+            </Card>
+          ) : null}
 
           {analyticsEnabled && analytics ? (
             <Card>

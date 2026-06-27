@@ -1,7 +1,12 @@
 import type {
+  AgreementStatus,
+  AgreementType,
   AssetType,
+  ContributorHelpType,
+  ContributorInvolvement,
   Goal,
   IdeaInclude,
+  InstitutionRelationship,
   ItemType,
   ResourceCategory,
   SharingChannel,
@@ -88,6 +93,60 @@ export const IDEA_INCLUDE_OPTIONS: Option<IdeaInclude>[] = [
   { value: "online_identity", label: "Online name or domain identity" },
 ];
 
+export const CONTRIBUTOR_INVOLVEMENT_OPTIONS: Option<ContributorInvolvement>[] = [
+  { value: "solo", label: "No, just me" },
+  { value: "cofounder_team", label: "Yes, co-founder or team member" },
+  { value: "freelancer_contractor", label: "Yes, freelancer or contractor" },
+  { value: "employee_employer", label: "Yes, employee or employer-related" },
+  { value: "school_grant", label: "Yes, school, university, or grant-related" },
+  {
+    value: "manufacturer_agency",
+    label: "Yes, manufacturer, developer, designer, or agency",
+  },
+  { value: "not_sure", label: "Not sure" },
+];
+
+export const CONTRIBUTOR_HELP_OPTIONS: Option<ContributorHelpType>[] = [
+  { value: "name_branding", label: "Name or branding" },
+  { value: "logo_visual", label: "Logo or visual design" },
+  { value: "product_design", label: "Product design" },
+  { value: "software_code", label: "Software code" },
+  { value: "prototype", label: "Prototype" },
+  { value: "drawings_diagrams", label: "Drawings or diagrams" },
+  { value: "written_content", label: "Written content" },
+  { value: "manufacturing_engineering", label: "Manufacturing or engineering" },
+  { value: "funding_planning", label: "Funding or business planning" },
+  { value: "testing_feedback", label: "Testing or feedback" },
+  { value: "other", label: "Other" },
+];
+
+export const AGREEMENT_STATUS_OPTIONS: Option<AgreementStatus>[] = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+  { value: "not_sure", label: "Not sure" },
+  { value: "not_applicable", label: "Not applicable" },
+];
+
+export const AGREEMENT_TYPE_OPTIONS: Option<AgreementType>[] = [
+  { value: "nda", label: "NDA / confidentiality agreement" },
+  { value: "contractor", label: "Contractor agreement" },
+  { value: "work_for_hire", label: "Work-for-hire agreement" },
+  { value: "founder", label: "Founder agreement" },
+  { value: "assignment", label: "Assignment agreement" },
+  { value: "employment", label: "Employment agreement" },
+  { value: "school_university", label: "School / university agreement" },
+  { value: "grant_funding", label: "Grant or funding agreement" },
+  { value: "manufacturing_design", label: "Manufacturing or design agreement" },
+  { value: "not_sure", label: "I am not sure" },
+];
+
+export const INSTITUTION_RELATIONSHIP_OPTIONS: Option<InstitutionRelationship>[] =
+  [
+    { value: "no", label: "No" },
+    { value: "yes", label: "Yes" },
+    { value: "not_sure", label: "Not sure" },
+  ];
+
 export const ITEM_TYPE_LABELS: Record<ItemType, string> = Object.fromEntries(
   ITEM_TYPE_OPTIONS.map((o) => [o.value, o.label]),
 ) as Record<ItemType, string>;
@@ -103,6 +162,35 @@ export const SHARING_LABELS: Record<SharingChannel, string> = Object.fromEntries
 export const GOAL_LABELS: Record<Goal, string> = Object.fromEntries(
   GOAL_OPTIONS.map((o) => [o.value, o.label]),
 ) as Record<Goal, string>;
+
+export const CONTRIBUTOR_INVOLVEMENT_LABELS: Record<
+  ContributorInvolvement,
+  string
+> = Object.fromEntries(
+  CONTRIBUTOR_INVOLVEMENT_OPTIONS.map((o) => [o.value, o.label]),
+) as Record<ContributorInvolvement, string>;
+
+export const CONTRIBUTOR_HELP_LABELS: Record<ContributorHelpType, string> =
+  Object.fromEntries(
+    CONTRIBUTOR_HELP_OPTIONS.map((o) => [o.value, o.label]),
+  ) as Record<ContributorHelpType, string>;
+
+export const AGREEMENT_STATUS_LABELS: Record<AgreementStatus, string> =
+  Object.fromEntries(
+    AGREEMENT_STATUS_OPTIONS.map((o) => [o.value, o.label]),
+  ) as Record<AgreementStatus, string>;
+
+export const AGREEMENT_TYPE_LABELS: Record<AgreementType, string> =
+  Object.fromEntries(
+    AGREEMENT_TYPE_OPTIONS.map((o) => [o.value, o.label]),
+  ) as Record<AgreementType, string>;
+
+export const INSTITUTION_RELATIONSHIP_LABELS: Record<
+  InstitutionRelationship,
+  string
+> = Object.fromEntries(
+  INSTITUTION_RELATIONSHIP_OPTIONS.map((o) => [o.value, o.label]),
+) as Record<InstitutionRelationship, string>;
 
 export const RESOURCE_LABELS: Record<ResourceCategory, string> = {
   education: "Education & self-guided learning",

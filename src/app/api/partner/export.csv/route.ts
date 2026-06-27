@@ -3,6 +3,7 @@ import { trackServerEvent } from "@/lib/analytics/server";
 import { listLiveRecords, verifyPartnerSecret } from "@/lib/db/records";
 import { getFeedbackMapByProjectIds } from "@/lib/db/feedback";
 import { getProjectEventFlags } from "@/lib/db/analytics";
+import { ownershipCsvFields } from "@/lib/ownership";
 import { SUPPORT_NEED_OPTIONS } from "@/lib/feedback";
 import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
@@ -59,6 +60,12 @@ export async function GET(request: Request) {
     "would_bring_to_expert",
     "support_needed",
     "follow_up_requested",
+    "ownership_signal",
+    "contributors_involved",
+    "contributor_types",
+    "agreement_status",
+    "agreement_types",
+    "employer_school_grant_flag",
   ];
 
   const feedbackMap = await getFeedbackMapByProjectIds(records.map((r) => r.id));
@@ -68,6 +75,7 @@ export async function GET(request: Request) {
       typeof r.postClarity === "number" ? r.postClarity - r.preClarity : "";
     const flags = eventFlags.get(r.id);
     const feedback = feedbackMap.get(r.id);
+    const ownership = ownershipCsvFields(r);
     const supportLabels = feedback?.supportNeeded
       .map(
         (need) =>
@@ -100,6 +108,12 @@ export async function GET(request: Request) {
       feedback?.wouldBringToExpert ?? "",
       supportLabels ?? "",
       feedback?.followUpRequested ?? false,
+      ownership.ownership_signal,
+      ownership.contributors_involved,
+      ownership.contributor_types,
+      ownership.agreement_status,
+      ownership.agreement_types,
+      ownership.employer_school_grant_flag,
     ]
       .map(escapeCsv)
       .join(",");

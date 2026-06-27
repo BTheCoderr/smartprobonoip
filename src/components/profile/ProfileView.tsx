@@ -27,6 +27,10 @@ import {
   TIMELINE_NOTE,
 } from "@/lib/packet";
 import {
+  buildOwnershipAgreementPrep,
+  hasOwnershipPrepSection,
+} from "@/lib/ownership";
+import {
   buildPatentSearchPrep,
   PATENT_SEARCH_PREP_INTRO,
   WORKSHEET_HEADERS,
@@ -52,6 +56,8 @@ export function ProfileView({
   const materials = buildMaterialsChecklist(record);
   const handoff = buildExpertHandoff(record);
   const searchPrep = buildPatentSearchPrep(record);
+  const ownershipPrep = buildOwnershipAgreementPrep(record);
+  const showOwnershipPrep = hasOwnershipPrepSection(record);
 
   return (
     <div className="space-y-8">
@@ -239,6 +245,67 @@ export function ProfileView({
         />
         <p className="text-sm text-navy-700">{profile.publicDisclosureNote}</p>
       </Card>
+
+      {showOwnershipPrep ? (
+        <Card variant="elevated">
+          <CardHeader
+            title={PACKET_COPY.ownershipPrepTitle}
+            subtitle={PACKET_COPY.ownershipPrepSubtitle}
+          />
+          <dl className="space-y-4 text-sm leading-relaxed text-navy-700">
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+                Contributors / helpers
+              </dt>
+              <dd className="mt-1.5">{ownershipPrep.contributorsSummary}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+                What they helped with
+              </dt>
+              <dd className="mt-1.5">{ownershipPrep.helpSummary}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+                Agreements you noted
+              </dt>
+              <dd className="mt-1.5">{ownershipPrep.agreementsSummary}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+                Employer / school / grant / contractor flag
+              </dt>
+              <dd className="mt-1.5">{ownershipPrep.institutionFlag}</dd>
+            </div>
+            {ownershipPrep.optionalNote ? (
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+                  Your notes
+                </dt>
+                <dd className="mt-1.5">{ownershipPrep.optionalNote}</dd>
+              </div>
+            ) : null}
+          </dl>
+          <div className="mt-6 border-t border-dashed border-mist-200 pt-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+              Questions to ask an expert
+            </p>
+            <ul className="mt-3 space-y-2">
+              {ownershipPrep.expertQuestions.map((q) => (
+                <li
+                  key={q}
+                  className="rounded-lg border border-mist-200/80 bg-mist-50/60 px-4 py-3 text-sm text-navy-700"
+                >
+                  {q}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p className="mt-4 text-xs leading-relaxed text-navy-500">
+            {ownershipPrep.disclaimer}
+          </p>
+        </Card>
+      ) : null}
 
       <Card variant="accent">
         <CardHeader title={PACKET_COPY.nextBestStepTitle} />

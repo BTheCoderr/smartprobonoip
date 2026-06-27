@@ -1,4 +1,5 @@
 import { normalizeAnswersForPacket } from "./intakeValidation";
+import { shouldTriggerOwnershipSignal } from "./ownership";
 import { containsForbiddenLanguage } from "./safety";
 import type { IntakeAnswers, IpSignal } from "./types";
 
@@ -23,6 +24,7 @@ export const SIGNAL_KEYS: IpSignal[] = [
   "design_appearance",
   "prior_art_search",
   "expert_review",
+  "ownership_collaborator",
 ];
 
 export const SIGNAL_CATALOG: Record<IpSignal, SignalGuide> = {
@@ -130,6 +132,15 @@ export const SIGNAL_CATALOG: Record<IpSignal, SignalGuide> = {
     whatToPrepare:
       "Consider bringing this packet, your materials, and your top questions.",
     suggestedResourceType: "IP clinic, PTRC, pro bono program, or patent professional",
+  },
+  ownership_collaborator: {
+    label: "Ownership / collaborator roles",
+    whyItMatters:
+      "Because other people may have helped create, design, code, fund, test, or document the idea, ownership and agreement questions may be worth reviewing before next steps.",
+    whatToPrepare:
+      "Consider preparing a list of contributors, what each person did, whether anyone was paid, and whether written agreements exist.",
+    suggestedResourceType:
+      "Business legal support, IP clinic, law school clinic, or startup/legal mentor",
   },
 };
 
@@ -350,6 +361,10 @@ export function deriveSignals(rawAnswers: IntakeAnswers): IpSignal[] {
     signals.size >= 4
   ) {
     signals.add("expert_review");
+  }
+
+  if (shouldTriggerOwnershipSignal(answers)) {
+    signals.add("ownership_collaborator");
   }
 
   return SIGNAL_KEYS.filter((key) => signals.has(key));

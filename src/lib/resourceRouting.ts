@@ -11,7 +11,9 @@ export type RoutedResourceId =
   | "innovation_hub"
   | "mentor_product_dev"
   | "business_attorney"
-  | "nda_support";
+  | "nda_support"
+  | "startup_legal_mentor"
+  | "contractor_agreement_review";
 
 export interface RoutedResourceCard {
   id: RoutedResourceId;
@@ -64,6 +66,14 @@ const RESOURCE_CATALOG: Record<
     title: "NDA or confidentiality support",
     lead: "may be worth exploring before sharing details with partners",
   },
+  startup_legal_mentor: {
+    title: "Startup legal mentor",
+    lead: "may be worth exploring for founder, contractor, or agreement questions",
+  },
+  contractor_agreement_review: {
+    title: "Contractor or founder agreement review resource",
+    lead: "consider asking about if you worked with collaborators or contractors",
+  },
 };
 
 const SIGNAL_RESOURCE_MAP: Partial<Record<IpSignal, RoutedResourceId[]>> = {
@@ -74,6 +84,12 @@ const SIGNAL_RESOURCE_MAP: Partial<Record<IpSignal, RoutedResourceId[]>> = {
   trade_secret: ["nda_support", "business_attorney"],
   nda_confidentiality: ["nda_support", "business_attorney"],
   business_formation: ["sbdc", "business_attorney"],
+  ownership_collaborator: [
+    "business_attorney",
+    "law_school_clinic",
+    "startup_legal_mentor",
+    "contractor_agreement_review",
+  ],
   licensing_commercialization: ["innovation_hub", "sbdc"],
   prior_art_search: ["ptrc", "mentor_product_dev"],
   expert_review: ["law_school_clinic", "patent_pro_bono"],
@@ -88,6 +104,12 @@ const SUPPORT_RESOURCE_MAP: Record<SupportNeed, RoutedResourceId[]> = {
   funding_accelerator: ["innovation_hub", "sbdc"],
   prototype_product_dev: ["mentor_product_dev", "innovation_hub"],
   similar_reference_research: ["ptrc", "mentor_product_dev"],
+  ownership_agreement_review: [
+    "business_attorney",
+    "law_school_clinic",
+    "startup_legal_mentor",
+    "contractor_agreement_review",
+  ],
   not_sure: ["ptrc", "sbdc", "law_school_clinic"],
 };
 

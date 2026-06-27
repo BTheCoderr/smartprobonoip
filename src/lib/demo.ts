@@ -25,6 +25,9 @@ export const DEMO_INVENTION: IntakeAnswers = {
   location: "Denver, Colorado, USA",
   wantsProBono: true,
   preClarity: 2,
+  contributorsInvolved: "solo",
+  agreementStatus: "not_applicable",
+  institutionRelationship: "no",
 };
 
 export const DEMO_PROFILE_ID = "demo-hydroseal-profile";
@@ -94,6 +97,11 @@ export const DEMO_RECORDS: ProjectRecord[] = [
       goals: ["funding", "business_support"],
       wantsProBono: false,
       assets: ["code", "screenshots"],
+      contributorsInvolved: "freelancer_contractor",
+      contributorHelpTypes: ["software_code", "logo_visual"],
+      agreementStatus: "not_sure",
+      agreementTypes: ["contractor", "not_sure"],
+      institutionRelationship: "no",
     },
     3,
     3,
