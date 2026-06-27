@@ -21,13 +21,12 @@ import {
   buildPatentPrepChecklist,
   buildReadinessMetrics,
   buildReadinessSnapshot,
-  DEVELOPMENT_TIMELINE_FIELDS,
   DIFFERENCE_MAP_NOTE,
   PATENT_PREP_INTRO,
-  TIMELINE_NOTE,
 } from "@/lib/packet";
 import { getTriggeredMiniPrepSections } from "@/lib/miniPrepSections";
 import { MiniPrepSectionCard } from "@/components/profile/MiniPrepSectionCard";
+import { DevelopmentTimelineEditor } from "@/components/profile/DevelopmentTimelineEditor";
 import {
   buildPatentSearchPrep,
   WORKSHEET_HEADERS,
@@ -40,10 +39,12 @@ export function ProfileView({
   record,
   savedReferenceCount = 0,
   onReferencesChange,
+  onTimelineSaved,
 }: {
   record: ProjectRecord;
   savedReferenceCount?: number;
   onReferencesChange?: (refs: SavedReference[]) => void;
+  onTimelineSaved?: (record: ProjectRecord) => void;
 }) {
   const { profile } = record;
   const summaryFields = buildIdeaSummaryFields(record.answers);
@@ -385,20 +386,13 @@ export function ProfileView({
             </ul>
           </Card>
 
-          <Card>
-            <CardHeader title="Development timeline" subtitle={TIMELINE_NOTE} />
-            <dl className="space-y-3">
-              {DEVELOPMENT_TIMELINE_FIELDS.map((field) => (
-                <div key={field} className="flex flex-col gap-1">
-                  <dt className="text-sm font-medium text-navy-800">{field}</dt>
-                  <dd className="h-7 rounded-md border border-dashed border-mist-300 bg-mist-50" />
-                </div>
-              ))}
-            </dl>
-          </Card>
+          <DevelopmentTimelineEditor record={record} onSaved={onTimelineSaved} />
 
           <Card>
-            <CardHeader title="Possible difference map" />
+            <CardHeader
+              title="Possible difference map"
+              subtitle={PACKET_COPY.differenceMapSubtitle}
+            />
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-left text-sm">
                 <thead>
@@ -423,7 +417,10 @@ export function ProfileView({
           </Card>
 
           <Card>
-            <CardHeader title="Drawings and materials checklist" />
+            <CardHeader
+              title="Drawings and materials checklist"
+              subtitle={PACKET_COPY.materialsChecklistSubtitle}
+            />
             <ul className="grid gap-2 sm:grid-cols-2">
               {materials.map((item) => (
                 <li

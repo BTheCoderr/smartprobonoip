@@ -12,7 +12,13 @@ import {
   extractBrandName,
   preserveBrandInText,
 } from "./textCleanup";
-import type { AssetType, IntakeAnswers, ProjectRecord } from "./types";
+import type {
+  AssetType,
+  DevelopmentTimeline,
+  DevelopmentTimelineField,
+  IntakeAnswers,
+  ProjectRecord,
+} from "./types";
 
 export interface SummaryField {
   label: string;
@@ -87,7 +93,35 @@ export const DEVELOPMENT_TIMELINE_FIELDS = [
   "Date first shared publicly",
   "Date first pitched, sold, or demoed",
   "Date of major improvements",
-];
+] as const satisfies readonly DevelopmentTimelineField[];
+
+export function sanitizeTimelineValue(value: string): string {
+  return value.trim().slice(0, 200);
+}
+
+export function countFilledTimelineFields(
+  timeline?: DevelopmentTimeline,
+): number {
+  if (!timeline) return 0;
+  return DEVELOPMENT_TIMELINE_FIELDS.filter((field) =>
+    Boolean(timeline[field]?.trim()),
+  ).length;
+}
+
+export function buildTimelineReadiness(timeline?: DevelopmentTimeline): string {
+  const filled = countFilledTimelineFields(timeline);
+  if (filled >= DEVELOPMENT_TIMELINE_FIELDS.length) return "Strong";
+  if (filled >= 3) return "Medium";
+  if (filled >= 1) return "Started";
+  return "Needs dates";
+}
+
+export function getTimelineFieldValue(
+  timeline: DevelopmentTimeline | undefined,
+  field: DevelopmentTimelineField,
+): string {
+  return timeline?.[field]?.trim() ?? "";
+}
 
 export function getIdeaLabel(answers: IntakeAnswers): string {
   return resolveIdeaLabel(normalizeAnswersForPacket(answers));
@@ -334,7 +368,9 @@ export function deriveOptionalGaps(
   const materials = buildMaterialsChecklist(record);
   const gaps: string[] = [];
 
-  gaps.push("Development timeline");
+  if (countFilledTimelineFields(record.developmentTimeline) < 3) {
+    gaps.push("Development timeline");
+  }
 
   const testing = materials.find((m) => m.label === "Testing notes");
   if (testing && !testing.available) gaps.push("Testing notes");
@@ -429,7 +465,7 @@ export function buildReadinessMetrics(
     { label: "Clarity Score", value: `${clarityBefore}, ${clarityAfter}` },
     { label: "Packet Completion Score", value: `${packetCompletion}%` },
     { label: "Missing Info Count", value: missingInfoCount },
-    { label: "Timeline Readiness", value: "Needs dates" },
+    { label: "Timeline Readiness", value: buildTimelineReadiness(record.developmentTimeline) },
     { label: "Materials Readiness", value: materialsReadiness },
     {
       label: "Similar Reference Prep",

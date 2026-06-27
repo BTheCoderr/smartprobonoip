@@ -1,6 +1,6 @@
 import { pilotSessionHeaders } from "../pilotSession";
 import { isSupabaseConfigured } from "../supabaseClient";
-import type { ProjectRecord, ReadinessProfile } from "../types";
+import type { DevelopmentTimeline, ProjectRecord, ReadinessProfile } from "../types";
 import type { SaveInput, Store } from "./types";
 
 async function parseRecord(res: Response): Promise<ProjectRecord> {
@@ -67,6 +67,21 @@ export const apiStore: Store = {
       const err = (await res.json().catch(() => ({}))) as { error?: string };
       throw new Error(err.error ?? "Update failed");
     }
+  },
+
+  async updateDevelopmentTimeline(
+    id: string,
+    timeline: DevelopmentTimeline,
+  ): Promise<ProjectRecord> {
+    const res = await fetch(`/api/records/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...pilotSessionHeaders(),
+      },
+      body: JSON.stringify({ developmentTimeline: timeline }),
+    });
+    return parseRecord(res);
   },
 };
 

@@ -1,11 +1,16 @@
 import "server-only";
 import { RESOURCE_LABELS } from "@/lib/labels";
 import { shouldTriggerOwnershipSignal } from "@/lib/ownership";
-import { getIdeaLabel } from "@/lib/packet";
+import {
+  DEVELOPMENT_TIMELINE_FIELDS,
+  getIdeaLabel,
+  sanitizeTimelineValue,
+} from "@/lib/packet";
 import { DEFAULT_FOLLOW_UP } from "@/lib/records";
 import { normalizeProfileSignals } from "@/lib/signals";
 import { getSupabaseService } from "@/lib/supabaseServer";
 import type {
+  DevelopmentTimeline,
   FollowUpStatus,
   IntakeAnswers,
   ProjectRecord,
@@ -31,6 +36,7 @@ interface ProjectRow {
   partner_name: string | null;
   source: string | null;
   campaign: string | null;
+  development_timeline: DevelopmentTimeline | null;
   smartprobonoip_answers: {
     payload: IntakeAnswers | null;
     pre_clarity_score: number | null;
@@ -45,7 +51,7 @@ interface ProjectRow {
 
 const NESTED_SELECT =
   "id, title, item_type, public_disclosure, location, generator, created_at, pilot_session_id, is_demo, " +
-  "partner_slug, partner_name, source, campaign, " +
+  "partner_slug, partner_name, source, campaign, development_timeline, " +
   "smartprobonoip_answers(payload, pre_clarity_score), smartprobonoip_profiles(payload), " +
   "smartprobonoip_impact_metrics(pre_clarity_score, post_clarity_score), " +
   "followups(followup_type, status)";
@@ -176,6 +182,7 @@ export function rowToRecord(row: ProjectRow): ProjectRecord | null {
     partnerName: row.partner_name,
     source: row.source,
     campaign: row.campaign,
+    developmentTimeline: (row.development_timeline as DevelopmentTimeline) ?? {},
   };
 }
 
@@ -282,6 +289,7 @@ export async function createRecord(input: {
     partnerName: !isDemo ? (tracking?.partnerName ?? null) : null,
     source: !isDemo ? (tracking?.source ?? null) : null,
     campaign: !isDemo ? (tracking?.campaign ?? null) : null,
+    developmentTimeline: {},
   };
 }
 
@@ -362,6 +370,45 @@ export async function updateProfile(
 
   if (profileRes.error) throw new Error(profileRes.error.message);
   if (projectRes.error) throw new Error(projectRes.error.message);
+}
+
+function sanitizeDevelopmentTimeline(
+  input: DevelopmentTimeline,
+): DevelopmentTimeline {
+  const out: DevelopmentTimeline = {};
+  for (const field of DEVELOPMENT_TIMELINE_FIELDS) {
+    const value = input[field];
+    if (typeof value === "string" && value.trim()) {
+      out[field] = sanitizeTimelineValue(value);
+    }
+  }
+  return out;
+}
+
+export async function updateDevelopmentTimeline(
+  id: string,
+  pilotSessionId: string,
+  timeline: DevelopmentTimeline,
+): Promise<ProjectRecord> {
+  const owned = await getRecordById(id, pilotSessionId);
+  if (!owned) throw new Error("Record not found");
+
+  const sb = getSupabaseService();
+  const sanitized = sanitizeDevelopmentTimeline(timeline);
+  const { error } = await sb
+    .from("smartprobonoip_projects")
+    .update({
+      development_timeline: sanitized,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("pilot_session_id", pilotSessionId);
+
+  if (error) throw new Error(error.message);
+
+  const record = await getRecordById(id, pilotSessionId);
+  if (!record) throw new Error("Record not found");
+  return record;
 }
 
 export function verifyPartnerSecret(secret: string | null): boolean {

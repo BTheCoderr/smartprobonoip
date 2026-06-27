@@ -21,6 +21,10 @@ export const PACKET_COPY = {
   similarReferenceSearchPrepIntro:
     "Use this workspace to collect possible similar references before talking with a patent professional, clinic, mentor, or PTRC resource. This does not determine patentability, novelty, clearance, infringement, or legal rights.",
   savedSimilarReferencesTitle: "Saved Similar References",
+  materialsChecklistSubtitle:
+    "Based on your intake answers. Use Edit packet to update what materials you have.",
+  differenceMapSubtitle:
+    "Based on your intake answers — user-described differences only, not a legal conclusion.",
   coreCompleteOptionalGaps:
     "You gave enough to create a first packet. These extra details could make your next conversation stronger.",
   coreComplete: "Core intake is complete.",

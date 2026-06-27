@@ -1,5 +1,5 @@
 import { DEFAULT_FOLLOW_UP } from "../records";
-import type { ProjectRecord, ReadinessProfile } from "../types";
+import type { DevelopmentTimeline, ProjectRecord, ReadinessProfile } from "../types";
 import type { SaveInput, Store } from "./types";
 
 const KEY = "smartprobonoip:records";
@@ -45,6 +45,7 @@ export const localStore: Store = {
       partnerName: input.isDemo ? null : (input.tracking?.partnerName ?? null),
       source: input.isDemo ? null : (input.tracking?.source ?? null),
       campaign: input.isDemo ? null : (input.tracking?.campaign ?? null),
+      developmentTimeline: {},
     };
     const all = readAll();
     all.unshift(record);
@@ -70,5 +71,21 @@ export const localStore: Store = {
     const all = readAll();
     const next = all.map((r) => (r.id === id ? { ...r, profile } : r));
     writeAll(next);
+  },
+
+  async updateDevelopmentTimeline(
+    id: string,
+    timeline: DevelopmentTimeline,
+  ): Promise<ProjectRecord> {
+    const all = readAll();
+    let updated: ProjectRecord | null = null;
+    const next = all.map((r) => {
+      if (r.id !== id) return r;
+      updated = { ...r, developmentTimeline: timeline };
+      return updated;
+    });
+    if (!updated) throw new Error("Record not found");
+    writeAll(next);
+    return updated;
   },
 };

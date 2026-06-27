@@ -1,4 +1,4 @@
-import type { IntakeAnswers, ProjectRecord, ReadinessProfile } from "../types";
+import type { DevelopmentTimeline, IntakeAnswers, ProjectRecord, ReadinessProfile } from "../types";
 import type { PilotTracking } from "../partnerTracking";
 
 export interface SaveInput {
@@ -18,4 +18,8 @@ export interface Store {
   listRecords(): Promise<ProjectRecord[]>;
   updatePostClarity(id: string, postClarity: number): Promise<void>;
   updateProfile(id: string, profile: ReadinessProfile): Promise<void>;
+  updateDevelopmentTimeline(
+    id: string,
+    timeline: DevelopmentTimeline,
+  ): Promise<ProjectRecord>;
 }

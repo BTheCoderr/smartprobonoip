@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
-import { getRecordById, updatePostClarity, updateProfile } from "@/lib/db/records";
+import { getRecordById, updateDevelopmentTimeline, updatePostClarity, updateProfile } from "@/lib/db/records";
+import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
-import type { ReadinessProfile } from "@/lib/types";
+import type { DevelopmentTimeline, ReadinessProfile } from "@/lib/types";
 
 export async function GET(
   request: Request,
@@ -44,6 +45,7 @@ export async function PATCH(
     const body = (await request.json()) as {
       postClarity?: number;
       profile?: ReadinessProfile;
+      developmentTimeline?: DevelopmentTimeline;
     };
 
     if (typeof body.postClarity === "number") {
@@ -63,11 +65,13 @@ export async function PATCH(
     if (body.profile) {
       await updateProfile(id, pilotSession, body.profile);
     }
+    if (body.developmentTimeline) {
+      await updateDevelopmentTimeline(id, pilotSession, body.developmentTimeline);
+    }
 
     const record = await getRecordById(id, pilotSession);
     return NextResponse.json({ record });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Update failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
   }
 }

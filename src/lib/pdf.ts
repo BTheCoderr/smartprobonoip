@@ -20,6 +20,7 @@ import {
   DEVELOPMENT_TIMELINE_FIELDS,
   DIFFERENCE_MAP_NOTE,
   getIdeaLabel,
+  getTimelineFieldValue,
   PATENT_PREP_INTRO,
   TIMELINE_NOTE,
 } from "./packet";
@@ -352,7 +353,8 @@ export function buildPacketPdf(
   text(TIMELINE_NOTE, { size: 9, color: GRAY, gap: 6 });
   for (const field of DEVELOPMENT_TIMELINE_FIELDS) {
     text(`${field}:`, { size: 10, bold: true, gap: 1 });
-    text("________________________________", { size: 10, color: GRAY, gap: 6 });
+    const value = getTimelineFieldValue(record.developmentTimeline, field);
+    text(value || "Not recorded yet", { size: 10, color: GRAY, gap: 6 });
   }
 
   // Possible difference map

@@ -43,6 +43,10 @@ export default function ProfilePage({
     setSavedReferences(refs);
   }, []);
 
+  const handleTimelineSaved = useCallback((updated: ProjectRecord) => {
+    setRecord(updated);
+  }, []);
+
   useEffect(() => {
     let active = true;
     getStore()
@@ -206,6 +210,7 @@ export default function ProfilePage({
             record={record}
             savedReferenceCount={savedReferences.length}
             onReferencesChange={handleReferencesChange}
+            onTimelineSaved={handleTimelineSaved}
           />
         )}
 

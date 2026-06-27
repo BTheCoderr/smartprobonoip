@@ -149,6 +149,18 @@ export interface FollowUpStatus {
   day90: FollowUpState;
 }
 
+export type DevelopmentTimelineField =
+  | "Date idea started"
+  | "Date first written down or sketched"
+  | "Date first prototype built"
+  | "Date first shared publicly"
+  | "Date first pitched, sold, or demoed"
+  | "Date of major improvements";
+
+export type DevelopmentTimeline = Partial<
+  Record<DevelopmentTimelineField, string>
+>;
+
 export interface ReadinessProfile {
   ideaSummary: string;
   signals: IpSignal[];
@@ -176,6 +188,7 @@ export interface ProjectRecord {
   partnerName?: string | null;
   source?: string | null;
   campaign?: string | null;
+  developmentTimeline?: DevelopmentTimeline;
 }
 
 export interface DashboardMetrics {
