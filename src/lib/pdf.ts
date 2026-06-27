@@ -35,8 +35,46 @@ const LINE = 15;
 
 const NAVY: [number, number, number] = [11, 31, 58];
 const TEAL: [number, number, number] = [15, 133, 133];
+const CREAM: [number, number, number] = [250, 248, 244];
+const MIST: [number, number, number] = [238, 242, 246];
 const AMBER: [number, number, number] = [146, 64, 14];
 const GRAY: [number, number, number] = [90, 105, 120];
+
+function drawBrandMarkPdf(doc: jsPDF, cx: number, cy: number, scale = 1) {
+  const s = scale;
+  doc.setDrawColor(NAVY[0], NAVY[1], NAVY[2]);
+  doc.setLineWidth(1.5 * s);
+
+  doc.setFillColor(MIST[0], MIST[1], MIST[2]);
+  doc.roundedRect(cx + 10 * s, cy + 14 * s, 30 * s, 30 * s, 1.5 * s, 1.5 * s, "FD");
+
+  doc.setFillColor(CREAM[0], CREAM[1], CREAM[2]);
+  doc.roundedRect(cx + 6 * s, cy + 10 * s, 30 * s, 30 * s, 1.5 * s, 1.5 * s, "FD");
+
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(cx + 2 * s, cy + 6 * s, 30 * s, 30 * s, 1.5 * s, 1.5 * s, "FD");
+
+  doc.setFillColor(CREAM[0], CREAM[1], CREAM[2]);
+  doc.rect(cx + 2 * s, cy + 6 * s, 10 * s, 5 * s, "F");
+  doc.rect(cx + 2 * s, cy + 6 * s, 10 * s, 5 * s, "S");
+
+  doc.setDrawColor(TEAL[0], TEAL[1], TEAL[2]);
+  doc.setLineWidth(1.25 * s);
+  doc.setFillColor(230, 246, 246);
+  doc.roundedRect(cx + 7 * s, cy + 17 * s, 17 * s, 11 * s, 1 * s, 1 * s, "FD");
+
+  doc.setFillColor(217, 119, 6);
+  doc.circle(cx + 21.5 * s, cy + 19.5 * s, 1.25 * s, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5 * s);
+  doc.setTextColor(TEAL[0], TEAL[1], TEAL[2]);
+  doc.text("IP", cx + 15.5 * s, cy + 25.5 * s, { align: "center" });
+
+  doc.setDrawColor(20, 163, 163);
+  doc.setLineWidth(2 * s);
+  doc.line(cx + 2 * s, cy + 34 * s, cx + 32 * s, cy + 34 * s);
+}
 
 export function buildPacketPdf(
   record: ProjectRecord,
@@ -123,20 +161,33 @@ export function buildPacketPdf(
   doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
   doc.rect(0, 0, pageWidth, pageHeight, "F");
 
+  drawBrandMarkPdf(doc, pageWidth / 2 - 37, 130, 2.2);
+
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
+  doc.setFontSize(18);
+  const wordmarkLeft = "SmartProBono";
+  const wordmarkRight = "IP";
+  const leftWidth = doc.getTextWidth(wordmarkLeft);
+  const wordmarkX = pageWidth / 2 - (leftWidth + doc.getTextWidth(wordmarkRight)) / 2;
+  doc.setTextColor(255, 255, 255);
+  doc.text(wordmarkLeft, wordmarkX, 228);
   doc.setTextColor(120, 220, 220);
-  doc.text(BRAND.product.toUpperCase(), pageWidth / 2, 200, { align: "center" });
+  doc.text(wordmarkRight, wordmarkX + leftWidth, 228);
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(180, 200, 215);
+  doc.text(BRAND.feature.toUpperCase(), pageWidth / 2, 246, { align: "center" });
 
   doc.setFontSize(30);
   doc.setTextColor(255, 255, 255);
-  doc.text("IP Readiness Packet", pageWidth / 2, 250, { align: "center" });
+  doc.text("IP Readiness Packet", pageWidth / 2, 286, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(13);
   doc.setTextColor(200, 215, 230);
   const labelLines = doc.splitTextToSize(ideaLabel, maxWidth - 40) as string[];
-  let cy = 300;
+  let cy = 336;
   for (const line of labelLines) {
     doc.text(line, pageWidth / 2, cy, { align: "center" });
     cy += 20;

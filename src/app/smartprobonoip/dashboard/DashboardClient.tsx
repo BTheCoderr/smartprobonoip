@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { EmptyStateCard, PaperShell, StampLabel } from "@/components/ui/design";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { Badge } from "@/components/ui/Badge";
 import { DemoChecklist } from "@/components/DemoChecklist";
 import { DASHBOARD_COPY } from "@/lib/copy";
@@ -310,6 +311,7 @@ export default function DashboardClient() {
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-teal-600 to-warm-500" />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
+            <BrandMark variant="compact" className="mb-4" />
             <StampLabel tone="teal">PARTNER IMPACT</StampLabel>
             <h1 className="headline-editorial mt-4 text-3xl sm:text-4xl">
               {DASHBOARD_COPY.title}

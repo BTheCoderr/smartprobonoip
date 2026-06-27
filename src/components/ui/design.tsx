@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BrandMark } from "@/components/brand/BrandMark";
 
 export function StampLabel({
   children,
@@ -256,6 +257,7 @@ export function CreativeHeroSection({
       <div className="paper-shell relative py-14 sm:py-20 lg:py-24">
         <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
           <div>
+            <BrandMark variant="full" size="lg" className="mb-6" />
             <StampLabel tone="teal">{stamp}</StampLabel>
             <h1 className="headline-editorial mt-5 text-[2rem] leading-[1.06] sm:text-5xl lg:text-[3.15rem]">
               {title}
@@ -312,6 +314,7 @@ export function DossierPageHeader({
       <PaperShell packet={!narrow} narrow={narrow} className="py-10 sm:py-12">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-2xl">
+            <BrandMark variant="compact" className="mb-5" />
             {stamps ? (
               <div className="flex flex-wrap items-center gap-2">{stamps}</div>
             ) : null}

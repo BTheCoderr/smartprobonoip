@@ -1,21 +1,11 @@
 import Link from "next/link";
-import { BRAND } from "@/lib/brand";
+import { BrandMark } from "@/components/brand/BrandMark";
 
 export function SiteNav() {
   return (
     <header className="sticky top-0 z-30 border-b border-mist-200/90 bg-cream/95 backdrop-blur-md">
       <nav className="page-shell flex items-center justify-between gap-4 py-3">
-        <Link href="/smartprobonoip" className="group flex min-w-0 items-center gap-3">
-          <span className="nav-mark shrink-0">IP</span>
-          <span className="min-w-0 flex flex-col leading-tight">
-            <span className="truncate font-serif text-base font-bold tracking-tight text-navy-900">
-              {BRAND.product}
-            </span>
-            <span className="truncate text-[10px] font-mono uppercase tracking-[0.12em] text-muted-blue">
-              Invention access desk
-            </span>
-          </span>
-        </Link>
+        <BrandMark variant="compact" href="/smartprobonoip" />
         <div className="flex shrink-0 items-center gap-0.5 text-sm sm:gap-1">
           <Link
             href="/smartprobonoip/sample"

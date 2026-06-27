@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { BRAND } from "@/lib/brand";
 import { DISCLAIMER_SHORT } from "@/lib/disclaimer";
 
@@ -8,11 +9,8 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-semibold text-navy-900">
-              {BRAND.umbrella}
-              <span className="text-teal-600">IP</span>
-            </p>
-            <p className="text-xs text-navy-500">{BRAND.tagline}</p>
+            <BrandMark variant="full" size="sm" />
+            <p className="mt-2 text-xs text-navy-500">{BRAND.tagline}</p>
           </div>
           <div className="flex gap-4 text-xs text-navy-500">
             <Link href="/smartprobonoip" className="hover:text-teal-600">
