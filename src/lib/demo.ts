@@ -42,6 +42,10 @@ function makeRecord(
   pre: number,
   post: number,
   followUp: ProjectRecord["followUpStatus"],
+  tracking?: Pick<
+    ProjectRecord,
+    "partnerSlug" | "partnerName" | "source" | "campaign"
+  >,
 ): ProjectRecord {
   const full: IntakeAnswers = {
     ...DEMO_INVENTION,
@@ -58,6 +62,10 @@ function makeRecord(
     postClarity: post,
     isDemo: true,
     followUpStatus: followUp,
+    partnerSlug: tracking?.partnerSlug ?? null,
+    partnerName: tracking?.partnerName ?? null,
+    source: tracking?.source ?? null,
+    campaign: tracking?.campaign ?? null,
   };
 }
 
@@ -69,6 +77,12 @@ export const DEMO_RECORDS: ProjectRecord[] = [
     2,
     4,
     { day30: "pending", day60: "pending", day90: "pending" },
+    {
+      partnerSlug: "smartprobonoip-ri-pilot",
+      partnerName: "SmartProBonoIP Rhode Island Pilot",
+      source: "demo",
+      campaign: "pilot-2026",
+    },
   ),
   makeRecord(
     "demo-002",
@@ -85,6 +99,12 @@ export const DEMO_RECORDS: ProjectRecord[] = [
     3,
     4,
     { day30: "pending", day60: "pending", day90: "pending" },
+    {
+      partnerSlug: "rihub",
+      partnerName: "RIHub",
+      source: "qr",
+      campaign: "pilot-2026",
+    },
   ),
   makeRecord(
     "demo-003",
@@ -101,6 +121,11 @@ export const DEMO_RECORDS: ProjectRecord[] = [
     2,
     3,
     { day30: "done", day60: "pending", day90: "pending" },
+    {
+      partnerSlug: "communityip",
+      partnerName: "Community IP",
+      source: "demo",
+    },
   ),
   makeRecord(
     "demo-004",

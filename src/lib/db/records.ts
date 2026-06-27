@@ -10,6 +10,7 @@ import type {
   ProjectRecord,
   ReadinessProfile,
 } from "@/lib/types";
+import type { PilotTracking } from "@/lib/partnerTracking";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 const SMARTPROBONOIP_VENTURE_SLUG = "smartprobonoip";
@@ -24,6 +25,10 @@ interface ProjectRow {
   created_at: string;
   pilot_session_id: string;
   is_demo: boolean;
+  partner_slug: string | null;
+  partner_name: string | null;
+  source: string | null;
+  campaign: string | null;
   smartprobonoip_answers: {
     payload: IntakeAnswers | null;
     pre_clarity_score: number | null;
@@ -38,6 +43,7 @@ interface ProjectRow {
 
 const NESTED_SELECT =
   "id, title, item_type, public_disclosure, location, generator, created_at, pilot_session_id, is_demo, " +
+  "partner_slug, partner_name, source, campaign, " +
   "smartprobonoip_answers(payload, pre_clarity_score), smartprobonoip_profiles(payload), " +
   "smartprobonoip_impact_metrics(pre_clarity_score, post_clarity_score), " +
   "followups(followup_type, status)";
@@ -67,16 +73,21 @@ async function ensurePilotSession(
   ventureId: string,
   pilotSessionId: string,
   isDemo: boolean,
+  tracking?: PilotTracking | null,
 ): Promise<void> {
-  await sb.from("pilot_sessions").upsert(
-    {
-      venture_id: ventureId,
-      pilot_session_id: pilotSessionId,
-      is_demo: isDemo,
-      status: "active",
-    },
-    { onConflict: "pilot_session_id" },
-  );
+  const payload: Record<string, unknown> = {
+    venture_id: ventureId,
+    pilot_session_id: pilotSessionId,
+    is_demo: isDemo,
+    status: "active",
+  };
+  if (tracking && !isDemo) {
+    if (tracking.partnerSlug) payload.partner_slug = tracking.partnerSlug;
+    if (tracking.partnerName) payload.partner_name = tracking.partnerName;
+    if (tracking.source) payload.source = tracking.source;
+    if (tracking.campaign) payload.campaign = tracking.campaign;
+  }
+  await sb.from("pilot_sessions").upsert(payload, { onConflict: "pilot_session_id" });
 }
 
 function answersToColumns(answers: IntakeAnswers) {
@@ -153,6 +164,10 @@ export function rowToRecord(row: ProjectRow): ProjectRecord | null {
     postClarity: metrics?.post_clarity_score ?? null,
     isDemo: row.is_demo,
     followUpStatus: followUpFromRows(row.followups ?? []),
+    partnerSlug: row.partner_slug,
+    partnerName: row.partner_name,
+    source: row.source,
+    campaign: row.campaign,
   };
 }
 
@@ -162,26 +177,36 @@ export async function createRecord(input: {
   preClarity: number;
   pilotSessionId: string;
   isDemo?: boolean;
+  tracking?: PilotTracking | null;
 }): Promise<ProjectRecord> {
   const sb = getSupabaseService();
-  const { answers, profile, preClarity, pilotSessionId, isDemo = false } =
+  const { answers, profile, preClarity, pilotSessionId, isDemo = false, tracking } =
     input;
   const ventureId = await getSmartProBonoIpVentureId(sb);
-  await ensurePilotSession(sb, ventureId, pilotSessionId, isDemo);
+  await ensurePilotSession(sb, ventureId, pilotSessionId, isDemo, tracking);
+
+  const projectInsert: Record<string, unknown> = {
+    venture_id: ventureId,
+    pilot_session_id: pilotSessionId,
+    title: getIdeaLabel(answers),
+    item_type: answers.itemType,
+    public_disclosure: profile.publicDisclosure,
+    location: answers.location || null,
+    generator: profile.generator,
+    is_demo: isDemo,
+    status: "packet_generated",
+  };
+
+  if (!isDemo && tracking) {
+    if (tracking.partnerSlug) projectInsert.partner_slug = tracking.partnerSlug;
+    if (tracking.partnerName) projectInsert.partner_name = tracking.partnerName;
+    if (tracking.source) projectInsert.source = tracking.source;
+    if (tracking.campaign) projectInsert.campaign = tracking.campaign;
+  }
 
   const { data: project, error: projectError } = await sb
     .from("smartprobonoip_projects")
-    .insert({
-      venture_id: ventureId,
-      pilot_session_id: pilotSessionId,
-      title: getIdeaLabel(answers),
-      item_type: answers.itemType,
-      public_disclosure: profile.publicDisclosure,
-      location: answers.location || null,
-      generator: profile.generator,
-      is_demo: isDemo,
-      status: "packet_generated",
-    })
+    .insert(projectInsert)
     .select("id, created_at")
     .single();
 
@@ -245,6 +270,10 @@ export async function createRecord(input: {
     postClarity: null,
     isDemo,
     followUpStatus: DEFAULT_FOLLOW_UP,
+    partnerSlug: !isDemo ? (tracking?.partnerSlug ?? null) : null,
+    partnerName: !isDemo ? (tracking?.partnerName ?? null) : null,
+    source: !isDemo ? (tracking?.source ?? null) : null,
+    campaign: !isDemo ? (tracking?.campaign ?? null) : null,
   };
 }
 

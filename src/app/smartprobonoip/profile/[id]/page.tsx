@@ -12,6 +12,7 @@ import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
 import { downloadPacketPdf } from "@/lib/pdf";
 import { getIdeaLabel } from "@/lib/packet";
+import { getPilotSourceLabel } from "@/lib/partnerTracking";
 import type { ProjectRecord, ReadinessProfile } from "@/lib/types";
 
 type LoadState = "loading" | "found" | "missing";
@@ -92,6 +93,7 @@ export default function ProfilePage({
   }
 
   const ideaLabel = getIdeaLabel(record.answers);
+  const pilotSource = getPilotSourceLabel(record);
 
   return (
     <div className="pb-16">
@@ -119,6 +121,12 @@ export default function ProfilePage({
                   : "Rule-based"}{" "}
                 draft · preparation only, not legal advice
               </p>
+              {pilotSource ? (
+                <p className="mt-2 text-xs text-muted-blue">
+                  Pilot source: {pilotSource}
+                  {record.source ? ` · via ${record.source}` : ""}
+                </p>
+              ) : null}
             </div>
             <div className="paper-card shrink-0 p-5 lg:max-w-xs">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">

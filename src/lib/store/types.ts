@@ -1,10 +1,12 @@
 import type { IntakeAnswers, ProjectRecord, ReadinessProfile } from "../types";
+import type { PilotTracking } from "../partnerTracking";
 
 export interface SaveInput {
   answers: IntakeAnswers;
   profile: ReadinessProfile;
   preClarity: number;
   isDemo?: boolean;
+  tracking?: PilotTracking | null;
 }
 
 export type StoreBackend = "supabase" | "local";

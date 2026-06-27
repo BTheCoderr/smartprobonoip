@@ -41,6 +41,10 @@ export const localStore: Store = {
       postClarity: null,
       isDemo: input.isDemo ?? false,
       followUpStatus: DEFAULT_FOLLOW_UP,
+      partnerSlug: input.isDemo ? null : (input.tracking?.partnerSlug ?? null),
+      partnerName: input.isDemo ? null : (input.tracking?.partnerName ?? null),
+      source: input.isDemo ? null : (input.tracking?.source ?? null),
+      campaign: input.isDemo ? null : (input.tracking?.campaign ?? null),
     };
     const all = readAll();
     all.unshift(record);

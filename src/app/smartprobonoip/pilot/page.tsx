@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { PILOT_KIT_COPY } from "@/lib/copy";
 import { appPath } from "@/lib/appUrl";
+import { appendTrackingQuery } from "@/lib/partnerTracking";
 import {
   CalloutCard,
   PageShell,
@@ -17,6 +18,13 @@ export default function PilotKitPage() {
     ...link,
     url: appPath(link.path),
   }));
+  const partnerQrLinks = PILOT_KIT_COPY.partnerQrLinks.map((link) => {
+    const path = appendTrackingQuery(
+      link.path,
+      link.query as Record<string, string | undefined>,
+    );
+    return { ...link, url: appPath(path) };
+  });
 
   return (
     <div>
@@ -109,8 +117,36 @@ export default function PilotKitPage() {
       <Section soft>
         <PageShell>
           <SectionHeader
-            kicker="QR-ready links"
-            title="Share these URLs at events and partner meetings"
+            kicker="Partner QR links"
+            title="Tracked links for pilot partners"
+            lead="Use these URLs on flyers, QR codes, and partner handouts. Partner and campaign params are stored with new packets."
+          />
+          <ul className="mt-8 space-y-3">
+            {partnerQrLinks.map((link) => (
+              <li
+                key={link.label}
+                className="paper-card flex flex-col gap-1 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <span className="text-sm font-semibold text-navy-900">
+                  {link.label}
+                </span>
+                <a
+                  href={link.url}
+                  className="break-all font-mono text-xs text-teal-700 hover:underline"
+                >
+                  {link.url}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </PageShell>
+      </Section>
+
+      <Section>
+        <PageShell>
+          <SectionHeader
+            kicker="General links"
+            title="QR-ready product links"
           />
           <ul className="mt-8 space-y-3">
             {qrLinks.map((link) => (

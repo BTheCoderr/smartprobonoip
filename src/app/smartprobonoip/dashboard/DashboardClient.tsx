@@ -12,6 +12,13 @@ import { DASHBOARD_COPY } from "@/lib/copy";
 import { DEFAULT_FILTERS, filterRecords } from "@/lib/dashboardFilters";
 import { mergeWithDemoRecords } from "@/lib/demo";
 import { clarityDelta, computeMetrics } from "@/lib/metrics";
+import {
+  computePartnerSummaries,
+  partnerLabel,
+  selectedPartnerSummary,
+  uniqueFilterValues,
+} from "@/lib/partnerMetrics";
+import { PARTNER_CATALOG } from "@/lib/partnerTracking";
 import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
 import { getBackendName, getStore } from "@/lib/store";
 import { isApiStoreAvailable } from "@/lib/store/api";
@@ -133,6 +140,27 @@ export default function DashboardClient() {
   const metrics: DashboardMetrics | null = loading
     ? null
     : computeMetrics(filteredRecords);
+  const partnerSummaries = useMemo(
+    () => computePartnerSummaries(filteredRecords),
+    [filteredRecords],
+  );
+  const activePartnerSummary = useMemo(
+    () => selectedPartnerSummary(filteredRecords, filters.partner),
+    [filteredRecords, filters.partner],
+  );
+  const partnerOptions = useMemo(() => {
+    const fromRecords = uniqueFilterValues(displayRecords, "partnerSlug");
+    const catalog = Object.keys(PARTNER_CATALOG);
+    return [...new Set([...catalog, ...fromRecords])].sort();
+  }, [displayRecords]);
+  const sourceOptions = useMemo(
+    () => uniqueFilterValues(displayRecords, "source"),
+    [displayRecords],
+  );
+  const campaignOptions = useMemo(
+    () => uniqueFilterValues(displayRecords, "campaign"),
+    [displayRecords],
+  );
 
   function toggleSignal(signal: IpSignal) {
     setFilters((prev) => ({
@@ -350,6 +378,99 @@ export default function DashboardClient() {
               <option value="no_response">No post response</option>
             </select>
           </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <p className="text-xs font-medium uppercase text-navy-500">Partner</p>
+              <select
+                value={filters.partner}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, partner: e.target.value }))
+                }
+                className="mt-2 w-full rounded-lg border border-mist-200 px-3 py-2 text-sm"
+              >
+                <option value="all">All partners</option>
+                <option value="unattributed">Unattributed</option>
+                {partnerOptions.map((slug) => (
+                  <option key={slug} value={slug}>
+                    {PARTNER_CATALOG[slug] ?? slug}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase text-navy-500">Source</p>
+              <select
+                value={filters.source}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, source: e.target.value }))
+                }
+                className="mt-2 w-full rounded-lg border border-mist-200 px-3 py-2 text-sm"
+              >
+                <option value="all">All sources</option>
+                {sourceOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase text-navy-500">Campaign</p>
+              <select
+                value={filters.campaign}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, campaign: e.target.value }))
+                }
+                className="mt-2 w-full rounded-lg border border-mist-200 px-3 py-2 text-sm"
+              >
+                <option value="all">All campaigns</option>
+                {campaignOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase text-navy-500">Data mode</p>
+              <select
+                value={filters.demoMode}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    demoMode: e.target.value as "all" | "live" | "demo",
+                  }))
+                }
+                className="mt-2 w-full rounded-lg border border-mist-200 px-3 py-2 text-sm"
+              >
+                <option value="all">Live + demo in view</option>
+                <option value="live">Live only</option>
+                <option value="demo">Demo only</option>
+              </select>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase text-navy-500">From date</p>
+              <input
+                type="date"
+                value={filters.dateFrom}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))
+                }
+                className="mt-2 w-full rounded-lg border border-mist-200 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase text-navy-500">To date</p>
+              <input
+                type="date"
+                value={filters.dateTo}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, dateTo: e.target.value }))
+                }
+                className="mt-2 w-full rounded-lg border border-mist-200 px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
         </div>
       </Card>
 
@@ -454,13 +575,124 @@ export default function DashboardClient() {
             </div>
           </Card>
 
+          {activePartnerSummary ? (
+            <Card>
+              <CardHeader
+                title={`Partner view: ${activePartnerSummary.partnerName}`}
+                subtitle="Metrics for the selected partner filter."
+              />
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <MetricCard
+                  label="Packets"
+                  value={activePartnerSummary.packetCount}
+                />
+                <MetricCard
+                  label="Avg. clarity before → after"
+                  value={`${activePartnerSummary.metrics.avgPreClarity ?? "—"} → ${activePartnerSummary.metrics.avgPostClarity ?? "—"}`}
+                  accent="navy"
+                />
+                <MetricCard
+                  label="Clarity improved"
+                  value={activePartnerSummary.metrics.clarityImprovedCount}
+                  accent="teal"
+                />
+                <MetricCard
+                  label="Public sharing flagged"
+                  value={activePartnerSummary.metrics.publicDisclosureCount}
+                  accent="warm"
+                />
+              </div>
+              <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                <BarList
+                  title="Top signal categories"
+                  total={activePartnerSummary.metrics.totalProfiles}
+                  entries={(
+                    Object.entries(activePartnerSummary.metrics.signalCounts) as [
+                      IpSignal,
+                      number,
+                    ][]
+                  ).map(([k, v]) => ({ label: SIGNAL_LABELS[k], value: v }))}
+                />
+                <BarList
+                  title="Referral readiness by resource"
+                  total={activePartnerSummary.metrics.totalProfiles}
+                  entries={(
+                    Object.entries(
+                      activePartnerSummary.metrics.referralCounts,
+                    ) as [ResourceCategory, number][]
+                  ).map(([k, v]) => ({ label: RESOURCE_LABELS[k], value: v }))}
+                />
+              </div>
+            </Card>
+          ) : null}
+
+          {partnerSummaries.length > 0 ? (
+            <Card>
+              <CardHeader
+                title="Packets by partner"
+                subtitle="Lightweight pilot attribution from URL params."
+              />
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-mist-200 text-xs uppercase text-navy-500">
+                      <th className="py-2 pr-4">Partner</th>
+                      <th className="py-2 pr-4">Packets</th>
+                      <th className="py-2 pr-4">Clarity Δ</th>
+                      <th className="py-2 pr-4">Top signal</th>
+                      <th className="py-2">Top resource</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {partnerSummaries.map((summary) => {
+                      const topSignal = (
+                        Object.entries(summary.metrics.signalCounts) as [
+                          IpSignal,
+                          number,
+                        ][]
+                      )
+                        .sort((a, b) => b[1] - a[1])
+                        .find(([, v]) => v > 0);
+                      const topResource = (
+                        Object.entries(summary.metrics.referralCounts) as [
+                          ResourceCategory,
+                          number,
+                        ][]
+                      )
+                        .sort((a, b) => b[1] - a[1])
+                        .find(([, v]) => v > 0);
+                      return (
+                        <tr key={summary.partnerSlug} className="border-b border-mist-100">
+                          <td className="py-2 pr-4 font-medium text-navy-800">
+                            {summary.partnerName}
+                          </td>
+                          <td className="py-2 pr-4">{summary.packetCount}</td>
+                          <td className="py-2 pr-4">
+                            {summary.metrics.avgClarityDelta ?? "—"}
+                          </td>
+                          <td className="py-2 pr-4 text-navy-600">
+                            {topSignal ? SIGNAL_LABELS[topSignal[0]] : "—"}
+                          </td>
+                          <td className="py-2 text-navy-600">
+                            {topResource ? RESOURCE_LABELS[topResource[0]] : "—"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          ) : null}
+
           <Card>
             <CardHeader title="Recent intakes (anonymized)" />
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left text-sm">
+              <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-mist-200 text-xs uppercase text-navy-500">
                     <th className="py-2 pr-4">Date</th>
+                    <th className="py-2 pr-4">Partner</th>
                     <th className="py-2 pr-4">Signals</th>
                     <th className="py-2 pr-4">Disclosure</th>
                     <th className="py-2 pr-4">Clarity Δ</th>
@@ -477,6 +709,9 @@ export default function DashboardClient() {
                           {r.isDemo ? (
                             <span className="ml-1 text-xs text-teal-600">demo</span>
                           ) : null}
+                        </td>
+                        <td className="py-2 pr-4 text-navy-600">
+                          {partnerLabel(r)}
                         </td>
                         <td className="py-2 pr-4 text-navy-600">
                           {r.profile.signals

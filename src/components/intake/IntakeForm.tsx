@@ -13,6 +13,7 @@ import {
 } from "@/lib/labels";
 import { suggestIdeaIncludes } from "@/lib/signals";
 import { getStore } from "@/lib/store";
+import { getStoredTracking } from "@/lib/partnerTracking";
 import { activateDemoFromQuery, DEMO_INVENTION, isDemoMode } from "@/lib/demo";
 import { INTAKE_COPY } from "@/lib/copy";
 import {
@@ -242,6 +243,7 @@ export function IntakeForm() {
         profile: data.profile,
         preClarity: answers.preClarity,
         isDemo: demoActive,
+        tracking: demoActive ? null : getStoredTracking(),
       });
       router.push(`/smartprobonoip/profile/${record.id}`);
     } catch (err) {

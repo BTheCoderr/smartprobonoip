@@ -23,6 +23,12 @@ export async function POST(request: Request) {
       profile: ReadinessProfile;
       preClarity: number;
       isDemo?: boolean;
+      tracking?: {
+        partnerSlug?: string;
+        partnerName?: string;
+        source?: string;
+        campaign?: string;
+      } | null;
     };
 
     const validationErrors = validateForGeneration(body.answers);
@@ -39,6 +45,7 @@ export async function POST(request: Request) {
       preClarity: body.preClarity,
       pilotSessionId: pilotSession,
       isDemo: body.isDemo ?? false,
+      tracking: body.tracking ?? null,
     });
 
     return NextResponse.json({ record });

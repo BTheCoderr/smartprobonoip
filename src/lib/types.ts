@@ -123,6 +123,10 @@ export interface ProjectRecord {
   postClarity: number | null;
   isDemo?: boolean;
   followUpStatus?: FollowUpStatus;
+  partnerSlug?: string | null;
+  partnerName?: string | null;
+  source?: string | null;
+  campaign?: string | null;
 }
 
 export interface DashboardMetrics {

@@ -194,4 +194,34 @@ export const PILOT_KIT_COPY = {
     { label: "Sample packet", path: "/smartprobonoip/sample" },
     { label: "Partner dashboard", path: "/smartprobonoip/dashboard" },
   ],
+  partnerQrLinks: [
+    {
+      label: "General start",
+      path: "/smartprobonoip/disclaimer",
+      query: {},
+    },
+    {
+      label: "SmartProBonoIP RI Pilot",
+      path: "/smartprobonoip/disclaimer",
+      query: {
+        partner: "smartprobonoip-ri-pilot",
+        campaign: "pilot-2026",
+      },
+    },
+    {
+      label: "Demo mode",
+      path: "/smartprobonoip/disclaimer",
+      query: { demo: "1", source: "demo" },
+    },
+    {
+      label: "Sample packet",
+      path: "/smartprobonoip/sample",
+      query: {},
+    },
+    {
+      label: "Partner dashboard",
+      path: "/smartprobonoip/dashboard",
+      query: {},
+    },
+  ],
 } as const;
