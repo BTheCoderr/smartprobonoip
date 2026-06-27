@@ -78,6 +78,8 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 | `OPENAI_API_KEY` | No | Optional AI profiles |
 | `NEXT_PUBLIC_APP_URL` | No | Canonical URL for exports |
 
+**Important:** After adding or changing any env var in Netlify, trigger a new production deploy (Deploys → Trigger deploy). Builds started before env vars were set will keep returning **503** on `/api/records` until redeployed.
+
 ### Alternative: Vercel
 
 - Connect the same GitHub repo
