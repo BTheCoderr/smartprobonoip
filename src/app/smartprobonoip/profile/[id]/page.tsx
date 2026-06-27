@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
 import { PacketCoach } from "@/components/profile/PacketCoach";
+import { PacketRecoveryCard } from "@/components/profile/PacketRecoveryCard";
 import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
@@ -148,7 +149,12 @@ export default function ProfilePage({
           <ProfileView record={record} />
         )}
 
-        {!editing ? <PacketCoach record={record} /> : null}
+        {!editing ? (
+          <>
+            <PacketRecoveryCard record={record} />
+            <PacketCoach record={record} />
+          </>
+        ) : null}
 
         <Card variant="soft">
           <h2 className="text-lg font-semibold text-navy-900">
