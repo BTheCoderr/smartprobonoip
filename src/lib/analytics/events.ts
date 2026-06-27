@@ -51,6 +51,7 @@ export const ANALYTICS_EVENTS = [
   "contact_form_viewed",
   "interest_submitted",
   "gap_map_saved",
+  "timeline_saved",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];

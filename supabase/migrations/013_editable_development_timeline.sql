@@ -1,4 +1,4 @@
--- SmartProBonoIP — editable development timeline on packet page (Priority 10 cleanup)
+-- SmartProBonoIP — editable development timeline on packet page (Pilot Launch)
 
 alter table public.smartprobonoip_projects
   add column if not exists development_timeline jsonb not null default '{}'::jsonb;

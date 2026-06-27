@@ -2,13 +2,9 @@
 
 import { useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
-import {
-  DEVELOPMENT_TIMELINE_FIELDS,
-  getTimelineFieldValue,
-  sanitizeTimelineValue,
-  TIMELINE_NOTE,
-} from "@/lib/packet";
+import { countFilledTimelineFields, DEVELOPMENT_TIMELINE_FIELDS, getTimelineFieldValue, sanitizeTimelineValue, TIMELINE_NOTE } from "@/lib/packet";
 import { getStore } from "@/lib/store";
+import { trackEvent } from "@/lib/analytics/client";
 import type { DevelopmentTimeline, DevelopmentTimelineField, ProjectRecord } from "@/lib/types";
 
 const PLACEHOLDER = 'e.g. March 2026, Summer 2025, Not yet, I don\u2019t remember';
@@ -54,6 +50,13 @@ export function DevelopmentTimelineEditor({
       const updated = await getStore().updateDevelopmentTimeline(record.id, sanitized);
       setValues(initialValues(updated));
       setSaved(true);
+      trackEvent("timeline_saved", {
+        projectId: record.id,
+        metadata: {
+          demo: record.isDemo ?? false,
+          filledTimelineFields: countFilledTimelineFields(updated.developmentTimeline),
+        },
+      });
       onSaved?.(updated);
     } catch {
       setError("Could not save timeline. Please try again.");

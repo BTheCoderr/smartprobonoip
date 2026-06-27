@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
+import { NetlifyInterestFormDetection } from "@/components/contact/NetlifyInterestFormDetection";
 import { trackEvent } from "@/lib/analytics/client";
 import { getCampaignAttribution } from "@/lib/analytics/campaignAttribution";
 import { INTEREST_TYPES, type InterestType } from "@/lib/interest";
+import { submitInterestToNetlify } from "@/lib/interestNetlify";
 import { CONSENT_CONFIDENTIAL } from "@/lib/disclaimer";
 
 const EMPTY = {
@@ -15,6 +17,7 @@ const EMPTY = {
   interestType: "partner" as InterestType,
   message: "",
   consent: false,
+  botField: "",
 };
 
 export function InterestForm({ id }: { id?: string }) {
@@ -32,32 +35,35 @@ export function InterestForm({ id }: { id?: string }) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (form.botField.trim()) return;
+
     setSubmitting(true);
     setError(null);
     setSuccess(null);
 
     const attr = getCampaignAttribution();
+    const payload = {
+      name: form.name,
+      email: form.email,
+      organization: form.organization,
+      role: form.role,
+      interestType: form.interestType,
+      message: form.message,
+      consent: form.consent,
+      attribution: {
+        source: attr?.utm_source,
+        campaign: attr?.utm_campaign,
+        medium: attr?.utm_medium,
+        referrer: attr?.referrer,
+        landingPage: attr?.landing_page,
+      },
+    };
 
     try {
       const res = await fetch("/api/interest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          organization: form.organization,
-          role: form.role,
-          interestType: form.interestType,
-          message: form.message,
-          consent: form.consent,
-          attribution: {
-            source: attr?.utm_source,
-            campaign: attr?.utm_campaign,
-            medium: attr?.utm_medium,
-            referrer: attr?.referrer,
-            landingPage: attr?.landing_page,
-          },
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = (await res.json()) as { error?: string; message?: string };
@@ -66,7 +72,11 @@ export function InterestForm({ id }: { id?: string }) {
         return;
       }
 
-      setSuccess(data.message ?? "Thanks — we received your interest.");
+      void submitInterestToNetlify(payload, form.botField);
+
+      setSuccess(
+        data.message ?? "Thanks — we received your interest. We'll follow up soon.",
+      );
       trackEvent("interest_submitted", {
         metadata: { interestType: form.interestType },
       });
@@ -79,12 +89,26 @@ export function InterestForm({ id }: { id?: string }) {
   }
 
   return (
-    <Card id={id} variant="soft">
+    <>
+      <NetlifyInterestFormDetection />
+      <Card id={id} variant="soft">
       <CardHeader
         title="Interested in partnering, piloting, or supporting SmartProBonoIP?"
         subtitle="Tell us how you want to connect. Please do not submit confidential invention details through this form."
       />
       <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
+        <p className="hidden" aria-hidden="true">
+          <label>
+            Do not fill this out
+            <input
+              name="bot-field"
+              value={form.botField}
+              onChange={(e) => setForm((f) => ({ ...f, botField: e.target.value }))}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </label>
+        </p>
         <label className="text-sm">
           <span className="font-medium text-navy-800">Name</span>
           <input
@@ -178,5 +202,6 @@ export function InterestForm({ id }: { id?: string }) {
         ) : null}
       </form>
     </Card>
+    </>
   );
 }

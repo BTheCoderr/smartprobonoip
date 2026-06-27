@@ -31,6 +31,7 @@ const GA4_EVENT_MAP: Partial<Record<AnalyticsEventName, string>> = {
   external_search_opened: "external_search_opened",
   reference_saved: "reference_saved",
   gap_map_saved: "gap_map_saved",
+  timeline_saved: "timeline_saved",
 };
 
 const SAFE_GA_PARAMS = new Set([
@@ -39,6 +40,7 @@ const SAFE_GA_PARAMS = new Set([
   "query_index",
   "route_name",
   "interest_type",
+  "filled_timeline_fields",
   "page_path",
   "utm_source",
   "utm_medium",

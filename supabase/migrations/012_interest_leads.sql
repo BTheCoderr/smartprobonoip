@@ -1,5 +1,4 @@
 -- SmartProBonoIP — interest / contact leads (Pilot Launch)
--- Note: 012 is development_timeline; this is 013 per migration order.
 
 create table if not exists public.smartprobonoip_interest_leads (
   id            uuid primary key default gen_random_uuid(),

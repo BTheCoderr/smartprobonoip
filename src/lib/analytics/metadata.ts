@@ -23,6 +23,7 @@ const ALLOWED_KEYS = new Set([
   "interestType",
   "label",
   "savedReferenceCount",
+  "filledTimelineFields",
   "queryIndex",
   "resourceKey",
   "validationField",

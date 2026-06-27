@@ -83,4 +83,5 @@ export const RATE_LIMITS = {
   analytics: { limit: 150, windowMs: 15 * 60_000 },
   partner: { limit: 40, windowMs: 15 * 60_000 },
   interest: { limit: 6, windowMs: 60 * 60_000 },
+  timeline: { limit: 30, windowMs: 15 * 60_000 },
 } as const;

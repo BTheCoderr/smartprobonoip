@@ -73,7 +73,7 @@ export const apiStore: Store = {
     id: string,
     timeline: DevelopmentTimeline,
   ): Promise<ProjectRecord> {
-    const res = await fetch(`/api/records/${id}`, {
+    const res = await fetch(`/api/records/${id}/timeline`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
