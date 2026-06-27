@@ -26,6 +26,7 @@ import {
   uniqueFilterValues,
 } from "@/lib/partnerMetrics";
 import { computeOwnershipMetrics } from "@/lib/ownership";
+import type { ResearchPrepMetrics } from "@/lib/researchMetrics";
 import { PARTNER_CATALOG } from "@/lib/partnerTracking";
 import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
 import { getBackendName, getStore } from "@/lib/store";
@@ -100,6 +101,9 @@ export default function DashboardClient() {
   const [feedbackMetrics, setFeedbackMetrics] = useState<FeedbackMetrics | null>(
     null,
   );
+  const [researchMetrics, setResearchMetrics] = useState<ResearchPrepMetrics | null>(
+    null,
+  );
   const filterTracked = useRef(false);
 
   useEffect(() => {
@@ -132,9 +136,13 @@ export default function DashboardClient() {
               headers: partnerSecretHeaders(secret),
             });
             if (res.ok) {
-              const data = (await res.json()) as { records: ProjectRecord[] };
+              const data = (await res.json()) as {
+                records: ProjectRecord[];
+                researchMetrics?: ResearchPrepMetrics;
+              };
               if (active) {
                 setRecords(data.records);
+                setResearchMetrics(data.researchMetrics ?? null);
                 setLoading(false);
                 return;
               }
@@ -646,6 +654,41 @@ export default function DashboardClient() {
                   label="Not sure on ownership answers"
                   value={ownershipMetrics.notSureOwnershipAnswers}
                   accent="navy"
+                />
+              </div>
+            </Card>
+          ) : null}
+
+          {researchMetrics ? (
+            <Card>
+              <CardHeader
+                title="Research prep workspace"
+                subtitle="Saved possible similar references — not patentability or clearance conclusions."
+              />
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <MetricCard
+                  label="Packets with saved references"
+                  value={researchMetrics.packetsWithSavedReferences}
+                />
+                <MetricCard
+                  label="Avg. saved references per packet"
+                  value={researchMetrics.averageSavedReferencesPerPacket}
+                />
+                <MetricCard
+                  label="Research prep started"
+                  value={researchMetrics.researchPrepStartedCount}
+                  accent="teal"
+                />
+                <MetricCard
+                  label="Top reference type"
+                  value={
+                    researchMetrics.topReferenceTypes[0]?.label ?? "—"
+                  }
+                  hint={
+                    researchMetrics.topReferenceTypes[0]
+                      ? `${researchMetrics.topReferenceTypes[0].value} saved`
+                      : "No saved types yet"
+                  }
                 />
               </div>
             </Card>

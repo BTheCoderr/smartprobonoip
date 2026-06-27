@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useRef, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
@@ -13,6 +13,8 @@ import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
 import { downloadPacketPdf } from "@/lib/pdf";
+import { loadWorkspace } from "@/lib/research/client";
+import type { SavedReference } from "@/lib/research/types";
 import { getIdeaLabel } from "@/lib/packet";
 import { getPilotSourceLabel } from "@/lib/partnerTracking";
 import { trackEvent } from "@/lib/analytics/client";
@@ -34,7 +36,12 @@ export default function ProfilePage({
   const [editing, setEditing] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [feedbackInput, setFeedbackInput] = useState<PilotFeedbackInput | null>(null);
+  const [savedReferences, setSavedReferences] = useState<SavedReference[]>([]);
   const packetViewTracked = useRef(false);
+
+  const handleReferencesChange = useCallback((refs: SavedReference[]) => {
+    setSavedReferences(refs);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -155,14 +162,27 @@ export default function ProfilePage({
               <button
                 type="button"
                 onClick={() => {
-                  downloadPacketPdf(record);
-                  trackEvent("pdf_downloaded", {
-                    projectId: record.id,
-                    metadata: {
-                      demo: record.isDemo ?? false,
-                      pdfDownloaded: true,
-                    },
-                  });
+                  void (async () => {
+                    let refs = savedReferences;
+                    if (refs.length === 0) {
+                      try {
+                        const workspace = await loadWorkspace(record);
+                        refs = workspace.savedReferences;
+                        setSavedReferences(refs);
+                      } catch {
+                        refs = [];
+                      }
+                    }
+                    downloadPacketPdf(record, refs);
+                    trackEvent("pdf_downloaded", {
+                      projectId: record.id,
+                      metadata: {
+                        demo: record.isDemo ?? false,
+                        pdfDownloaded: true,
+                        savedReferenceCount: refs.length,
+                      },
+                    });
+                  })();
                 }}
                 className="btn-primary w-full sm:w-auto"
               >
@@ -182,7 +202,11 @@ export default function ProfilePage({
             saving={savingProfile}
           />
         ) : (
-          <ProfileView record={record} />
+          <ProfileView
+            record={record}
+            savedReferenceCount={savedReferences.length}
+            onReferencesChange={handleReferencesChange}
+          />
         )}
 
         {!editing ? (

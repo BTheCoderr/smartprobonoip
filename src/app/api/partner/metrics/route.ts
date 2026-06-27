@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { listLiveRecords, verifyPartnerSecret } from "@/lib/db/records";
+import { getResearchMetricsForLiveRecords } from "@/lib/db/research";
 import { computeMetrics } from "@/lib/metrics";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
@@ -22,5 +23,6 @@ export async function GET(request: Request) {
 
   const records = await listLiveRecords();
   const metrics = computeMetrics(records);
-  return NextResponse.json({ records, metrics });
+  const researchMetrics = await getResearchMetricsForLiveRecords();
+  return NextResponse.json({ records, metrics, researchMetrics });
 }

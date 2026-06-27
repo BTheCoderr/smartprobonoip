@@ -4,6 +4,8 @@ import { listLiveRecords, verifyPartnerSecret } from "@/lib/db/records";
 import { getFeedbackMapByProjectIds } from "@/lib/db/feedback";
 import { getProjectEventFlags } from "@/lib/db/analytics";
 import { ownershipCsvFields } from "@/lib/ownership";
+import { getResearchCsvMap } from "@/lib/db/research";
+import { researchCsvFields } from "@/lib/researchMetrics";
 import { SUPPORT_NEED_OPTIONS } from "@/lib/feedback";
 import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
@@ -66,9 +68,13 @@ export async function GET(request: Request) {
     "agreement_status",
     "agreement_types",
     "employer_school_grant_flag",
+    "saved_reference_count",
+    "research_prep_started",
+    "reference_types",
   ];
 
   const feedbackMap = await getFeedbackMapByProjectIds(records.map((r) => r.id));
+  const researchMap = await getResearchCsvMap(records.map((r) => r.id));
 
   const rows = records.map((r) => {
     const delta =
@@ -76,6 +82,7 @@ export async function GET(request: Request) {
     const flags = eventFlags.get(r.id);
     const feedback = feedbackMap.get(r.id);
     const ownership = ownershipCsvFields(r);
+    const research = researchCsvFields(researchMap.get(r.id));
     const supportLabels = feedback?.supportNeeded
       .map(
         (need) =>
@@ -114,6 +121,9 @@ export async function GET(request: Request) {
       ownership.agreement_status,
       ownership.agreement_types,
       ownership.employer_school_grant_flag,
+      research.saved_reference_count,
+      research.research_prep_started,
+      research.reference_types,
     ]
       .map(escapeCsv)
       .join(",");

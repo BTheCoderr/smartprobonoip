@@ -41,6 +41,13 @@ export const ANALYTICS_EVENTS = [
   "feedback_submitted",
   "followup_requested",
   "resource_type_selected",
+  "research_workspace_viewed",
+  "query_copied",
+  "external_search_opened",
+  "reference_saved",
+  "reference_updated",
+  "reference_deleted",
+  "comparison_helper_used",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];
