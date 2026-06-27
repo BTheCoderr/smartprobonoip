@@ -5,6 +5,7 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import {
   COACH_ACTIONS,
   COACH_INTRO,
+  COACH_SAFETY_NOTE,
   type CoachMode,
   type CoachResponse,
 } from "@/lib/coach";
@@ -15,6 +16,8 @@ interface CoachEntry {
   prompt: string;
   response: CoachResponse;
 }
+
+const PRIMARY_ACTIONS = COACH_ACTIONS.slice(0, 8);
 
 export function PacketCoach({ record }: { record: ProjectRecord }) {
   const [entries, setEntries] = useState<CoachEntry[]>([]);
@@ -61,85 +64,95 @@ export function PacketCoach({ record }: { record: ProjectRecord }) {
   }
 
   return (
-    <Card className="border-teal-200 bg-teal-50/30">
+    <Card variant="accent" className="overflow-hidden">
       <CardHeader
         title="AI Packet Coach"
         subtitle={COACH_INTRO}
-        icon={<span aria-hidden>✨</span>}
+        icon={<span aria-hidden>🧭</span>}
       />
 
-      <div className="flex flex-wrap gap-2">
-        {COACH_ACTIONS.map((action) => (
+      <p className="mb-4 text-xs leading-relaxed text-navy-500">
+        {COACH_SAFETY_NOTE}
+      </p>
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        {PRIMARY_ACTIONS.map((action) => (
           <button
             key={action.mode}
             type="button"
             disabled={loading !== null}
             onClick={() => ask(action.mode, action.label)}
-            className="rounded-full border border-teal-300 bg-white px-3.5 py-1.5 text-sm font-medium text-teal-800 transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border border-teal-200/80 bg-white px-4 py-3 text-left text-sm font-medium leading-snug text-navy-800 shadow-sm transition hover:border-teal-300 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading === action.label ? "Thinking…" : action.label}
           </button>
         ))}
       </div>
 
-      <form onSubmit={onSubmit} className="mt-4 flex flex-col gap-2 sm:flex-row">
+      <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-3 sm:flex-row">
         <input
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Or type your own prep question…"
           maxLength={500}
-          className="flex-1 rounded-lg border border-mist-300 bg-white px-3 py-2 text-sm text-navy-800 placeholder:text-navy-400 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-200"
+          className="input-surface flex-1"
         />
         <button
           type="submit"
           disabled={loading !== null || question.trim().length === 0}
-          className="rounded-lg bg-teal-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-primary shrink-0 disabled:cursor-not-allowed disabled:bg-mist-300 disabled:shadow-none"
         >
           Ask coach
         </button>
       </form>
 
       {error ? (
-        <p className="mt-3 text-sm text-amber-700" role="alert">
+        <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800" role="alert">
           {error}
         </p>
       ) : null}
 
       {entries.length > 0 ? (
-        <div className="mt-5 space-y-4">
+        <div className="mt-6 space-y-4">
           {entries.map((entry) => (
             <div
               key={entry.id}
-              className="rounded-lg border border-mist-200 bg-white p-4"
+              className="rounded-2xl border border-mist-200/80 bg-white p-5 shadow-sm"
             >
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
                   {entry.prompt}
                 </p>
-                <span className="shrink-0 rounded-full bg-mist-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-navy-500">
+                <span className="rounded-full bg-mist-100 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-navy-500">
                   {entry.response.generator === "ai"
                     ? "AI-assisted"
                     : "Prep guide"}
                 </span>
               </div>
-              <h4 className="mt-2 text-sm font-semibold text-navy-900">
+              <h4 className="mt-3 text-base font-semibold text-navy-900">
                 {entry.response.title}
               </h4>
-              <p className="mt-1 text-sm text-navy-600">
+              <p className="mt-2 text-sm leading-relaxed text-navy-600">
                 {entry.response.intro}
               </p>
-              <ul className="mt-2 space-y-1.5">
+              <ul className="mt-3 space-y-2">
                 {entry.response.bullets.map((b, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-navy-700">
-                    <span aria-hidden className="text-teal-500">
-                      •
+                  <li
+                    key={i}
+                    className="flex gap-3 text-sm leading-relaxed text-navy-700"
+                  >
+                    <span
+                      aria-hidden
+                      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-800"
+                    >
+                      {i + 1}
                     </span>
                     <span>{b}</span>
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 border-t border-mist-100 pt-2 text-xs text-navy-400">
+              <p className="mt-4 border-t border-mist-100 pt-3 text-xs leading-relaxed text-navy-400">
                 {entry.response.note}
               </p>
             </div>

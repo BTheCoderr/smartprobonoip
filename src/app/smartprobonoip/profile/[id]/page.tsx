@@ -62,9 +62,9 @@ export default function ProfilePage({
 
   if (state === "loading") {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <div className="page-shell-packet py-12">
         <Card>
-          <p className="text-sm text-navy-500">Loading your profile…</p>
+          <p className="text-sm text-navy-500">Loading your packet…</p>
         </Card>
       </div>
     );
@@ -72,19 +72,16 @@ export default function ProfilePage({
 
   if (state === "missing" || !record) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <Card>
+      <div className="page-shell-packet py-12">
+        <Card variant="elevated">
           <h1 className="text-xl font-semibold text-navy-900">
-            Profile not found
+            Packet not found
           </h1>
-          <p className="mt-2 text-sm text-navy-600">
-            We couldn&rsquo;t find this profile on this device. It may have been
+          <p className="mt-3 text-sm leading-relaxed text-navy-600">
+            We couldn&rsquo;t find this packet on this device. It may have been
             created in another browser, or storage was cleared.
           </p>
-          <Link
-            href="/smartprobonoip/start"
-            className="mt-4 inline-block rounded-lg bg-teal-600 px-5 py-2.5 font-semibold text-white transition hover:bg-teal-700"
-          >
+          <Link href="/smartprobonoip/start" className="btn-primary mt-6">
             Start a new readiness check
           </Link>
         </Card>
@@ -93,44 +90,49 @@ export default function ProfilePage({
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-wide text-teal-600">
-            {BRAND.product}
-          </p>
-          <h1 className="text-3xl font-bold text-navy-900">
-            Your IP Readiness Packet
-          </h1>
-          <p className="mt-1 text-sm text-navy-500">
-            Generated {new Date(record.createdAt).toLocaleString()} ·{" "}
-            {record.profile.generator === "ai"
-              ? "AI-assisted"
-              : "Rule-based"}{" "}
-            draft
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {!editing ? (
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-navy-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:bg-mist-100"
-            >
-              ✎ Edit
-            </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => downloadPacketPdf(record)}
-            className="inline-flex items-center gap-2 rounded-lg border border-navy-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:bg-mist-100"
-          >
-            <span aria-hidden>⬇</span> Download IP Readiness Packet
-          </button>
+    <div className="pb-16">
+      <div className="border-b border-mist-200/80 bg-gradient-to-b from-white to-surface">
+        <div className="page-shell-packet py-10 sm:py-12">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <p className="section-kicker">{BRAND.product}</p>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 sm:text-4xl">
+                Your IP Readiness Packet
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-navy-500">
+                Generated {new Date(record.createdAt).toLocaleString()} ·{" "}
+                {record.profile.generator === "ai"
+                  ? "AI-assisted"
+                  : "Rule-based"}{" "}
+                draft · preparation only, not legal advice
+              </p>
+              <p className="mt-2 text-sm italic text-navy-500">
+                {BRAND.coreMessage}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {!editing ? (
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="btn-secondary"
+                >
+                  Edit packet
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => downloadPacketPdf(record)}
+                className="btn-primary"
+              >
+                Download PDF
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="page-shell-packet mt-8 space-y-8">
         {editing ? (
           <ProfileEditor
             profile={record.profile}
@@ -141,35 +143,27 @@ export default function ProfilePage({
         ) : (
           <ProfileView record={record} />
         )}
-      </div>
 
-      {!editing ? (
-        <div className="mt-6">
-          <PacketCoach record={record} />
-        </div>
-      ) : null}
+        {!editing ? <PacketCoach record={record} /> : null}
 
-      <Card className="mt-6">
-        <h2 className="text-base font-semibold text-navy-900">
-          How clear are you now on your next IP step?
-        </h2>
-        <p className="mt-1 text-sm text-navy-500">
-          Rate your clarity to help us measure pilot impact. You rated{" "}
-          {record.preClarity}/5 before.
-        </p>
-        <div className="mt-4">
-          <ClarityScale
-            label=""
-            value={postClarity}
-            onChange={saveClarity}
-          />
-        </div>
-        {saved ? (
-          <p className="mt-3 text-sm text-teal-700">
-            Thanks — your response was saved.
+        <Card variant="soft">
+          <h2 className="text-lg font-semibold text-navy-900">
+            How clear are you now on your next step?
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-navy-500">
+            Rate your clarity to help us measure pilot impact. You rated{" "}
+            {record.preClarity}/5 before seeing your packet.
           </p>
-        ) : null}
-      </Card>
+          <div className="mt-5">
+            <ClarityScale label="" value={postClarity} onChange={saveClarity} />
+          </div>
+          {saved ? (
+            <p className="mt-4 text-sm font-medium text-teal-700">
+              Thanks — your response was saved.
+            </p>
+          ) : null}
+        </Card>
+      </div>
     </div>
   );
 }

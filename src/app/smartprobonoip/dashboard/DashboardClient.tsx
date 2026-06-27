@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Card, CardHeader } from "@/components/ui/Card";
+import { MetricCard } from "@/components/ui/MetricCard";
 import { Badge } from "@/components/ui/Badge";
 import { DemoChecklist } from "@/components/DemoChecklist";
 import { DEFAULT_FILTERS, filterRecords } from "@/lib/dashboardFilters";
@@ -24,24 +25,6 @@ import type {
   ProjectRecord,
   ResourceCategory,
 } from "@/lib/types";
-
-function StatCard({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string | number;
-  hint?: string;
-}) {
-  return (
-    <Card>
-      <p className="text-sm text-navy-500">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-navy-900">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-navy-400">{hint}</p> : null}
-    </Card>
-  );
-}
 
 function BarList({
   title,
@@ -197,21 +180,27 @@ export default function DashboardClient() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold text-navy-900">Partner dashboard</h1>
-          <p className="mt-1 text-navy-500">
-            Readiness and impact metrics across intakes.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Badge tone={includeDemo ? "teal" : "gray"}>
-            {includeDemo ? "Demo data" : "Live pilot data"}
-          </Badge>
-          <Badge tone={backend === "supabase" ? "teal" : "gray"}>
-            Data source: {backend === "supabase" ? "Supabase" : "Local device"}
-          </Badge>
+    <div className="page-shell py-12 sm:py-16">
+      <div className="rounded-3xl border border-mist-200/80 bg-gradient-to-br from-white to-surface px-6 py-8 shadow-[var(--shadow-soft)] sm:px-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="section-kicker">Partner impact</p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 sm:text-4xl">
+              Partner dashboard
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-navy-600 sm:text-base">
+              Readiness and impact metrics across intakes — built for clinics,
+              programs, and innovation partners reviewing pilot results.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Badge tone={includeDemo ? "teal" : "gray"}>
+              {includeDemo ? "Demo data" : "Live pilot data"}
+            </Badge>
+            <Badge tone={backend === "supabase" ? "teal" : "gray"}>
+              Data source: {backend === "supabase" ? "Supabase" : "Local device"}
+            </Badge>
+          </div>
         </div>
       </div>
 
@@ -386,44 +375,55 @@ export default function DashboardClient() {
             {liveCount === 0 && includeDemo ? " (demo only)" : ""}.
           </p>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Total intakes completed" value={metrics.totalIntakes} />
-            <StatCard label="Profiles generated" value={metrics.totalProfiles} />
-            <StatCard
-              label="Users with public sharing risk"
-              value={metrics.publicDisclosureCount}
-              hint="Flagged possible public disclosure"
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              label="Total packets"
+              value={metrics.totalIntakes}
+              hint="Completed intakes in current view"
             />
-            <StatCard
-              label="Avg. clarity (pre → post)"
+            <MetricCard
+              label="Profiles generated"
+              value={metrics.totalProfiles}
+              accent="navy"
+            />
+            <MetricCard
+              label="Public sharing flagged"
+              value={metrics.publicDisclosureCount}
+              hint="Possible public disclosure noted"
+              accent="warm"
+            />
+            <MetricCard
+              label="Avg. clarity before → after"
               value={`${metrics.avgPreClarity ?? "—"} → ${metrics.avgPostClarity ?? "—"}`}
-              hint={`${metrics.clarityResponses} post-profile responses`}
+              hint={`${metrics.clarityResponses} post-packet responses`}
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <StatCard
+            <MetricCard
               label="Clarity improved"
               value={metrics.clarityImprovedCount}
               hint="Post clarity higher than pre"
+              accent="teal"
             />
-            <StatCard
+            <MetricCard
               label="Avg. clarity delta"
               value={metrics.avgClarityDelta ?? "—"}
               hint="Average post − pre score"
+              accent="navy"
             />
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
             <BarList
-              title="Most common IP category signals"
+              title="Top signal categories"
               total={metrics.totalProfiles}
               entries={(Object.entries(metrics.signalCounts) as [IpSignal, number][]).map(
                 ([k, v]) => ({ label: SIGNAL_LABELS[k], value: v }),
               )}
             />
             <BarList
-              title="Referrals by resource type"
+              title="Referral readiness by resource"
               total={metrics.totalProfiles}
               entries={(
                 Object.entries(metrics.referralCounts) as [ResourceCategory, number][]

@@ -52,30 +52,39 @@ export function ProfileView({
   const searchPrep = buildPatentSearchPrep(record);
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader title="Plain-language idea summary" />
-        <p className="text-navy-700">{profile.ideaSummary}</p>
+    <div className="space-y-8">
+      <Card variant="elevated" className="relative overflow-hidden border-teal-100">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 to-teal-600" />
+        <CardHeader
+          kicker="IP Readiness Packet"
+          title={PACKET_COPY.ideaAtGlance}
+          subtitle="A plain-language summary you can bring to your next conversation."
+        />
+        <p className="text-base leading-relaxed text-navy-700">
+          {profile.ideaSummary}
+        </p>
         {summaryFields.length > 0 ? (
-          <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+          <dl className="mt-6 grid gap-4 sm:grid-cols-2">
             {summaryFields.map((field) => (
               <div
                 key={field.label}
-                className="rounded-lg border border-mist-200 bg-mist-50 p-3"
+                className="rounded-2xl border border-mist-200/80 bg-mist-50/70 p-4"
               >
                 <dt className="text-xs font-semibold uppercase tracking-wide text-navy-500">
                   {field.label}
                 </dt>
-                <dd className="mt-1 text-sm text-navy-700">{field.value}</dd>
+                <dd className="mt-2 text-sm leading-relaxed text-navy-700">
+                  {field.value}
+                </dd>
               </div>
             ))}
           </dl>
         ) : null}
       </Card>
 
-      <Card>
+      <Card variant="soft">
         <CardHeader
-          title="Readiness snapshot"
+          title={PACKET_COPY.readinessSnapshotTitle}
           subtitle="A quick view of where your idea stands today."
         />
         {profile.signals.length > 0 ? (
@@ -111,7 +120,7 @@ export function ProfileView({
         </dl>
       </Card>
 
-      <Card>
+      <Card variant="elevated">
         <CardHeader
           title={PACKET_COPY.signalsSection}
           subtitle={PACKET_COPY.signalsSubtitle}
@@ -122,27 +131,31 @@ export function ProfileView({
             return (
               <li
                 key={s}
-                className="rounded-lg border border-mist-200 bg-mist-50 p-4 text-sm text-navy-600"
+                className="rounded-2xl border border-mist-200/80 border-l-4 border-l-teal-500 bg-white p-5 shadow-sm"
               >
-                <p className="font-semibold text-navy-900">{guide.label}</p>
-                <p className="mt-2">
-                  <span className="font-medium text-navy-800">
-                    Why it may matter:
-                  </span>{" "}
-                  {guide.whyItMatters}
+                <p className="text-base font-semibold text-navy-900">
+                  {guide.label}
                 </p>
-                <p className="mt-2">
-                  <span className="font-medium text-navy-800">
-                    What to prepare:
-                  </span>{" "}
-                  {guide.whatToPrepare}
-                </p>
-                <p className="mt-2">
-                  <span className="font-medium text-navy-800">
-                    Suggested resource type:
-                  </span>{" "}
-                  {guide.suggestedResourceType}
-                </p>
+                <dl className="mt-4 space-y-3 text-sm leading-relaxed text-navy-600">
+                  <div>
+                    <dt className="font-semibold text-navy-800">
+                      Why it may matter
+                    </dt>
+                    <dd className="mt-1">{guide.whyItMatters}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-navy-800">
+                      What to prepare
+                    </dt>
+                    <dd className="mt-1">{guide.whatToPrepare}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-navy-800">
+                      Suggested resource type
+                    </dt>
+                    <dd className="mt-1">{guide.suggestedResourceType}</dd>
+                  </div>
+                </dl>
               </li>
             );
           })}
@@ -212,8 +225,11 @@ export function ProfileView({
       </div>
 
       <Card
+        variant={profile.publicDisclosure ? "default" : "soft"}
         className={
-          profile.publicDisclosure ? "border-amber-300 bg-amber-50" : undefined
+          profile.publicDisclosure
+            ? "border-amber-300 bg-amber-50/50"
+            : undefined
         }
       >
         <CardHeader
@@ -227,36 +243,43 @@ export function ProfileView({
         <p className="text-sm text-navy-700">{profile.publicDisclosureNote}</p>
       </Card>
 
-      <Card className="border-teal-200 bg-teal-50">
+      <Card variant="accent">
         <CardHeader title={PACKET_COPY.nextBestStepTitle} />
-        <p className="text-navy-800">{profile.suggestedNextStep}</p>
+        <p className="text-base leading-relaxed text-navy-800">
+          {profile.suggestedNextStep}
+        </p>
       </Card>
 
-      <Card>
+      <Card variant="elevated">
         <CardHeader
           title={PACKET_COPY.expertPrepTitle}
           subtitle="Questions to bring with you."
         />
-        <ul className="space-y-2 text-sm text-navy-700">
-          {profile.expertQuestions.map((q) => (
-            <li key={q} className="flex gap-2">
-              <span className="text-navy-400">?</span>
+        <ul className="space-y-3">
+          {profile.expertQuestions.map((q, i) => (
+            <li
+              key={q}
+              className="flex gap-3 rounded-xl border border-mist-200/80 bg-mist-50/60 px-4 py-3 text-sm leading-relaxed text-navy-700"
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-800">
+                {i + 1}
+              </span>
               {q}
             </li>
           ))}
         </ul>
       </Card>
 
-      <Card>
+      <Card variant="elevated">
         <CardHeader
           title={PACKET_COPY.resourcesTitle}
           subtitle="Consider exploring these to prepare."
         />
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           {profile.recommendedResources.map((r) => (
             <div
               key={r}
-              className="rounded-lg border border-mist-200 bg-mist-50 p-3"
+              className="rounded-2xl border border-mist-200/80 bg-gradient-to-br from-white to-mist-50 p-4 shadow-sm"
             >
               <p className="text-sm font-semibold text-navy-800">
                 {RESOURCE_LABELS[r]}
@@ -297,12 +320,17 @@ export function ProfileView({
         </div>
       </Card>
 
-      <div className="rounded-xl border border-navy-200 bg-navy-50/40 p-1">
-        <div className="px-3 py-2">
-          <h2 className="text-lg font-bold text-navy-900">
+      <div className="overflow-hidden rounded-3xl border border-navy-200/80 bg-gradient-to-br from-navy-50/80 to-white p-2 shadow-[var(--shadow-soft)]">
+        <div className="rounded-2xl bg-white/70 px-5 py-5 sm:px-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-600">
+            Deep prep
+          </p>
+          <h2 className="mt-1 text-xl font-bold text-navy-900 sm:text-2xl">
             {PACKET_COPY.patentPrepTitle}
           </h2>
-          <p className="mt-1 text-sm text-navy-600">{PATENT_PREP_INTRO}</p>
+          <p className="mt-2 text-sm leading-relaxed text-navy-600">
+            {PATENT_PREP_INTRO}
+          </p>
         </div>
 
         <div className="space-y-6 p-2">
@@ -443,12 +471,15 @@ export function ProfileView({
         </div>
       </div>
 
-      <div className="rounded-xl border border-teal-200 bg-teal-50/20 p-1">
-        <div className="px-3 py-2">
-          <h2 className="text-lg font-bold text-navy-900">
+      <div className="overflow-hidden rounded-3xl border border-teal-200/80 bg-gradient-to-br from-teal-50/40 to-white p-2 shadow-[var(--shadow-soft)]">
+        <div className="rounded-2xl bg-white/70 px-5 py-5 sm:px-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-600">
+            Reference prep
+          </p>
+          <h2 className="mt-1 text-xl font-bold text-navy-900 sm:text-2xl">
             {PACKET_COPY.similarRefPrepTitle}
           </h2>
-          <p className="mt-1 text-sm text-navy-600">
+          <p className="mt-2 text-sm leading-relaxed text-navy-600">
             {PATENT_SEARCH_PREP_INTRO}
           </p>
         </div>
@@ -565,7 +596,7 @@ export function ProfileView({
         </div>
       </div>
 
-      <Card className="border-teal-200 bg-teal-50">
+      <Card variant="accent">
         <CardHeader
           title={PACKET_COPY.readinessSnapshotTitle}
           subtitle="Preparation only — not legal outcomes."
@@ -584,9 +615,11 @@ export function ProfileView({
         </dl>
       </Card>
 
-      <Card className="border-navy-200 bg-navy-50">
+      <Card variant="elevated" className="border-navy-200 bg-gradient-to-br from-navy-50/60 to-white">
         <CardHeader title={PACKET_COPY.nextBestStepTitle} />
-        <p className="text-sm text-navy-800">{nextBestAction}</p>
+        <p className="text-base leading-relaxed text-navy-800">
+          {nextBestAction}
+        </p>
       </Card>
 
       <DisclaimerNotice />

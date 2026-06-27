@@ -36,18 +36,12 @@ export interface CoachAction {
 
 export const COACH_ACTIONS: CoachAction[] = [
   { mode: "missing_info", label: "What should I strengthen?" },
-  { mode: "expert_questions", label: "What might an expert ask me?" },
+  { mode: "expert_questions", label: "What might an expert ask?" },
   { mode: "explain_better", label: "Help me explain this clearer" },
-  {
-    mode: "difference_map",
-    label: "Help me describe what makes this different",
-  },
-  { mode: "timeline_prep", label: "Help me prepare my development timeline" },
-  {
-    mode: "materials_checklist",
-    label: "Help me organize drawings and materials",
-  },
-  { mode: "expert_handoff", label: "Create a short expert handoff summary" },
+  { mode: "difference_map", label: "Help me describe what's different" },
+  { mode: "timeline_prep", label: "Build my development timeline" },
+  { mode: "materials_checklist", label: "Organize my materials" },
+  { mode: "expert_handoff", label: "Create my expert handoff summary" },
   { mode: "search_terms", label: "Generate similar-reference search terms" },
   {
     mode: "compare_reference",

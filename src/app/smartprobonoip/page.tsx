@@ -1,23 +1,9 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
+import { LANDING_COPY } from "@/lib/copy";
 import { Card } from "@/components/ui/Card";
 import { DemoChecklist } from "@/components/DemoChecklist";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
-
-const STEPS = [
-  {
-    title: "Guided intake",
-    body: "Answer plain-language questions about your idea — no jargon required.",
-  },
-  {
-    title: "IP Readiness Profile",
-    body: "Get an organized, structured summary of your idea and possible IP signals.",
-  },
-  {
-    title: "Places that may help",
-    body: "See where to go next: education, a clinic, a pro bono program, or an expert.",
-  },
-];
 
 const AUDIENCE = [
   "Inventors",
@@ -30,45 +16,40 @@ const AUDIENCE = [
 export default function ProductLanding() {
   return (
     <div>
-      <section className="border-b border-mist-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-          <p className="mb-3 text-sm font-medium uppercase tracking-wide text-teal-600">
+      <section className="relative overflow-hidden border-b border-mist-200/80 bg-gradient-to-b from-white via-white to-surface">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(20,163,163,0.08),transparent_45%),radial-gradient(circle_at_bottom_left,rgba(217,119,6,0.06),transparent_40%)]" />
+        <div className="page-shell relative py-16 sm:py-24">
+          <p className="section-kicker">
             {BRAND.product} · {BRAND.feature}
           </p>
-          <h1 className="max-w-3xl text-4xl font-bold leading-tight text-navy-900 sm:text-5xl">
+          <h1 className="mt-3 max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight text-navy-900 sm:text-5xl lg:text-6xl">
             {BRAND.tagline}
           </h1>
-          <p className="mt-5 max-w-2xl text-lg text-navy-600">
-            {BRAND.positioning}
-          </p>
-          <p className="mt-3 max-w-2xl text-base text-navy-500">
+          <p className="section-lead max-w-3xl">{BRAND.positioning}</p>
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-navy-500">
             {BRAND.coreMessage}
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/smartprobonoip/disclaimer"
-              className="rounded-lg bg-teal-600 px-6 py-3 font-semibold text-white transition hover:bg-teal-700"
-            >
+
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Link href="/smartprobonoip/disclaimer" className="btn-primary">
               Start the readiness check
             </Link>
             <Link
               href="/smartprobonoip/disclaimer?demo=1"
-              className="rounded-lg border border-teal-300 bg-teal-50 px-6 py-3 font-semibold text-teal-800 transition hover:bg-teal-100"
+              className="btn-secondary"
             >
               Try demo intake
             </Link>
-            <Link
-              href="/smartprobonoip/dashboard"
-              className="rounded-lg border border-mist-300 px-6 py-3 font-semibold text-navy-700 transition hover:bg-mist-100"
-            >
-              View partner dashboard
+            <Link href="/smartprobonoip/dashboard" className="btn-ghost">
+              Partner dashboard
             </Link>
           </div>
-          <div className="mt-8 flex flex-wrap gap-2">
+
+          <div className="mt-10 flex flex-wrap gap-2">
             {AUDIENCE.map((a) => (
               <span
                 key={a}
-                className="rounded-full bg-mist-100 px-3 py-1 text-sm text-navy-600"
+                className="rounded-full border border-mist-200 bg-white/80 px-3.5 py-1.5 text-sm text-navy-600 shadow-sm"
               >
                 {a}
               </span>
@@ -77,35 +58,59 @@ export default function ProductLanding() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="rounded-2xl bg-navy-900 p-8 text-white sm:p-10">
-          <h2 className="text-xl font-semibold text-teal-300">
-            What matters most
-          </h2>
-          <p className="mt-2 max-w-3xl text-2xl font-semibold leading-snug">
-            {BRAND.mission}
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-        <h2 className="text-2xl font-bold text-navy-900">How it works</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {STEPS.map((s, i) => (
-            <Card key={s.title}>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-50 font-semibold text-teal-700">
+      <section className="page-shell py-16 sm:py-20">
+        <div className="grid gap-6 md:grid-cols-3">
+          {LANDING_COPY.valueCards.map((card, i) => (
+            <Card key={card.title} variant="elevated" className="h-full">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-50 text-sm font-bold text-teal-700 ring-1 ring-teal-100">
                 {i + 1}
               </span>
-              <h3 className="mt-4 text-lg font-semibold text-navy-900">
-                {s.title}
+              <h3 className="mt-5 text-xl font-semibold text-navy-900">
+                {card.title}
               </h3>
-              <p className="mt-2 text-sm text-navy-500">{s.body}</p>
+              <p className="mt-3 text-sm leading-relaxed text-navy-600">
+                {card.body}
+              </p>
             </Card>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+      <section className="page-shell pb-16 sm:pb-20">
+        <div className="mission-band">
+          <p className="text-sm font-semibold uppercase tracking-wide text-teal-300">
+            Our mission
+          </p>
+          <p className="mt-4 max-w-4xl text-2xl font-semibold leading-snug sm:text-3xl">
+            {BRAND.coreMessage}
+          </p>
+          <p className="mt-4 max-w-3xl text-base leading-relaxed text-navy-100/90">
+            {BRAND.mission}
+          </p>
+        </div>
+      </section>
+
+      <section className="page-shell pb-16 sm:pb-20">
+        <h2 className="section-title">How it works</h2>
+        <p className="section-lead">
+          A guided path from messy notes to a packet you can bring to your next
+          conversation.
+        </p>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {LANDING_COPY.howItWorks.map((step, i) => (
+            <Card key={step} variant="soft" className="relative">
+              <span className="text-xs font-semibold uppercase tracking-wide text-teal-600">
+                Step {i + 1}
+              </span>
+              <p className="mt-3 text-base font-semibold leading-snug text-navy-900">
+                {step}
+              </p>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="page-shell pb-20">
         <div className="mb-8">
           <DemoChecklist />
         </div>

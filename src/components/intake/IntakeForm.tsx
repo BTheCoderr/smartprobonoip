@@ -14,6 +14,7 @@ import {
 import { suggestIdeaIncludes } from "@/lib/signals";
 import { getStore } from "@/lib/store";
 import { activateDemoFromQuery, DEMO_INVENTION, isDemoMode } from "@/lib/demo";
+import { INTAKE_COPY } from "@/lib/copy";
 import {
   REVIEW_FIELDS,
   validateForGeneration,
@@ -30,6 +31,7 @@ import type {
 import {
   CheckboxGroup,
   ClarityScale,
+  ReviewFieldCard,
   SelectField,
   TextField,
   YesNoField,
@@ -44,6 +46,15 @@ const STEP_LABELS = [
   "Review your answers",
   "Readiness",
 ];
+
+const STEP_HINTS: Record<number, string | undefined> = {
+  0: "Start with plain language. You can refine the details later.",
+  1: "Describe how it works and what makes it different from what already exists.",
+  2: "Help us understand the shape of your idea and what it includes.",
+  3: "Materials and sharing history help prepare your packet.",
+  4: "Tell us what kind of support you are looking for.",
+  6: "One last check before we build your packet.",
+};
 
 const INITIAL: IntakeAnswers = {
   whatCreated: "",
@@ -69,6 +80,65 @@ function toggle<T>(list: T[], value: T): T[] {
     : [...list, value];
 }
 
+function IntakeActions({
+  step,
+  last,
+  canProceed,
+  submitting,
+  demoActive,
+  onBack,
+  onNext,
+  onSubmit,
+}: {
+  step: number;
+  last: number;
+  canProceed: boolean;
+  submitting: boolean;
+  demoActive: boolean;
+  onBack: () => void;
+  onNext: () => void;
+  onSubmit: () => void;
+}) {
+  return (
+    <div className="sticky bottom-0 -mx-6 -mb-6 mt-8 border-t border-mist-200 bg-white/95 px-6 py-4 backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none">
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={step === 0 || submitting}
+          className="btn-ghost disabled:invisible"
+        >
+          ← Back
+        </button>
+
+        {step < last ? (
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={!canProceed}
+            className="btn-primary min-w-[120px] disabled:cursor-not-allowed disabled:bg-mist-300 disabled:text-navy-500 disabled:shadow-none"
+          >
+            Continue →
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={submitting}
+            className="btn-primary min-w-[160px] disabled:cursor-not-allowed disabled:bg-mist-300 disabled:shadow-none"
+          >
+            {submitting
+              ? "Generating…"
+              : demoActive
+                ? "Generate demo packet"
+                : "Generate my packet"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function IntakeForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -76,7 +146,8 @@ export function IntakeForm() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<IntakeAnswers>(() => {
     if (typeof window !== "undefined") {
-      const active = activateDemoFromQuery(`?${searchParams.toString()}`) || isDemoMode();
+      const active =
+        activateDemoFromQuery(`?${searchParams.toString()}`) || isDemoMode();
       return active ? DEMO_INVENTION : INITIAL;
     }
     return demoFromUrl ? DEMO_INVENTION : INITIAL;
@@ -90,8 +161,12 @@ export function IntakeForm() {
     answers.whatCreated === DEMO_INVENTION.whatCreated;
 
   const last = STEP_LABELS.length - 1;
+  const stepHint = STEP_HINTS[step];
 
-  function update<K extends keyof IntakeAnswers>(key: K, value: IntakeAnswers[K]) {
+  function update<K extends keyof IntakeAnswers>(
+    key: K,
+    value: IntakeAnswers[K],
+  ) {
     setAnswers((prev) => ({ ...prev, [key]: value }));
     setFieldError(null);
   }
@@ -180,19 +255,39 @@ export function IntakeForm() {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {demoActive ? (
-        <div className="mb-4 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
+        <div className="rounded-2xl border border-teal-200 bg-teal-50/80 px-5 py-4 text-sm text-teal-900 shadow-sm">
           <strong>Demo mode:</strong> Sample invention loaded — click through or
-          edit, then generate your profile.
+          edit, then generate your packet.
         </div>
       ) : null}
 
       <ProgressIndicator steps={STEP_LABELS} current={step} />
 
-      <Card className="mt-6">
+      <Card variant="elevated" className="overflow-hidden">
+        {step !== 5 ? (
+          stepHint ? (
+            <p className="mb-6 rounded-xl bg-mist-50 px-4 py-3 text-sm leading-relaxed text-navy-600">
+              {stepHint}
+            </p>
+          ) : null
+        ) : (
+          <div className="mb-8 rounded-2xl border border-teal-100 bg-gradient-to-br from-teal-50/70 to-white px-5 py-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+              Checkpoint
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-navy-900">
+              {INTAKE_COPY.reviewTitle}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-navy-600">
+              {INTAKE_COPY.reviewSubcopy}
+            </p>
+          </div>
+        )}
+
         {step === 0 && (
-          <div className="space-y-5">
+          <div className="space-y-8">
             <TextField
               label="What did you create?"
               hint="Describe it in plain language — no jargon needed."
@@ -214,7 +309,7 @@ export function IntakeForm() {
         )}
 
         {step === 1 && (
-          <div className="space-y-5">
+          <div className="space-y-8">
             <TextField
               label="How does it work?"
               value={answers.howItWorks}
@@ -234,7 +329,7 @@ export function IntakeForm() {
         )}
 
         {step === 2 && (
-          <div className="space-y-5">
+          <div className="space-y-8">
             <SelectField
               label="What kind of thing is it?"
               value={answers.itemType}
@@ -257,17 +352,14 @@ export function IntakeForm() {
               options={IDEA_INCLUDE_OPTIONS}
               selected={answers.ideaIncludes ?? []}
               onToggle={(v) =>
-                update(
-                  "ideaIncludes",
-                  toggle(answers.ideaIncludes ?? [], v),
-                )
+                update("ideaIncludes", toggle(answers.ideaIncludes ?? [], v))
               }
             />
           </div>
         )}
 
         {step === 3 && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <CheckboxGroup<AssetType>
               label="Which materials do you already have?"
               hint="Select all that apply."
@@ -286,7 +378,7 @@ export function IntakeForm() {
         )}
 
         {step === 4 && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <CheckboxGroup<Goal>
               label="What are you looking for?"
               hint="Select all that apply."
@@ -310,18 +402,16 @@ export function IntakeForm() {
         )}
 
         {step === 5 && (
-          <div className="space-y-5">
-            <p className="text-sm text-navy-600">
-              Review your answers before we generate your IP Readiness Packet.
-              Edit anything that looks wrong.
-            </p>
+          <div className="grid gap-4 sm:grid-cols-2">
             {REVIEW_FIELDS.map(({ key, label }) => (
-              <TextField
+              <ReviewFieldCard
                 key={key}
                 label={label}
                 value={String(answers[key] ?? "")}
                 onChange={(v) => update(key, v)}
-                rows={key === "whatCreated" || key === "howItWorks" ? 3 : 2}
+                rows={
+                  key === "whatCreated" || key === "howItWorks" ? 4 : 3
+                }
               />
             ))}
           </div>
@@ -334,55 +424,41 @@ export function IntakeForm() {
               value={answers.preClarity}
               onChange={(v) => update("preClarity", v)}
             />
-            <p className="rounded-lg bg-mist-50 p-4 text-sm text-navy-600">
-              We&rsquo;ll ask you again after you see your profile so we can
+            <p className="rounded-2xl bg-mist-50 px-5 py-4 text-sm leading-relaxed text-navy-600">
+              We&rsquo;ll ask you again after you see your packet so we can
               measure how much clearer you feel.
             </p>
           </div>
         )}
 
         {fieldError ? (
-          <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+          <p
+            className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+            role="alert"
+          >
             {fieldError}
           </p>
         ) : null}
 
         {error ? (
-          <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <p
+            className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            role="alert"
+          >
             {error}
           </p>
         ) : null}
 
-        <div className="mt-8 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setStep((s) => Math.max(0, s - 1))}
-            disabled={step === 0 || submitting}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-navy-600 transition hover:bg-mist-100 disabled:invisible"
-          >
-            ← Back
-          </button>
-
-          {step < last ? (
-            <button
-              type="button"
-              onClick={goNext}
-              disabled={!canProceed}
-              className="rounded-lg bg-teal-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-mist-300 disabled:text-navy-500"
-            >
-              Next →
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="rounded-lg bg-teal-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-mist-300"
-            >
-              {submitting ? "Generating…" : demoActive ? "Generate demo profile" : "Generate my profile"}
-            </button>
-          )}
-        </div>
+        <IntakeActions
+          step={step}
+          last={last}
+          canProceed={canProceed}
+          submitting={submitting}
+          demoActive={demoActive}
+          onBack={() => setStep((s) => Math.max(0, s - 1))}
+          onNext={goNext}
+          onSubmit={handleSubmit}
+        />
       </Card>
     </div>
   );

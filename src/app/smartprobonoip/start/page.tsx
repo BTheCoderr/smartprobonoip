@@ -7,46 +7,57 @@ import { Card } from "@/components/ui/Card";
 import { hasAcknowledgedDisclaimer } from "@/lib/ack";
 import { useIsClient } from "@/lib/useIsClient";
 import { BRAND } from "@/lib/brand";
+import { INTAKE_COPY } from "@/lib/copy";
 
 export default function StartPage() {
   const ready = useIsClient();
   const acknowledged = ready && hasAcknowledgedDisclaimer();
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <p className="mb-2 text-sm font-medium uppercase tracking-wide text-teal-600">
-        {BRAND.product} · {BRAND.feature}
-      </p>
-      <h1 className="text-3xl font-bold text-navy-900">Guided intake</h1>
-      <p className="mt-2 text-navy-500">
-        You do not need perfect answers yet. Answer a few plain-language questions
-        about your idea — there are no wrong answers. This is about organizing
-        what you already know.
-      </p>
+    <div className="pb-24 sm:pb-12">
+      <div className="border-b border-mist-200/80 bg-gradient-to-b from-white to-surface">
+        <div className="page-shell-narrow py-12 sm:py-14">
+          <p className="section-kicker">
+            {BRAND.product} · Guided intake
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 sm:text-4xl">
+            Tell us about your idea
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
+            {INTAKE_COPY.intro}
+          </p>
+          <p className="mt-3 text-sm italic text-navy-500">
+            {BRAND.coreMessage}
+          </p>
+        </div>
+      </div>
 
-      <div className="mt-8">
+      <div className="page-shell-narrow mt-8">
         {!ready ? (
           <Card>
             <p className="text-sm text-navy-500">Loading…</p>
           </Card>
         ) : acknowledged ? (
-          <Suspense fallback={<Card><p className="text-sm text-navy-500">Loading intake…</p></Card>}>
+          <Suspense
+            fallback={
+              <Card>
+                <p className="text-sm text-navy-500">Loading intake…</p>
+              </Card>
+            }
+          >
             <IntakeForm />
           </Suspense>
         ) : (
-          <Card>
-            <h2 className="text-lg font-semibold text-navy-900">
+          <Card variant="elevated">
+            <h2 className="text-xl font-semibold text-navy-900">
               Please review the disclaimer first
             </h2>
-            <p className="mt-2 text-sm text-navy-600">
+            <p className="mt-3 text-sm leading-relaxed text-navy-600">
               Before starting the intake, we need you to acknowledge that{" "}
               {BRAND.product} is an educational readiness tool and does not
               provide legal advice.
             </p>
-            <Link
-              href="/smartprobonoip/disclaimer"
-              className="mt-4 inline-block rounded-lg bg-teal-600 px-6 py-3 font-semibold text-white transition hover:bg-teal-700"
-            >
+            <Link href="/smartprobonoip/disclaimer" className="btn-primary mt-6">
               Read & acknowledge the disclaimer
             </Link>
           </Card>
