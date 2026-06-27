@@ -23,6 +23,7 @@ function emptyWorkspace(projectId: string): ResearchWorkspaceData {
     projectId,
     searchKeywords: [],
     suggestedQueries: [],
+    queryGroups: [],
     savedReferences: [],
   };
 }
@@ -56,6 +57,7 @@ function normalizeLocalReference(ref: SavedReference): SavedReference {
     expertQuestions: ref.expertQuestions ?? "",
     notes: ref.notes ?? "",
     comparison: ref.comparison,
+    gapMap: ref.gapMap,
     createdAt: ref.createdAt ?? new Date().toISOString(),
     updatedAt: ref.updatedAt,
   };

@@ -30,6 +30,7 @@ import {
   WORKSHEET_HEADERS,
 } from "./patentSearchPrep";
 import { getTriggeredMiniPrepSections } from "./miniPrepSections";
+import { GAP_MAP_FIELD_LABELS } from "./research/gapMap";
 import type { SavedReference } from "./research/types";
 import type { ProjectRecord } from "./types";
 
@@ -42,6 +43,31 @@ const CREAM: [number, number, number] = [250, 248, 244];
 const MIST: [number, number, number] = [238, 242, 246];
 const AMBER: [number, number, number] = [146, 64, 14];
 const GRAY: [number, number, number] = [90, 105, 120];
+
+function collectExpertReviewQuestions(savedReferences: SavedReference[]): string[] {
+  const seen = new Set<string>();
+  const questions: string[] = [];
+
+  function addQuestion(raw: string) {
+    raw
+      .split(/\n+/)
+      .map((line) => line.replace(/^[-•?\d.)\s]+/, "").trim())
+      .filter(Boolean)
+      .forEach((line) => {
+        const key = line.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        questions.push(line);
+      });
+  }
+
+  for (const ref of savedReferences) {
+    if (ref.expertQuestions?.trim()) addQuestion(ref.expertQuestions);
+    ref.gapMap?.output?.expertQuestions?.forEach((question) => addQuestion(question));
+  }
+
+  return questions.slice(0, 20);
+}
 
 function drawBrandMarkPdf(doc: jsPDF, cx: number, cy: number, scale = 1) {
   const s = scale;
@@ -455,6 +481,52 @@ export function buildPacketPdf(
       }
       if (ref.notes) labeledBlock("Notes", ref.notes);
     });
+  }
+
+  const refsWithGapMap = savedReferences.filter((ref) => {
+    const fields = ref.gapMap?.fields;
+    if (!fields) return false;
+    return Object.values(fields).some((value) => value?.trim());
+  });
+
+  if (refsWithGapMap.length > 0) {
+    heading("Gap Map");
+    text(
+      "User-completed gap map prep — preparation only, not a legal conclusion about patentability, clearance, or infringement.",
+      { size: 9, color: GRAY, gap: 4 },
+    );
+    refsWithGapMap.forEach((ref, idx) => {
+      text(`Reference ${idx + 1}: ${ref.title}`, { size: 10, bold: true, gap: 2 });
+      for (const { key, label } of GAP_MAP_FIELD_LABELS) {
+        const value = ref.gapMap?.fields?.[key]?.trim();
+        if (value) labeledBlock(label, value);
+      }
+      const output = ref.gapMap?.output;
+      if (output) {
+        if (output.possibleSimilarity.length > 0) {
+          text("Possible similarity", { size: 10, bold: true, gap: 1 });
+          bullets(output.possibleSimilarity, "~");
+        }
+        if (output.possibleDifference.length > 0) {
+          text("Possible difference to clarify", { size: 10, bold: true, gap: 1 });
+          bullets(output.possibleDifference, "~");
+        }
+        if (output.documentNext.length > 0) {
+          text("What to document next", { size: 10, bold: true, gap: 1 });
+          bullets(output.documentNext, "~");
+        }
+      }
+    });
+  }
+
+  const expertReviewQuestions = collectExpertReviewQuestions(savedReferences);
+  if (expertReviewQuestions.length > 0) {
+    heading("Questions for Expert Review");
+    text(
+      "Questions you wrote while preparing — bring these to a patent professional, clinic, or mentor.",
+      { size: 9, color: GRAY, gap: 4 },
+    );
+    bullets(expertReviewQuestions, "?");
   }
 
   // Optional clarity check

@@ -1,6 +1,7 @@
 import { isSupabaseConfigured } from "@/lib/supabaseClient";
 import { pilotSessionHeaders } from "@/lib/pilotSession";
 import { buildResearchPrepFromRecord } from "@/lib/research/buildLinks";
+import { buildQueryGroups } from "@/lib/research/queryGroups";
 import {
   deleteLocalReference,
   mergeLocalResearch,
@@ -23,6 +24,7 @@ export function buildInitialWorkspace(record: ProjectRecord): ResearchWorkspaceD
     projectId: record.id,
     searchKeywords: prep.searchKeywords,
     suggestedQueries: prep.suggestedQueries,
+    queryGroups: buildQueryGroups(record),
     savedReferences: [],
   };
 }
@@ -32,6 +34,7 @@ export function initLocalWorkspace(record: ProjectRecord): ResearchWorkspaceData
   return mergeLocalResearch(record.id, {
     searchKeywords: prep.searchKeywords,
     suggestedQueries: prep.suggestedQueries,
+    queryGroups: buildQueryGroups(record),
   });
 }
 

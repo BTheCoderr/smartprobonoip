@@ -1,12 +1,14 @@
 import "server-only";
 import { buildResearchPrepFromRecord } from "@/lib/research/buildLinks";
+import { buildQueryGroups } from "@/lib/research/queryGroups";
 import type {
+  CompareReferenceOutput,
+  GapMapData,
   ResearchWorkspaceData,
   SaveReferenceInput,
   SavedReference,
   UpdateReferenceInput,
 } from "@/lib/research/types";
-import type { CompareReferenceOutput } from "@/lib/research/types";
 import {
   computeResearchMetrics,
   type ProjectResearchSummary,
@@ -25,6 +27,7 @@ function mapReference(row: {
   expert_questions: string | null;
   notes: string | null;
   comparison_notes: CompareReferenceOutput | null;
+  gap_map: GapMapData | null;
   created_at: string;
   updated_at: string;
 }): SavedReference {
@@ -39,6 +42,7 @@ function mapReference(row: {
     expertQuestions: row.expert_questions ?? "",
     notes: row.notes ?? "",
     comparison: row.comparison_notes ?? undefined,
+    gapMap: row.gap_map ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -49,7 +53,7 @@ async function loadReferencesForProject(projectId: string): Promise<SavedReferen
   const { data, error } = await sb
     .from("smartprobonoip_saved_references")
     .select(
-      "id, reference_title, reference_url, reference_type, search_query_used, what_looks_similar, what_seems_different, expert_questions, notes, comparison_notes, created_at, updated_at",
+      "id, reference_title, reference_url, reference_type, search_query_used, what_looks_similar, what_seems_different, expert_questions, notes, comparison_notes, gap_map, created_at, updated_at",
     )
     .eq("project_id", projectId)
     .order("created_at", { ascending: false });
@@ -72,6 +76,7 @@ export async function getResearchWorkspace(
     projectId,
     searchKeywords: prep.searchKeywords,
     suggestedQueries: prep.suggestedQueries,
+    queryGroups: buildQueryGroups(record),
     savedReferences,
   };
 }
@@ -103,7 +108,7 @@ export async function saveResearchReference(
       notes: input.notes ?? null,
     })
     .select(
-      "id, reference_title, reference_url, reference_type, search_query_used, what_looks_similar, what_seems_different, expert_questions, notes, comparison_notes, created_at, updated_at",
+      "id, reference_title, reference_url, reference_type, search_query_used, what_looks_similar, what_seems_different, expert_questions, notes, comparison_notes, gap_map, created_at, updated_at",
     )
     .single();
 
@@ -137,12 +142,13 @@ export async function updateResearchReference(
       expert_questions: input.expertQuestions ?? owned.expertQuestions,
       notes: input.notes ?? owned.notes,
       comparison_notes: input.comparison ?? owned.comparison ?? {},
+      gap_map: input.gapMap ?? owned.gapMap ?? {},
       updated_at: new Date().toISOString(),
     })
     .eq("id", input.id)
     .eq("project_id", projectId)
     .select(
-      "id, reference_title, reference_url, reference_type, search_query_used, what_looks_similar, what_seems_different, expert_questions, notes, comparison_notes, created_at, updated_at",
+      "id, reference_title, reference_url, reference_type, search_query_used, what_looks_similar, what_seems_different, expert_questions, notes, comparison_notes, gap_map, created_at, updated_at",
     )
     .single();
 

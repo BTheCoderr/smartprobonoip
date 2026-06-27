@@ -16,10 +16,10 @@ export const PACKET_COPY = {
   miniPrepSubtitle:
     "These mini-sections appear only when relevant to your answers. One packet, modular sections — preparation only, not legal advice.",
   researchPrepDisclaimer:
-    "Research Prep Workspace helps you organize possible references and questions. It does not determine patentability, novelty, clearance, infringement, or legal rights.",
-  similarReferenceSearchPrepTitle: "Similar Reference Search Prep",
-  similarReferenceSearchPrepIntro:
     "Use this workspace to collect possible similar references before talking with a patent professional, clinic, mentor, or PTRC resource. This does not determine patentability, novelty, clearance, infringement, or legal rights.",
+  similarReferenceSearchPrepTitle: "Similar Reference Search + Gap Map",
+  similarReferenceSearchPrepIntro:
+    "Search for possible similar products, patents, brand names, designs, and web references. Save what you find, compare what looks similar, and write questions for an expert. This does not determine patentability, clearance, infringement, or legal rights.",
   savedSimilarReferencesTitle: "Saved Similar References",
   materialsChecklistSubtitle:
     "Based on your intake answers. Use Edit packet to update what materials you have.",

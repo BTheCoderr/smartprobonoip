@@ -20,6 +20,7 @@ const ALLOWED_KEYS = new Set([
   "mode",
   "isDemo",
   "referenceType",
+  "interestType",
   "label",
   "savedReferenceCount",
   "queryIndex",

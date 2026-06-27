@@ -4,11 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { trackEvent } from "@/lib/analytics/client";
 import { PACKET_COPY } from "@/lib/copy";
-import {
-  buildGooglePatentsUrl,
-  buildUsptoSearchUrl,
-  buildWebSearchUrl,
-} from "@/lib/research/buildLinks";
+import { QuerySearchLauncher } from "@/components/research/QuerySearchLauncher";
+import { ReferenceGapMapForm } from "@/components/research/ReferenceGapMapForm";
 import {
   buildInitialWorkspace,
   compareReference,
@@ -67,6 +64,12 @@ export function ResearchPrepWorkspace({
   const fetchSavedReferences = useCallback(async () => {
     try {
       const data = await loadWorkspace(record);
+      setWorkspace((current) => ({
+        ...current,
+        queryGroups: data.queryGroups,
+        searchKeywords: data.searchKeywords,
+        suggestedQueries: data.suggestedQueries,
+      }));
       syncReferences(data.savedReferences);
       setLoadError(data.loadError ?? null);
     } catch {
@@ -131,13 +134,6 @@ export function ResearchPrepWorkspace({
     } catch {
       setError("Could not copy query.");
     }
-  }
-
-  function trackExternalSearch(label: string, queryIndex: number) {
-    trackEvent("external_search_opened", {
-      projectId: record.id,
-      metadata: { label, demo: record.isDemo ?? false, queryIndex },
-    });
   }
 
   async function onSaveReference(e: React.FormEvent) {
@@ -280,70 +276,12 @@ export function ResearchPrepWorkspace({
         </p>
       ) : null}
 
-      <Card>
-        <CardHeader
-          title="Suggested query cards"
-          subtitle="Search terms to try — possible similar references only."
-        />
-        <ul className="space-y-4">
-          {workspace.suggestedQueries.map((item, queryIndex) => (
-            <li
-              key={item.query}
-              className="rounded-xl border border-mist-200 bg-mist-50/60 p-4"
-            >
-              <p className="text-sm font-medium text-navy-900">{item.query}</p>
-              <p className="mt-1 text-xs leading-relaxed text-navy-600">
-                {item.whyItMayHelp}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <a
-                  href={buildGooglePatentsUrl(item.query)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackExternalSearch("Google Patents", queryIndex)}
-                  className="rounded-lg border border-teal-300 px-3 py-1.5 text-xs font-medium text-teal-800 hover:bg-teal-50"
-                >
-                  Open in Google Patents
-                </a>
-                <a
-                  href={buildUsptoSearchUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() =>
-                    trackExternalSearch("USPTO Patent Public Search", queryIndex)
-                  }
-                  className="rounded-lg border border-teal-300 px-3 py-1.5 text-xs font-medium text-teal-800 hover:bg-teal-50"
-                >
-                  Open in USPTO Patent Public Search
-                </a>
-                <a
-                  href={buildWebSearchUrl(item.query)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackExternalSearch("Web search", queryIndex)}
-                  className="rounded-lg border border-teal-300 px-3 py-1.5 text-xs font-medium text-teal-800 hover:bg-teal-50"
-                >
-                  Open web search
-                </a>
-                <button
-                  type="button"
-                  onClick={() => void copyQuery(item.query, queryIndex)}
-                  className="rounded-lg border border-mist-300 px-3 py-1.5 text-xs font-medium text-navy-700 hover:bg-white"
-                >
-                  Copy query
-                </button>
-                <button
-                  type="button"
-                  onClick={() => prefillFromQuery(item.query)}
-                  className="rounded-lg border border-mist-300 px-3 py-1.5 text-xs font-medium text-navy-700 hover:bg-white"
-                >
-                  Save as research note
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </Card>
+      <QuerySearchLauncher
+        record={record}
+        queryGroups={workspace.queryGroups}
+        onCopyQuery={(query, queryIndex) => void copyQuery(query, queryIndex)}
+        onPrefillQuery={prefillFromQuery}
+      />
 
       <Card>
         <CardHeader
@@ -361,7 +299,7 @@ export function ResearchPrepWorkspace({
             />
           </label>
           <label className="text-sm">
-            <span className="font-medium text-navy-800">Reference link</span>
+            <span className="font-medium text-navy-800">Reference URL</span>
             <input
               value={form.url}
               onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
@@ -571,6 +509,14 @@ export function ResearchPrepWorkspace({
                       </p>
                     ) : null}
                   </div>
+                ) : null}
+                {editingId !== ref.id ? (
+                  <ReferenceGapMapForm
+                    key={`${ref.id}-${ref.updatedAt ?? ref.createdAt}`}
+                    record={record}
+                    reference={ref}
+                    onSaved={() => void refreshSavedReferences()}
+                  />
                 ) : null}
               </li>
             ))}

@@ -22,13 +22,13 @@ export function InterestForm({ id }: { id?: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const viewed = useState(false);
+  const viewedRef = useRef(false);
 
   useEffect(() => {
-    if (viewed[0]) return;
-    viewed[1](true);
+    if (viewedRef.current) return;
+    viewedRef.current = true;
     trackEvent("contact_form_viewed");
-  }, [viewed]);
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -67,10 +67,10 @@ export function InterestForm({ id }: { id?: string }) {
       }
 
       setSuccess(data.message ?? "Thanks — we received your interest.");
-      setForm(EMPTY);
       trackEvent("interest_submitted", {
         metadata: { interestType: form.interestType },
       });
+      setForm(EMPTY);
     } catch {
       setError("Could not submit form. Please try again.");
     } finally {

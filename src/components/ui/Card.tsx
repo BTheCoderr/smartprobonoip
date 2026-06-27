@@ -4,6 +4,7 @@ interface CardProps {
   children: ReactNode;
   className?: string;
   variant?: "default" | "elevated" | "soft" | "accent";
+  id?: string;
 }
 
 const VARIANTS = {
@@ -19,9 +20,10 @@ export function Card({
   children,
   className = "",
   variant = "default",
+  id,
 }: CardProps) {
   return (
-    <div className={`${VARIANTS[variant]} ${className}`}>{children}</div>
+    <div id={id} className={`${VARIANTS[variant]} ${className}`}>{children}</div>
   );
 }
 

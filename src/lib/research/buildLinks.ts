@@ -17,6 +17,10 @@ export function buildWebSearchUrl(query: string): string {
   return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 }
 
+export function buildUsptoTrademarkSearchUrl(query: string): string {
+  return `https://tmsearch.uspto.gov/search/search-results?query=${encodeURIComponent(query)}`;
+}
+
 function whyQueryMayHelp(query: string, index: number): string {
   if (index === 0) {
     return "This broad query may help you explore possible similar references in your general topic area.";

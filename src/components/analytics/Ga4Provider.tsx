@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { captureCampaignAttribution } from "@/lib/analytics/campaignAttribution";
 import { ga4MeasurementId, trackGa4PageView } from "@/lib/analytics/ga4";
@@ -30,18 +30,23 @@ function Ga4RouteTracker() {
   return null;
 }
 
-function AnalyticsNotice() {
-  const [visible, setVisible] = useState(false);
+function readNoticeVisible(): boolean {
+  if (!ga4MeasurementId()) return false;
+  try {
+    return !window.localStorage.getItem(CONSENT_KEY);
+  } catch {
+    return true;
+  }
+}
 
-  useEffect(() => {
-    if (!ga4MeasurementId()) return;
-    try {
-      const seen = window.localStorage.getItem(CONSENT_KEY);
-      if (!seen) setVisible(true);
-    } catch {
-      setVisible(true);
-    }
-  }, []);
+function AnalyticsNotice() {
+  const [dismissed, setDismissed] = useState(false);
+  const shouldShow = useSyncExternalStore(
+    () => () => {},
+    readNoticeVisible,
+    () => false,
+  );
+  const visible = shouldShow && !dismissed;
 
   if (!visible) return null;
 
@@ -57,7 +62,7 @@ function AnalyticsNotice() {
           type="button"
           onClick={() => {
             window.localStorage.setItem(CONSENT_KEY, "acknowledged");
-            setVisible(false);
+            setDismissed(true);
           }}
           className="shrink-0 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700"
         >
