@@ -28,10 +28,8 @@ import {
   PATENT_SEARCH_PREP_INTRO,
   WORKSHEET_HEADERS,
 } from "./patentSearchPrep";
-import {
-  buildOwnershipAgreementPrep,
-  hasOwnershipPrepSection,
-} from "./ownership";
+import { getTriggeredMiniPrepSections } from "./miniPrepSections";
+import type { SavedReference } from "./research/types";
 import type { ProjectRecord } from "./types";
 
 const MARGIN = 48;
@@ -82,8 +80,9 @@ function drawBrandMarkPdf(doc: jsPDF, cx: number, cy: number, scale = 1) {
 
 export function buildPacketPdf(
   record: ProjectRecord,
-  savedReferenceCount = 0,
+  savedReferences: SavedReference[] = [],
 ): jsPDF {
+  const savedReferenceCount = savedReferences.length;
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -298,23 +297,21 @@ export function buildPacketPdf(
   heading(PACKET_COPY.expertPrepTitle);
   bullets(profile.expertQuestions, "?");
 
-  if (hasOwnershipPrepSection(record)) {
-    const ownershipPrep = buildOwnershipAgreementPrep(record);
-    heading(PACKET_COPY.ownershipPrepTitle);
-    text(PACKET_COPY.ownershipPrepSubtitle, { size: 9, color: GRAY, gap: 4 });
-    labeledBlock("Contributors / helpers", ownershipPrep.contributorsSummary);
-    labeledBlock("What they helped with", ownershipPrep.helpSummary);
-    labeledBlock("Agreements you noted", ownershipPrep.agreementsSummary);
-    labeledBlock(
-      "Employer / school / grant / contractor flag",
-      ownershipPrep.institutionFlag,
-    );
-    if (ownershipPrep.optionalNote) {
-      labeledBlock("Your notes", ownershipPrep.optionalNote);
+  for (const section of getTriggeredMiniPrepSections(record)) {
+    heading(section.title);
+    text(section.subtitle, { size: 9, color: GRAY, gap: 4 });
+    labeledBlock("Why this may matter", section.whyItMatters);
+    text("What to gather", { size: 10, bold: true, gap: 2 });
+    bullets(section.whatToGather, "•");
+    if (section.personalizedNotes) {
+      for (const note of section.personalizedNotes) {
+        labeledBlock(note.label, note.value);
+      }
     }
-    text("Questions to ask an expert", { size: 10, bold: true, gap: 2 });
-    bullets(ownershipPrep.expertQuestions, "?");
-    text(ownershipPrep.disclaimer, { size: 9, color: GRAY, gap: 6 });
+    text("Questions to ask", { size: 10, bold: true, gap: 2 });
+    bullets(section.questionsToAsk, "?");
+    labeledBlock("Suggested resource type", section.suggestedResourceType);
+    text(section.disclaimer, { size: 9, color: GRAY, gap: 6 });
   }
 
   // 7. Suggested next resources
@@ -432,6 +429,32 @@ export function buildPacketPdf(
 
   text(searchPrep.safeDisclaimer, { size: 9, color: AMBER, gap: 6 });
 
+  if (savedReferences.length > 0) {
+    heading("Saved research references");
+    text(
+      "User-saved possible similar references — not a legal conclusion about patentability, novelty, clearance, or infringement.",
+      { size: 9, color: GRAY, gap: 4 },
+    );
+    savedReferences.forEach((ref, idx) => {
+      text(`Reference ${idx + 1}: ${ref.title}`, { size: 10, bold: true, gap: 2 });
+      if (ref.referenceType) {
+        text(`Type: ${ref.referenceType}`, { size: 9, color: GRAY, gap: 1 });
+      }
+      if (ref.url) text(`Link: ${ref.url}`, { size: 9, gap: 1 });
+      if (ref.searchQueryUsed) {
+        labeledBlock("Search query used", ref.searchQueryUsed);
+      }
+      if (ref.looksSimilar) labeledBlock("What looks similar", ref.looksSimilar);
+      if (ref.seemsDifferent) {
+        labeledBlock("What seems different", ref.seemsDifferent);
+      }
+      if (ref.expertQuestions) {
+        labeledBlock("Questions to ask an expert", ref.expertQuestions);
+      }
+      if (ref.notes) labeledBlock("Notes", ref.notes);
+    });
+  }
+
   // Optional clarity check
   if (record.postClarity) {
     heading("Clarity check");
@@ -461,7 +484,10 @@ export function buildPacketPdf(
   return doc;
 }
 
-export function downloadPacketPdf(record: ProjectRecord): void {
-  const doc = buildPacketPdf(record);
+export function downloadPacketPdf(
+  record: ProjectRecord,
+  savedReferences: SavedReference[] = [],
+): void {
+  const doc = buildPacketPdf(record, savedReferences);
   doc.save(`smartprobonoip-ip-readiness-packet-${record.id.slice(0, 8)}.pdf`);
 }

@@ -17,6 +17,14 @@ const FORBIDDEN = [
   /\bclearance\s+opinion\b/i,
   /\bnot\s+protectable\b/i,
   /\bthis\s+protects\s+your\s+idea\b/i,
+  /\byou\s+need\s+this\s+protection\b/i,
+  /\bthis\s+protects\s+you\b/i,
+  /\bthis\s+proves\s+ownership\b/i,
+  /\bthis\s+clears\s+your\s+brand\b/i,
+  /\bthis\s+contract\s+is\s+valid\b/i,
+  /\byou\s+should\s+sign\b/i,
+  /\byou\s+own\s+this\b/i,
+  /\bthey\s+own\s+this\b/i,
   /\bwe\s+provide\s+legal\s+advice\b/i,
 ];
 

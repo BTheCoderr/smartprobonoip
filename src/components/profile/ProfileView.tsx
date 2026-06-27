@@ -1,4 +1,3 @@
-import { TrackedExternalLink } from "@/components/analytics/TrackedExternalLink";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
@@ -26,23 +25,25 @@ import {
   PATENT_PREP_INTRO,
   TIMELINE_NOTE,
 } from "@/lib/packet";
-import {
-  buildOwnershipAgreementPrep,
-  hasOwnershipPrepSection,
-} from "@/lib/ownership";
+import { getTriggeredMiniPrepSections } from "@/lib/miniPrepSections";
+import { MiniPrepSectionCard } from "@/components/profile/MiniPrepSectionCard";
 import {
   buildPatentSearchPrep,
   PATENT_SEARCH_PREP_INTRO,
   WORKSHEET_HEADERS,
 } from "@/lib/patentSearchPrep";
+import { ResearchPrepWorkspace } from "@/components/research/ResearchPrepWorkspace";
 import type { ProjectRecord } from "@/lib/types";
+import type { SavedReference } from "@/lib/research/types";
 
 export function ProfileView({
   record,
   savedReferenceCount = 0,
+  onReferencesChange,
 }: {
   record: ProjectRecord;
   savedReferenceCount?: number;
+  onReferencesChange?: (refs: SavedReference[]) => void;
 }) {
   const { profile } = record;
   const summaryFields = buildIdeaSummaryFields(record.answers);
@@ -56,8 +57,7 @@ export function ProfileView({
   const materials = buildMaterialsChecklist(record);
   const handoff = buildExpertHandoff(record);
   const searchPrep = buildPatentSearchPrep(record);
-  const ownershipPrep = buildOwnershipAgreementPrep(record);
-  const showOwnershipPrep = hasOwnershipPrepSection(record);
+  const miniPrepSections = getTriggeredMiniPrepSections(record);
 
   return (
     <div className="space-y-8">
@@ -246,65 +246,23 @@ export function ProfileView({
         <p className="text-sm text-navy-700">{profile.publicDisclosureNote}</p>
       </Card>
 
-      {showOwnershipPrep ? (
-        <Card variant="elevated">
-          <CardHeader
-            title={PACKET_COPY.ownershipPrepTitle}
-            subtitle={PACKET_COPY.ownershipPrepSubtitle}
-          />
-          <dl className="space-y-4 text-sm leading-relaxed text-navy-700">
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-                Contributors / helpers
-              </dt>
-              <dd className="mt-1.5">{ownershipPrep.contributorsSummary}</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-                What they helped with
-              </dt>
-              <dd className="mt-1.5">{ownershipPrep.helpSummary}</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-                Agreements you noted
-              </dt>
-              <dd className="mt-1.5">{ownershipPrep.agreementsSummary}</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-                Employer / school / grant / contractor flag
-              </dt>
-              <dd className="mt-1.5">{ownershipPrep.institutionFlag}</dd>
-            </div>
-            {ownershipPrep.optionalNote ? (
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-                  Your notes
-                </dt>
-                <dd className="mt-1.5">{ownershipPrep.optionalNote}</dd>
-              </div>
-            ) : null}
-          </dl>
-          <div className="mt-6 border-t border-dashed border-mist-200 pt-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-              Questions to ask an expert
+      {miniPrepSections.length > 0 ? (
+        <div className="space-y-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-600">
+              Targeted prep
             </p>
-            <ul className="mt-3 space-y-2">
-              {ownershipPrep.expertQuestions.map((q) => (
-                <li
-                  key={q}
-                  className="rounded-lg border border-mist-200/80 bg-mist-50/60 px-4 py-3 text-sm text-navy-700"
-                >
-                  {q}
-                </li>
-              ))}
-            </ul>
+            <h2 className="mt-1 text-xl font-bold text-navy-900">
+              {PACKET_COPY.miniPrepTitle}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-navy-600">
+              {PACKET_COPY.miniPrepSubtitle}
+            </p>
           </div>
-          <p className="mt-4 text-xs leading-relaxed text-navy-500">
-            {ownershipPrep.disclaimer}
-          </p>
-        </Card>
+          {miniPrepSections.map((section) => (
+            <MiniPrepSectionCard key={section.id} section={section} />
+          ))}
+        </div>
       ) : null}
 
       <Card variant="accent">
@@ -541,7 +499,7 @@ export function ProfileView({
             Reference prep
           </p>
           <h2 className="mt-1 text-xl font-bold text-navy-900 sm:text-2xl">
-            {PACKET_COPY.similarRefPrepTitle}
+            Research Prep Workspace
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-navy-600">
             {PATENT_SEARCH_PREP_INTRO}
@@ -569,42 +527,10 @@ export function ProfileView({
             </div>
           </Card>
 
-          <Card>
-            <CardHeader
-              title="Suggested search queries"
-              subtitle="Search terms to try — possible similar references only, not a legal conclusion."
-            />
-            <ul className="space-y-2 text-sm text-navy-700">
-              {searchPrep.suggestedQueries.map((q) => (
-                <li key={q} className="flex gap-2">
-                  <span className="text-teal-600">•</span>
-                  {q}
-                </li>
-              ))}
-            </ul>
-          </Card>
-
-          <Card>
-            <CardHeader title="External search links" />
-            <ul className="space-y-3">
-              {searchPrep.externalSearchLinks.map((link) => (
-                <li key={link.label} className="text-sm">
-                  <TrackedExternalLink
-                    href={link.url}
-                    event="similar_reference_link_clicked"
-                    linkLabel={link.label}
-                    linkType="patent_search"
-                    className="font-medium text-teal-700 underline hover:text-teal-900"
-                  >
-                    {link.label}
-                  </TrackedExternalLink>
-                  <p className="mt-0.5 text-xs text-navy-500">
-                    Suggested query: {link.queryHint}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </Card>
+          <ResearchPrepWorkspace
+            record={record}
+            onReferencesChange={onReferencesChange}
+          />
 
           <Card>
             <CardHeader title="Similar reference worksheet" />

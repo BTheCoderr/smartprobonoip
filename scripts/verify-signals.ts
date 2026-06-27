@@ -1,4 +1,5 @@
 import { DEMO_INVENTION } from "../src/lib/demo";
+import { assertMiniPrepSectionsSafe } from "../src/lib/miniPrepSections";
 import {
   deriveSignals,
   assertSignalCatalogSafe,
@@ -47,6 +48,7 @@ function assertSet(label: string, actual: string[], expected: string[]) {
 }
 
 assertSignalCatalogSafe();
+assertMiniPrepSectionsSafe();
 
 const catalogText = Object.values(SIGNAL_CATALOG)
   .flatMap((entry) => [

@@ -12,6 +12,11 @@ export const PACKET_COPY = {
   ownershipPrepTitle: "Ownership and agreement prep",
   ownershipPrepSubtitle:
     "What to gather before ownership or agreement conversations — preparation only, not an ownership determination.",
+  miniPrepTitle: "Targeted prep sections",
+  miniPrepSubtitle:
+    "These mini-sections appear only when relevant to your answers. One packet, modular sections — preparation only, not legal advice.",
+  researchPrepDisclaimer:
+    "Research Prep Workspace helps you organize possible references and questions. It does not determine patentability, novelty, clearance, infringement, or legal rights.",
   coreCompleteOptionalGaps:
     "You gave enough to create a first packet. These extra details could make your next conversation stronger.",
   coreComplete: "Core intake is complete.",
