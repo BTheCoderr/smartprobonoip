@@ -5,14 +5,12 @@ import {
   saveResearchReference,
   updateResearchReference,
 } from "@/lib/db/research";
+import { GENERIC_SERVER_ERROR, readPilotSession } from "@/lib/security/api";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 import type { SaveReferenceInput, UpdateReferenceInput } from "@/lib/research/types";
 
 export const runtime = "nodejs";
-
-function pilotSession(request: Request): string | null {
-  return request.headers.get("x-pilot-session");
-}
 
 export async function GET(
   request: Request,
@@ -22,10 +20,18 @@ export async function GET(
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  const session = pilotSession(request);
+  const session = readPilotSession(request);
   if (!session) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
+
+  const limited = enforceRateLimit(
+    request,
+    "research",
+    RATE_LIMITS.research,
+    session,
+  );
+  if (limited) return limited;
 
   const { projectId } = await context.params;
   const workspace = await getResearchWorkspace(projectId, session);
@@ -44,10 +50,18 @@ export async function POST(
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  const session = pilotSession(request);
+  const session = readPilotSession(request);
   if (!session) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
+
+  const limited = enforceRateLimit(
+    request,
+    "research",
+    RATE_LIMITS.research,
+    session,
+  );
+  if (limited) return limited;
 
   const { projectId } = await context.params;
   let body: {
@@ -89,7 +103,10 @@ export async function POST(
 
     return NextResponse.json({ error: "Invalid action" }, { status: 422 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Request failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const message = err instanceof Error ? err.message : "";
+    if (message.includes("not found")) {
+      return NextResponse.json({ error: "Record not found" }, { status: 404 });
+    }
+    return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
   }
 }

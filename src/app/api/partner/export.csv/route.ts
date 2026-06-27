@@ -9,30 +9,23 @@ import { researchCsvFields } from "@/lib/researchMetrics";
 import { SUPPORT_NEED_OPTIONS } from "@/lib/feedback";
 import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
-
-function readSecret(request: Request): string | null {
-  return (
-    request.headers.get("x-partner-secret") ??
-    new URL(request.url).searchParams.get("secret")
-  );
-}
-
-function escapeCsv(value: string | number | boolean | null | undefined): string {
-  if (value === null || value === undefined) return "";
-  const str = String(value);
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
+import { escapeCsvField } from "@/lib/security/csv";
+import {
+  GENERIC_UNAUTHORIZED,
+  readPartnerSecretHeader,
+} from "@/lib/security/api";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 
 export async function GET(request: Request) {
   if (!isSupabaseServerConfigured()) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  if (!verifyPartnerSecret(readSecret(request))) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = enforceRateLimit(request, "partner-export-csv", RATE_LIMITS.partner);
+  if (limited) return limited;
+
+  if (!verifyPartnerSecret(readPartnerSecretHeader(request))) {
+    return NextResponse.json({ error: GENERIC_UNAUTHORIZED }, { status: 401 });
   }
 
   const records = await listLiveRecords();
@@ -125,7 +118,7 @@ export async function GET(request: Request) {
       research.research_prep_started,
       research.reference_types,
     ]
-      .map(escapeCsv)
+      .map(escapeCsvField)
       .join(",");
   });
 

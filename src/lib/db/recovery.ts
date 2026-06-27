@@ -5,7 +5,7 @@ import { getSupabaseService } from "@/lib/supabaseServer";
 import type { ProjectRecord } from "@/lib/types";
 
 const TOKEN_BYTES = 32;
-const DEFAULT_EXPIRY_DAYS = 365;
+const DEFAULT_EXPIRY_DAYS = 90;
 
 export function generateRecoveryToken(): string {
   return randomBytes(TOKEN_BYTES).toString("base64url");
@@ -121,7 +121,7 @@ export async function claimRecoveryToken(input: {
     throw new Error("Invalid or expired recovery link");
   }
 
-  if (row.expires_at && new Date(row.expires_at as string) < new Date()) {
+  if (!row.expires_at || new Date(row.expires_at as string) < new Date()) {
     throw new Error("Invalid or expired recovery link");
   }
 

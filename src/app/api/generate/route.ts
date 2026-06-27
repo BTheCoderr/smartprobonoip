@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { generateProfile } from "@/lib/generateProfile";
 import { generateProfileAI, isAIConfigured } from "@/lib/generateProfileAI";
 import { validateForGeneration } from "@/lib/intakeValidation";
+import {
+  GENERIC_SERVER_ERROR,
+  isValidPilotSessionId,
+  readPilotSession,
+} from "@/lib/security/api";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import type { IntakeAnswers } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -19,6 +25,19 @@ function isValid(answers: unknown): answers is IntakeAnswers {
 }
 
 export async function POST(request: Request) {
+  const pilotSession = readPilotSession(request);
+  if (!isValidPilotSessionId(pilotSession)) {
+    return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
+  }
+
+  const limited = enforceRateLimit(
+    request,
+    "generate",
+    RATE_LIMITS.generate,
+    pilotSession,
+  );
+  if (limited) return limited;
+
   let body: unknown;
   try {
     body = await request.json();
@@ -42,14 +61,18 @@ export async function POST(request: Request) {
     );
   }
 
-  if (isAIConfigured()) {
-    try {
-      const profile = await generateProfileAI(answers);
-      return NextResponse.json({ profile });
-    } catch {
-      // Fall back to the rule-based generator if the AI call fails.
+  try {
+    if (isAIConfigured()) {
+      try {
+        const profile = await generateProfileAI(answers);
+        return NextResponse.json({ profile });
+      } catch {
+        // Fall back to the rule-based generator if the AI call fails.
+      }
     }
-  }
 
-  return NextResponse.json({ profile: generateProfile(answers) });
+    return NextResponse.json({ profile: generateProfile(answers) });
+  } catch {
+    return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
+  }
 }

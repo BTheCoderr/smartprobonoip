@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PacketSection } from "@/components/ui/design";
 import { trackEvent } from "@/lib/analytics/client";
+import { pilotSessionHeaders } from "@/lib/pilotSession";
 import {
   COACH_ACTIONS,
   COACH_INTRO,
@@ -55,7 +56,10 @@ export function PacketCoach({ record }: { record: ProjectRecord }) {
     try {
       const res = await fetch("/api/coach", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...pilotSessionHeaders(),
+        },
         body: JSON.stringify({ record, mode, question: q }),
       });
       if (!res.ok) {

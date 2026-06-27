@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { getFeedbackForProject, saveFeedback } from "@/lib/db/feedback";
+import { getRecordById } from "@/lib/db/records";
 import {
   isFeedbackLikert,
   parseSupportNeeds,
   sanitizeConfusionNote,
   type PilotFeedbackInput,
 } from "@/lib/feedback";
+import { GENERIC_SERVER_ERROR, readPilotSession } from "@/lib/security/api";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
 export async function GET(request: Request) {
@@ -14,7 +17,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  const pilotSession = request.headers.get("x-pilot-session");
+  const pilotSession = readPilotSession(request);
   if (!pilotSession) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
@@ -22,6 +25,11 @@ export async function GET(request: Request) {
   const projectId = new URL(request.url).searchParams.get("projectId")?.trim();
   if (!projectId) {
     return NextResponse.json({ error: "Missing project id" }, { status: 400 });
+  }
+
+  const owned = await getRecordById(projectId, pilotSession);
+  if (!owned) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   const feedback = await getFeedbackForProject(projectId, pilotSession);
@@ -33,10 +41,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  const pilotSession = request.headers.get("x-pilot-session");
+  const pilotSession = readPilotSession(request);
   if (!pilotSession) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
+
+  const limited = enforceRateLimit(
+    request,
+    "feedback",
+    RATE_LIMITS.feedback,
+    pilotSession,
+  );
+  if (limited) return limited;
 
   try {
     const body = (await request.json()) as {
@@ -103,8 +119,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ feedback });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Save failed";
-    const status = message.includes("Demo packets") ? 400 : 500;
-    return NextResponse.json({ error: message }, { status });
+    const message = err instanceof Error ? err.message : "";
+    if (message.includes("Demo packets") || message.includes("not found")) {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+    return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
   }
 }

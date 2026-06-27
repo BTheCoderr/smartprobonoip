@@ -20,6 +20,7 @@ import { suggestIdeaIncludes } from "@/lib/signals";
 import { ownershipInfoCompleted } from "@/lib/ownership";
 import { getStore } from "@/lib/store";
 import { getStoredTracking } from "@/lib/partnerTracking";
+import { pilotSessionHeaders } from "@/lib/pilotSession";
 import { trackEvent } from "@/lib/analytics/client";
 import { activateDemoFromQuery, DEMO_INVENTION, isDemoMode } from "@/lib/demo";
 import { INTAKE_COPY } from "@/lib/copy";
@@ -297,7 +298,10 @@ export function IntakeForm() {
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...pilotSessionHeaders(),
+        },
         body: JSON.stringify({ answers }),
       });
       if (!res.ok) {

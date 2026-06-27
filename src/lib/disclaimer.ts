@@ -5,9 +5,12 @@ export const DISCLAIMER = [
 ].join("\n\n");
 
 export const PRIVACY_NOTICE = [
-  "What we collect: your intake answers, optional clarity ratings (before and after), and the generated readiness profile.",
-  "Where it is stored: on your device (local mode) or in our database when Supabase is configured for a pilot. Demo data is clearly marked and kept separate from live pilot records.",
-  "What we do not do: we do not provide confidential legal representation, and we are not a secure vault for trade secrets. Do not submit details you are not comfortable sharing unless you understand the risks.",
+  "What we collect: your intake answers, optional clarity ratings (before and after), generated readiness profiles, optional pilot feedback, saved research prep notes you choose to store, and first-party analytics events (event names, routes, signal keys, and safe counts — not your full invention text).",
+  "Where it is stored: on your device (local mode) or in our database when Supabase is configured for a pilot. Demo data is clearly marked and excluded from live pilot reporting.",
+  "Partner pilot reporting: authorized partners with a dashboard secret may view aggregated pilot metrics and export CSV summaries for readiness reporting. CSV exports exclude raw invention descriptions and free-text feedback notes.",
+  "Recovery links: if you create a recovery link, we store only a hashed token (never the raw link text). Anyone with the private link can access your packet until the link expires or you create a new one.",
+  "What we do not do: we do not provide legal advice, confidential legal representation, or an attorney-client relationship. SmartProBonoIP is not a secure vault for trade secrets. Do not submit details you are not comfortable sharing unless you understand the risks.",
+  "Deletion and export: you may email us to request export or deletion of your pilot data during the pilot period.",
 ].join("\n\n");
 
 export const CONSENT_EDUCATIONAL =

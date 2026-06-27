@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { isAnalyticsEventName } from "@/lib/analytics/events";
-import { sanitizeAnalyticsMetadata } from "@/lib/analytics/metadata";
 import { readAnalyticsHeaders, trackServerEvent } from "@/lib/analytics/server";
 import { resolvePartnerName } from "@/lib/partnerTracking";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
 export async function POST(request: Request) {
   if (!isSupabaseServerConfigured()) {
     return new NextResponse(null, { status: 204 });
   }
+
+  const limited = enforceRateLimit(request, "analytics-track", RATE_LIMITS.analytics);
+  if (limited) return limited;
 
   try {
     const body = (await request.json()) as {
@@ -40,7 +43,7 @@ export async function POST(request: Request) {
       source: body.source ?? null,
       campaign: body.campaign ?? null,
       route: body.route ?? null,
-      metadata: sanitizeAnalyticsMetadata(body.metadata),
+      metadata: body.metadata,
     });
 
     return new NextResponse(null, { status: 204 });

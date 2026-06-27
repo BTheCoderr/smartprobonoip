@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { claimRecoveryToken } from "@/lib/db/recovery";
+import { readPilotSession } from "@/lib/security/api";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
 export async function POST(request: Request) {
@@ -8,10 +10,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  const pilotSession = request.headers.get("x-pilot-session");
+  const pilotSession = readPilotSession(request);
   if (!pilotSession) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
+
+  const limited = enforceRateLimit(
+    request,
+    "recovery-claim",
+    RATE_LIMITS.recoveryClaim,
+  );
+  if (limited) return limited;
 
   try {
     const body = (await request.json()) as { token?: string };

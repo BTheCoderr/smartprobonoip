@@ -13,6 +13,7 @@ import type {
 } from "@/lib/types";
 import type { PilotTracking } from "@/lib/partnerTracking";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { verifyPartnerSecretTimingSafe } from "@/lib/security/api";
 
 const SMARTPROBONOIP_VENTURE_SLUG = "smartprobonoip";
 
@@ -364,7 +365,5 @@ export async function updateProfile(
 }
 
 export function verifyPartnerSecret(secret: string | null): boolean {
-  const expected = process.env.PARTNER_DASHBOARD_SECRET;
-  if (!expected) return false;
-  return secret === expected;
+  return verifyPartnerSecretTimingSafe(secret);
 }

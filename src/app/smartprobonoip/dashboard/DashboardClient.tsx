@@ -251,7 +251,7 @@ export default function DashboardClient() {
     if (!secret) return;
 
     let active = true;
-    fetch(`/api/partner/feedback?secret=${encodeURIComponent(secret)}`, {
+    fetch("/api/partner/feedback", {
       headers: partnerSecretHeaders(secret),
     })
       .then((res) => (res.ok ? res.json() : null))
@@ -301,9 +301,9 @@ export default function DashboardClient() {
       alert("Enter the partner dashboard secret to export pilot CSV.");
       return;
     }
-    const res = await fetch(
-      `/api/partner/export.csv?secret=${encodeURIComponent(secret)}`,
-    );
+    const res = await fetch("/api/partner/export.csv", {
+      headers: partnerSecretHeaders(secret),
+    });
     if (!res.ok) {
       alert("Export failed. Check your partner secret.");
       return;

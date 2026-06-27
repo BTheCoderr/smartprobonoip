@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { createRecoveryLink } from "@/lib/db/recovery";
+import { GENERIC_SERVER_ERROR, readPilotSession } from "@/lib/security/api";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
 export async function POST(request: Request) {
@@ -8,10 +10,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  const pilotSession = request.headers.get("x-pilot-session");
+  const pilotSession = readPilotSession(request);
   if (!pilotSession) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
+
+  const limited = enforceRateLimit(
+    request,
+    "recovery-create",
+    RATE_LIMITS.recoveryCreate,
+    pilotSession,
+  );
+  if (limited) return limited;
 
   try {
     const body = (await request.json()) as {
@@ -45,8 +55,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Create failed";
-    const status = message.includes("not found") ? 404 : 400;
-    return NextResponse.json({ error: message }, { status });
+    const message = err instanceof Error ? err.message : "";
+    if (message.includes("not found")) {
+      return NextResponse.json({ error: "Packet not found" }, { status: 404 });
+    }
+    if (message.includes("Demo packets")) {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+    return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
   }
 }
