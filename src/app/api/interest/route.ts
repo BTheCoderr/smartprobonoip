@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { saveInterestLead, sendInterestNotification } from "@/lib/db/interest";
-import { validateInterestInput, type InterestLeadInput } from "@/lib/interest";
+import { validateInterestInput, isInterestHoneypotTriggered, type InterestLeadInput } from "@/lib/interest";
 import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
@@ -24,6 +24,13 @@ export async function POST(request: Request) {
   const validationError = validateInterestInput(body);
   if (validationError) {
     return NextResponse.json({ error: validationError }, { status: 422 });
+  }
+
+  if (isInterestHoneypotTriggered(body)) {
+    return NextResponse.json({
+      ok: true,
+      message: "Thanks — we received your interest. We'll follow up soon.",
+    });
   }
 
   try {

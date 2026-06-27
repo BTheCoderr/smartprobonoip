@@ -18,6 +18,7 @@ export interface InterestLeadInput {
   interestType: InterestType | string;
   message?: string;
   consent: boolean;
+  companyWebsite?: string;
   attribution?: {
     source?: string;
     campaign?: string;
@@ -35,6 +36,10 @@ export function sanitizeInterestText(
 ): string | null {
   if (!value?.trim()) return null;
   return value.trim().slice(0, max);
+}
+
+export function isInterestHoneypotTriggered(input: InterestLeadInput): boolean {
+  return Boolean(input.companyWebsite?.trim());
 }
 
 export function validateInterestInput(input: InterestLeadInput): string | null {

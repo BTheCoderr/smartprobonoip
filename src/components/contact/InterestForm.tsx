@@ -2,11 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { NetlifyInterestFormDetection } from "@/components/contact/NetlifyInterestFormDetection";
 import { trackEvent } from "@/lib/analytics/client";
 import { getCampaignAttribution } from "@/lib/analytics/campaignAttribution";
 import { INTEREST_TYPES, type InterestType } from "@/lib/interest";
-import { submitInterestToNetlify } from "@/lib/interestNetlify";
 import { CONSENT_CONFIDENTIAL } from "@/lib/disclaimer";
 
 const EMPTY = {
@@ -17,7 +15,7 @@ const EMPTY = {
   interestType: "partner" as InterestType,
   message: "",
   consent: false,
-  botField: "",
+  companyWebsite: "",
 };
 
 export function InterestForm({ id }: { id?: string }) {
@@ -35,35 +33,35 @@ export function InterestForm({ id }: { id?: string }) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (form.botField.trim()) return;
+    if (form.companyWebsite.trim()) return;
 
     setSubmitting(true);
     setError(null);
     setSuccess(null);
 
     const attr = getCampaignAttribution();
-    const payload = {
-      name: form.name,
-      email: form.email,
-      organization: form.organization,
-      role: form.role,
-      interestType: form.interestType,
-      message: form.message,
-      consent: form.consent,
-      attribution: {
-        source: attr?.utm_source,
-        campaign: attr?.utm_campaign,
-        medium: attr?.utm_medium,
-        referrer: attr?.referrer,
-        landingPage: attr?.landing_page,
-      },
-    };
 
     try {
       const res = await fetch("/api/interest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          organization: form.organization,
+          role: form.role,
+          interestType: form.interestType,
+          message: form.message,
+          consent: form.consent,
+          companyWebsite: form.companyWebsite,
+          attribution: {
+            source: attr?.utm_source,
+            campaign: attr?.utm_campaign,
+            medium: attr?.utm_medium,
+            referrer: attr?.referrer,
+            landingPage: attr?.landing_page,
+          },
+        }),
       });
 
       const data = (await res.json()) as { error?: string; message?: string };
@@ -71,8 +69,6 @@ export function InterestForm({ id }: { id?: string }) {
         setError(data.error ?? "Could not submit form.");
         return;
       }
-
-      void submitInterestToNetlify(payload, form.botField);
 
       setSuccess(
         data.message ?? "Thanks — we received your interest. We'll follow up soon.",
@@ -89,9 +85,7 @@ export function InterestForm({ id }: { id?: string }) {
   }
 
   return (
-    <>
-      <NetlifyInterestFormDetection />
-      <Card id={id} variant="soft">
+    <Card id={id} variant="soft">
       <CardHeader
         title="Interested in partnering, piloting, or supporting SmartProBonoIP?"
         subtitle="Tell us how you want to connect. Please do not submit confidential invention details through this form."
@@ -99,11 +93,13 @@ export function InterestForm({ id }: { id?: string }) {
       <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
         <p className="hidden" aria-hidden="true">
           <label>
-            Do not fill this out
+            Company website
             <input
-              name="bot-field"
-              value={form.botField}
-              onChange={(e) => setForm((f) => ({ ...f, botField: e.target.value }))}
+              name="company_website"
+              value={form.companyWebsite}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, companyWebsite: e.target.value }))
+              }
               tabIndex={-1}
               autoComplete="off"
             />
@@ -202,6 +198,5 @@ export function InterestForm({ id }: { id?: string }) {
         ) : null}
       </form>
     </Card>
-    </>
   );
 }
