@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
 import { downloadPacketPdf } from "@/lib/pdf";
+import { getIdeaLabel } from "@/lib/packet";
 import { BRAND } from "@/lib/brand";
 import type { ProjectRecord, ReadinessProfile } from "@/lib/types";
 
@@ -89,25 +90,28 @@ export default function ProfilePage({
     );
   }
 
+  const ideaLabel = getIdeaLabel(record.answers);
+
   return (
     <div className="pb-16">
-      <div className="border-b border-mist-200/80 bg-gradient-to-b from-white to-surface">
+      <div className="border-b border-mist-200/80 bg-gradient-to-b from-cream via-white to-surface">
         <div className="page-shell-packet py-10 sm:py-12">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <p className="section-kicker">{BRAND.product}</p>
               <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 sm:text-4xl">
-                Your IP Readiness Packet
+                {ideaLabel}
               </h1>
-              <p className="mt-3 text-sm leading-relaxed text-navy-500">
+              <p className="mt-2 text-lg text-navy-700">IP Readiness Packet</p>
+              <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-navy-600">
+                {record.profile.ideaSummary}
+              </p>
+              <p className="mt-3 text-xs text-navy-500">
                 Generated {new Date(record.createdAt).toLocaleString()} ·{" "}
                 {record.profile.generator === "ai"
                   ? "AI-assisted"
                   : "Rule-based"}{" "}
                 draft · preparation only, not legal advice
-              </p>
-              <p className="mt-2 text-sm italic text-navy-500">
-                {BRAND.coreMessage}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">

@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { MetricCard } from "@/components/ui/MetricCard";
+import { EmptyStateCard } from "@/components/ui/design";
 import { Badge } from "@/components/ui/Badge";
 import { DemoChecklist } from "@/components/DemoChecklist";
+import { DASHBOARD_COPY } from "@/lib/copy";
 import { DEFAULT_FILTERS, filterRecords } from "@/lib/dashboardFilters";
 import { mergeWithDemoRecords } from "@/lib/demo";
 import { clarityDelta, computeMetrics } from "@/lib/metrics";
@@ -189,8 +191,7 @@ export default function DashboardClient() {
               Partner dashboard
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-navy-600 sm:text-base">
-              Readiness and impact metrics across intakes — built for clinics,
-              programs, and innovation partners reviewing pilot results.
+              {DASHBOARD_COPY.lead}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -356,18 +357,16 @@ export default function DashboardClient() {
           <p className="text-sm text-navy-500">Loading metrics…</p>
         </Card>
       ) : !metrics || (metrics.totalIntakes === 0 && !includeDemo) ? (
-        <Card className="mt-8">
-          <p className="text-sm text-navy-600">
-            No intakes recorded yet.{" "}
-            <Link
-              href="/smartprobonoip/disclaimer?demo=1"
-              className="text-teal-600 hover:underline"
-            >
-              Try demo intake
-            </Link>{" "}
-            to populate the dashboard.
-          </p>
-        </Card>
+        <div className="mt-8">
+          <EmptyStateCard
+            title="No pilot packets yet"
+            body="When inventors complete intake, you will see readiness signals, clarity trends, and referral patterns here."
+            action={{
+              href: "/smartprobonoip/disclaimer?demo=1",
+              label: "Try demo intake",
+            }}
+          />
+        </div>
       ) : (
         <div className="mt-8 space-y-6">
           <p className="text-sm text-navy-500">

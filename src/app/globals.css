@@ -29,6 +29,10 @@
   --color-warm-200: #fed7aa;
   --color-warm-500: #d97706;
   --color-warm-700: #b45309;
+  --color-warm-400: #f59e0b;
+
+  --color-cream: #faf8f4;
+  --color-sky-50: #eef6fc;
 
   --color-surface: #f4f8fb;
   --color-ink: #0b1f3a;
@@ -47,7 +51,7 @@ html {
 }
 
 body {
-  background: var(--color-surface);
+  background: var(--color-cream);
   color: var(--color-foreground);
 }
 

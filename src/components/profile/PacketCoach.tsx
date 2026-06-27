@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardHeader } from "@/components/ui/Card";
+import { PacketSection } from "@/components/ui/design";
 import {
   COACH_ACTIONS,
   COACH_INTRO,
@@ -64,25 +64,22 @@ export function PacketCoach({ record }: { record: ProjectRecord }) {
   }
 
   return (
-    <Card variant="accent" className="overflow-hidden">
-      <CardHeader
-        title="AI Packet Coach"
-        subtitle={COACH_INTRO}
-        icon={<span aria-hidden>🧭</span>}
-      />
+    <PacketSection
+      kicker="Preparation coach"
+      title="AI Packet Coach"
+      subtitle={COACH_INTRO}
+      accent="teal"
+    >
+      <p className="text-xs leading-relaxed text-navy-500">{COACH_SAFETY_NOTE}</p>
 
-      <p className="mb-4 text-xs leading-relaxed text-navy-500">
-        {COACH_SAFETY_NOTE}
-      </p>
-
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="mt-5 grid gap-2 sm:grid-cols-2">
         {PRIMARY_ACTIONS.map((action) => (
           <button
             key={action.mode}
             type="button"
             disabled={loading !== null}
             onClick={() => ask(action.mode, action.label)}
-            className="rounded-xl border border-teal-200/80 bg-white px-4 py-3 text-left text-sm font-medium leading-snug text-navy-800 shadow-sm transition hover:border-teal-300 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-2xl border border-teal-200/80 bg-white px-4 py-3.5 text-left text-sm font-medium leading-snug text-navy-800 shadow-sm transition hover:border-teal-300 hover:bg-teal-50/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading === action.label ? "Thinking…" : action.label}
           </button>
@@ -108,7 +105,10 @@ export function PacketCoach({ record }: { record: ProjectRecord }) {
       </form>
 
       {error ? (
-        <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800" role="alert">
+        <p
+          className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
@@ -159,6 +159,6 @@ export function PacketCoach({ record }: { record: ProjectRecord }) {
           ))}
         </div>
       ) : null}
-    </Card>
+    </PacketSection>
   );
 }

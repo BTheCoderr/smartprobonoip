@@ -8,6 +8,7 @@ import {
 } from "@/lib/labels";
 import { PACKET_COPY } from "@/lib/copy";
 import { SIGNAL_CATALOG } from "@/lib/signals";
+import { SignalCard } from "@/components/ui/design";
 import {
   buildDifferenceMap,
   buildExpertHandoff,
@@ -129,33 +130,13 @@ export function ProfileView({
           {profile.signals.map((s) => {
             const guide = SIGNAL_CATALOG[s];
             return (
-              <li
-                key={s}
-                className="rounded-2xl border border-mist-200/80 border-l-4 border-l-teal-500 bg-white p-5 shadow-sm"
-              >
-                <p className="text-base font-semibold text-navy-900">
-                  {guide.label}
-                </p>
-                <dl className="mt-4 space-y-3 text-sm leading-relaxed text-navy-600">
-                  <div>
-                    <dt className="font-semibold text-navy-800">
-                      Why it may matter
-                    </dt>
-                    <dd className="mt-1">{guide.whyItMatters}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold text-navy-800">
-                      What to prepare
-                    </dt>
-                    <dd className="mt-1">{guide.whatToPrepare}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold text-navy-800">
-                      Suggested resource type
-                    </dt>
-                    <dd className="mt-1">{guide.suggestedResourceType}</dd>
-                  </div>
-                </dl>
+              <li key={s}>
+                <SignalCard
+                  label={guide.label}
+                  whyItMatters={guide.whyItMatters}
+                  whatToPrepare={guide.whatToPrepare}
+                  suggestedResourceType={guide.suggestedResourceType}
+                />
               </li>
             );
           })}

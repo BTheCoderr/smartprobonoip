@@ -38,12 +38,12 @@ import {
 } from "./fields";
 
 const STEP_LABELS = [
-  "Your idea",
+  "Idea basics",
   "How it works",
-  "Type & prototype",
-  "Materials & sharing",
-  "Goals & support",
-  "Review your answers",
+  "What it includes",
+  "Sharing and materials",
+  "Support goals",
+  "Review before packet",
   "Readiness",
 ];
 
@@ -414,6 +414,22 @@ export function IntakeForm() {
                 }
               />
             ))}
+            <div className="rounded-2xl border border-mist-200/80 bg-mist-50/50 p-5 shadow-sm sm:col-span-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+                What your idea includes
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-navy-700">
+                {(answers.ideaIncludes ?? []).length > 0
+                  ? (answers.ideaIncludes ?? [])
+                      .map(
+                        (v) =>
+                          IDEA_INCLUDE_OPTIONS.find((o) => o.value === v)
+                            ?.label ?? v,
+                      )
+                      .join(" · ")
+                  : "None selected — you can go back to step 3 to add these."}
+              </p>
+            </div>
           </div>
         )}
 

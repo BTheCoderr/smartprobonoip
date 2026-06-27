@@ -24,7 +24,7 @@ export default function StartPage() {
             Tell us about your idea
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            {INTAKE_COPY.intro}
+            {INTAKE_COPY.intro} {INTAKE_COPY.introDetail}
           </p>
           <p className="mt-3 text-sm italic text-navy-500">
             {BRAND.coreMessage}
