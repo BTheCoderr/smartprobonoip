@@ -57,18 +57,18 @@ export const DASHBOARD_COPY = {
 export const LANDING_COPY = {
   heroStamp: "ACCESS TO IP",
   heroSafety:
-    "SmartProBonoIP is preparation only and does not create an attorney-client relationship.",
+    "Preparation only. Not legal advice. No attorney-client relationship is created.",
   whyExists:
     "People do not always lose ideas because the ideas are weak. Sometimes they lose momentum because the first step is confusing, expensive, or hard to explain.",
   whyExistsLead:
     "SmartProBonoIP helps turn scattered notes into a structured packet — so the first step feels possible.",
   whoHelps: [
-    "Inventors with rough sketches or prototypes",
-    "Creators with brands, content, or digital work",
-    "Founders building software or hardware",
-    "Small businesses with product or process ideas",
-    "Community programs supporting innovation access",
-    "Clinics and partners reviewing intake before referrals",
+    "Inventors with rough sketches",
+    "Creators with names, brands, or content",
+    "Founders building software",
+    "Small businesses with product ideas",
+    "Community programs supporting innovation",
+    "Clinics and partners reviewing intake",
   ],
   packetHelps: [
     {
@@ -97,7 +97,7 @@ export const LANDING_COPY = {
     },
   ],
   whatWeDoNot:
-    "We do not tell you whether your idea is patentable. We do not replace experts. We help you show up more prepared.",
+    "SmartProBonoIP does not tell you whether your idea is patentable, clear your brand, or replace an expert. It helps you organize your thoughts before the expert conversation.",
   safetyLine: "We do not replace experts. We help people show up more prepared.",
   partnerCallout:
     "For clinics, libraries, innovation hubs, and community partners, SmartProBonoIP creates cleaner intake, stronger referrals, and better pilot data.",

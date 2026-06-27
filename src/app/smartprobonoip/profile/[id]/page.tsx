@@ -8,7 +8,7 @@ import { PacketCoach } from "@/components/profile/PacketCoach";
 import { PacketRecoveryCard } from "@/components/profile/PacketRecoveryCard";
 import { PilotFeedbackCard } from "@/components/profile/PilotFeedbackCard";
 import { ResourceRoutingCards } from "@/components/profile/ResourceRoutingCards";
-import { StampLabel } from "@/components/ui/design";
+import { DossierPageHeader, PaperCard, StampLabel } from "@/components/ui/design";
 import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
@@ -118,76 +118,60 @@ export default function ProfilePage({
 
   return (
     <div className="pb-16">
-      <div className="paper-grid border-b border-mist-200/80">
-        <div className="page-shell-packet py-10 sm:py-12">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-2xl">
-              <div className="flex flex-wrap items-center gap-2">
-                <StampLabel tone="teal">IP READINESS</StampLabel>
-                <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
-              </div>
-              <p className="mt-4 text-sm font-semibold uppercase tracking-wide text-teal-600">
-                IP Readiness Packet
-              </p>
-              <h1 className="headline-editorial mt-2 text-3xl sm:text-4xl">
-                {ideaLabel}
-              </h1>
-              <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-muted-blue">
-                {record.profile.ideaSummary}
-              </p>
-              <p className="mt-4 text-xs text-navy-400">
-                Generated {new Date(record.createdAt).toLocaleString()} ·{" "}
-                {record.profile.generator === "ai"
-                  ? "AI-assisted"
-                  : "Rule-based"}{" "}
-                draft · preparation only, not legal advice
-              </p>
-              {pilotSource ? (
-                <p className="mt-2 text-xs text-muted-blue">
-                  Pilot source: {pilotSource}
-                  {record.source ? ` · via ${record.source}` : ""}
-                </p>
-              ) : null}
-            </div>
-            <div className="paper-card shrink-0 p-5 lg:max-w-xs">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
-                Handoff packet
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-navy-700">
-                Download or share this packet before your next conversation with
-                a professional, clinic, or partner.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                {!editing ? (
-                  <button
-                    type="button"
-                    onClick={() => setEditing(true)}
-                    className="btn-secondary w-full sm:w-auto"
-                  >
-                    Edit packet
-                  </button>
-                ) : null}
+      <DossierPageHeader
+        stamps={
+          <>
+            <StampLabel tone="teal">IP READINESS</StampLabel>
+            <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
+          </>
+        }
+        kicker="IP Readiness Packet"
+        title={ideaLabel}
+        lead={record.profile.ideaSummary}
+        meta={`Generated ${new Date(record.createdAt).toLocaleString()} · ${
+          record.profile.generator === "ai" ? "AI-assisted" : "Rule-based"
+        } draft · preparation only, not legal advice${
+          pilotSource
+            ? ` · Pilot source: ${pilotSource}${record.source ? ` · via ${record.source}` : ""}`
+            : ""
+        }`}
+        aside={
+          <PaperCard className="p-5">
+            <p className="section-kicker text-muted-blue">Handoff packet</p>
+            <p className="mt-2 text-sm leading-relaxed text-navy-700">
+              Download or share this packet before your next conversation with
+              a professional, clinic, or partner.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {!editing ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    downloadPacketPdf(record);
-                    trackEvent("pdf_downloaded", {
-                      projectId: record.id,
-                      metadata: {
-                        demo: record.isDemo ?? false,
-                        pdfDownloaded: true,
-                      },
-                    });
-                  }}
-                  className="btn-primary w-full sm:w-auto"
+                  onClick={() => setEditing(true)}
+                  className="btn-secondary w-full sm:w-auto"
                 >
-                  Download PDF
+                  Edit packet
                 </button>
-              </div>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => {
+                  downloadPacketPdf(record);
+                  trackEvent("pdf_downloaded", {
+                    projectId: record.id,
+                    metadata: {
+                      demo: record.isDemo ?? false,
+                      pdfDownloaded: true,
+                    },
+                  });
+                }}
+                className="btn-primary w-full sm:w-auto"
+              >
+                Download PDF
+              </button>
             </div>
-          </div>
-        </div>
-      </div>
+          </PaperCard>
+        }
+      />
 
       <div className="page-shell-packet mt-8 space-y-8">
         {editing ? (

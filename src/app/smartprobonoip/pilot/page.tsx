@@ -7,7 +7,8 @@ import { appPath } from "@/lib/appUrl";
 import { appendTrackingQuery } from "@/lib/partnerTracking";
 import {
   CalloutCard,
-  PageShell,
+  DossierPageHeader,
+  PaperShell,
   Section,
   SectionHeader,
   StampLabel,
@@ -39,19 +40,13 @@ export default function PilotKitPage() {
     <div>
       <PageEvent event="pilot_page_viewed" />
 
-      <Section className="paper-grid border-b border-mist-200/70 !py-12 sm:!py-16">
-        <PageShell>
-          <StampLabel tone="teal">RHODE ISLAND PILOT LAUNCH</StampLabel>
-          <p className="mt-4 text-sm font-semibold uppercase tracking-wide text-teal-600">
-            {PILOT_KIT_COPY.subtitle}
-          </p>
-          <h1 className="headline-editorial mt-3 text-3xl sm:text-4xl lg:text-5xl">
-            {PILOT_KIT_COPY.title}
-          </h1>
-          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-muted-blue">
-            {PILOT_KIT_COPY.lead}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+      <DossierPageHeader
+        stamps={<StampLabel tone="teal">RHODE ISLAND PILOT LAUNCH</StampLabel>}
+        kicker={PILOT_KIT_COPY.subtitle}
+        title={PILOT_KIT_COPY.title}
+        lead={PILOT_KIT_COPY.lead}
+        aside={
+          <div className="flex flex-wrap gap-3 lg:flex-col">
             <Link href="/smartprobonoip/sample" className="btn-primary">
               View sample packet
             </Link>
@@ -61,15 +56,15 @@ export default function PilotKitPage() {
             >
               Start RI pilot intake
             </Link>
-            <Link href="/smartprobonoip/dashboard?demo=1" className="btn-ghost">
-              Partner Impact Desk
+            <Link href="/smartprobonoip/dashboard?demo=1" className="btn-ghost px-0">
+              Partner Impact Desk →
             </Link>
           </div>
-        </PageShell>
-      </Section>
+        }
+      />
 
       <Section>
-        <PageShell>
+        <PaperShell>
           <SectionHeader
             kicker="What it is"
             title="IP Readiness Packets — preparation only"
@@ -77,11 +72,11 @@ export default function PilotKitPage() {
           <p className="mt-6 max-w-3xl text-base leading-relaxed text-navy-700">
             {PILOT_KIT_COPY.whatItIs}
           </p>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section soft>
-        <PageShell>
+        <PaperShell>
           <SectionHeader kicker="Who it helps" title="Built for overlooked innovators" />
           <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PILOT_KIT_COPY.whoItHelps.map((item) => (
@@ -93,11 +88,11 @@ export default function PilotKitPage() {
               </li>
             ))}
           </ul>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section>
-        <PageShell>
+        <PaperShell>
           <SectionHeader
             kicker="Rhode Island pilot"
             title="How the 10–25 user pilot works"
@@ -114,11 +109,11 @@ export default function PilotKitPage() {
               </li>
             ))}
           </ol>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section soft>
-        <PageShell>
+        <PaperShell>
           <SectionHeader
             kicker="Partner value"
             title="What partners get"
@@ -133,11 +128,11 @@ export default function PilotKitPage() {
               </li>
             ))}
           </ul>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section>
-        <PageShell>
+        <PaperShell>
           <SectionHeader
             kicker="Pilot measurement"
             title={PILOT_KIT_COPY.pilotMetrics.title}
@@ -153,11 +148,11 @@ export default function PilotKitPage() {
               </li>
             ))}
           </ul>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section soft>
-        <PageShell>
+        <PaperShell>
           <SectionHeader
             kicker="2-minute demo"
             title="Demo walkthrough guide"
@@ -180,11 +175,11 @@ export default function PilotKitPage() {
               </li>
             ))}
           </ol>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section>
-        <PageShell>
+        <PaperShell>
           <SectionHeader
             kicker="Partner handout"
             title="One-page copy for flyers and email"
@@ -211,11 +206,11 @@ export default function PilotKitPage() {
           <div className="mt-4">
             <CopyTextButton text={handoutText} label="Copy handout text" />
           </div>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section soft>
-        <PageShell>
+        <PaperShell>
           <SectionHeader
             kicker="QR-ready links"
             title="Tracked pilot links"
@@ -239,11 +234,11 @@ export default function PilotKitPage() {
               </li>
             ))}
           </ul>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section>
-        <PageShell>
+        <PaperShell>
           <SectionHeader
             kicker="Outreach"
             title="Short messages for partners"
@@ -267,11 +262,11 @@ export default function PilotKitPage() {
               </li>
             ))}
           </ul>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section soft>
-        <PageShell>
+        <PaperShell>
           <SectionHeader
             kicker="Recovery"
             title="Private packet access"
@@ -280,11 +275,11 @@ export default function PilotKitPage() {
           <Link href="/smartprobonoip/recover" className="btn-secondary mt-6">
             Recover a packet
           </Link>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section>
-        <PageShell>
+        <PaperShell>
           <SectionHeader kicker="Safety" title="What SmartProBonoIP is not" />
           <ul className="mt-6 space-y-2 text-sm leading-relaxed text-navy-700">
             {PILOT_KIT_COPY.safetyPoints.map((point) => (
@@ -294,11 +289,11 @@ export default function PilotKitPage() {
               </li>
             ))}
           </ul>
-        </PageShell>
+        </PaperShell>
       </Section>
 
       <Section soft>
-        <PageShell className="pb-8">
+        <PaperShell className="pb-8">
           <CalloutCard
             tone="warm"
             title={`About ${BRAND.product}`}
@@ -307,7 +302,7 @@ export default function PilotKitPage() {
           <div className="mt-8">
             <DisclaimerNotice />
           </div>
-        </PageShell>
+        </PaperShell>
       </Section>
     </div>
   );

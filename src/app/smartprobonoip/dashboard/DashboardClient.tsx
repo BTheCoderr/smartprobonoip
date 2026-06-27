@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { MetricCard } from "@/components/ui/MetricCard";
-import { EmptyStateCard, StampLabel } from "@/components/ui/design";
+import { EmptyStateCard, PaperShell, StampLabel } from "@/components/ui/design";
 import { Badge } from "@/components/ui/Badge";
 import { DemoChecklist } from "@/components/DemoChecklist";
 import { DASHBOARD_COPY } from "@/lib/copy";
@@ -305,9 +305,9 @@ export default function DashboardClient() {
   }
 
   return (
-    <div className="page-shell py-12 sm:py-16">
-      <div className="paper-card-elevated relative overflow-hidden px-6 py-6 sm:px-8">
-        <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-teal-500 via-teal-600 to-warm-500" />
+    <PaperShell className="py-12 sm:py-16">
+      <div className="dossier-card relative overflow-hidden px-6 py-6 shadow-[var(--shadow-paper-offset)] sm:px-8">
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-teal-600 to-warm-500" />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <StampLabel tone="teal">PARTNER IMPACT</StampLabel>
@@ -1060,6 +1060,6 @@ export default function DashboardClient() {
           </Card>
         </div>
       )}
-    </div>
+    </PaperShell>
   );
 }
