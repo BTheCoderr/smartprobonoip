@@ -7,6 +7,7 @@ import { DossierPageHeader, StampLabel } from "@/components/ui/design";
 import { ResearchPrepWorkspace } from "@/components/research/ResearchPrepWorkspace";
 import { getStore } from "@/lib/store";
 import { getIdeaLabel } from "@/lib/packet";
+import { PACKET_COPY } from "@/lib/copy";
 import type { ProjectRecord } from "@/lib/types";
 
 export default function ResearchPage({
@@ -61,9 +62,9 @@ export default function ResearchPage({
             <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
           </>
         }
-        kicker="Research Prep Workspace"
+        kicker={PACKET_COPY.similarReferenceSearchPrepTitle}
         title={getIdeaLabel(record.answers)}
-        lead="Organize possible similar references and expert questions — not legal conclusions."
+        lead={PACKET_COPY.similarReferenceSearchPrepIntro}
       />
       <div className="page-shell-packet mt-8 space-y-6">
         <Link
@@ -72,7 +73,7 @@ export default function ResearchPage({
         >
           ← Back to IP Readiness Packet
         </Link>
-        <ResearchPrepWorkspace record={record} />
+        <ResearchPrepWorkspace key={record.id} record={record} routeName="research" />
       </div>
     </div>
   );

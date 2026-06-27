@@ -7,6 +7,7 @@ import { PACKET_COPY } from "@/lib/copy";
 import {
   buildGooglePatentsUrl,
   buildUsptoSearchUrl,
+  buildWebSearchUrl,
 } from "@/lib/research/buildLinks";
 import {
   buildInitialWorkspace,
@@ -37,9 +38,11 @@ const EMPTY_FORM = {
 export function ResearchPrepWorkspace({
   record,
   onReferencesChange,
+  routeName = "packet",
 }: {
   record: ProjectRecord;
   onReferencesChange?: (refs: SavedReference[]) => void;
+  routeName?: string;
 }) {
   const [workspace, setWorkspace] = useState<ResearchWorkspaceData>(() =>
     buildInitialWorkspace(record),
@@ -51,7 +54,7 @@ export function ResearchPrepWorkspace({
   const [saving, setSaving] = useState(false);
   const [comparingId, setComparingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const viewedTracked = useRef(false);
+  const viewedTracked = useRef<string | null>(null);
 
   const syncReferences = useCallback(
     (refs: SavedReference[]) => {
@@ -61,34 +64,53 @@ export function ResearchPrepWorkspace({
     [onReferencesChange],
   );
 
-  const refreshSavedReferences = useCallback(async () => {
-    setRefsLoading(true);
-    setLoadError(null);
+  const fetchSavedReferences = useCallback(async () => {
     try {
       const data = await loadWorkspace(record);
       syncReferences(data.savedReferences);
-      if (data.loadError) {
-        setLoadError(data.loadError);
-      }
+      setLoadError(data.loadError ?? null);
     } catch {
       setLoadError("Could not load saved references. You can still save new ones.");
       syncReferences([]);
-    } finally {
-      setRefsLoading(false);
     }
   }, [record, syncReferences]);
 
+  const refreshSavedReferences = useCallback(async () => {
+    setRefsLoading(true);
+    setLoadError(null);
+    await fetchSavedReferences();
+    setRefsLoading(false);
+  }, [fetchSavedReferences]);
+
   useEffect(() => {
-    setWorkspace(buildInitialWorkspace(record));
-    if (!viewedTracked.current) {
-      viewedTracked.current = true;
+    if (viewedTracked.current !== record.id) {
+      viewedTracked.current = record.id;
       trackEvent("research_workspace_viewed", {
         projectId: record.id,
-        metadata: { demo: record.isDemo ?? false, routeName: "packet" },
+        metadata: { demo: record.isDemo ?? false, routeName },
       });
     }
-    void refreshSavedReferences();
-  }, [record, refreshSavedReferences]);
+
+    let active = true;
+    void (async () => {
+      try {
+        const data = await loadWorkspace(record);
+        if (!active) return;
+        syncReferences(data.savedReferences);
+        setLoadError(data.loadError ?? null);
+      } catch {
+        if (!active) return;
+        setLoadError("Could not load saved references. You can still save new ones.");
+        syncReferences([]);
+      } finally {
+        if (active) setRefsLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [record, routeName, syncReferences]);
 
   function prefillFromQuery(query: string) {
     setForm((current) => ({
@@ -99,22 +121,22 @@ export function ResearchPrepWorkspace({
     setEditingId(null);
   }
 
-  async function copyQuery(query: string) {
+  async function copyQuery(query: string, queryIndex: number) {
     try {
       await navigator.clipboard.writeText(query);
       trackEvent("query_copied", {
         projectId: record.id,
-        metadata: { demo: record.isDemo ?? false },
+        metadata: { demo: record.isDemo ?? false, queryIndex },
       });
     } catch {
       setError("Could not copy query.");
     }
   }
 
-  function trackExternalSearch(label: string) {
+  function trackExternalSearch(label: string, queryIndex: number) {
     trackEvent("external_search_opened", {
       projectId: record.id,
-      metadata: { label, demo: record.isDemo ?? false },
+      metadata: { label, demo: record.isDemo ?? false, queryIndex },
     });
   }
 
@@ -264,7 +286,7 @@ export function ResearchPrepWorkspace({
           subtitle="Search terms to try — possible similar references only."
         />
         <ul className="space-y-4">
-          {workspace.suggestedQueries.map((item) => (
+          {workspace.suggestedQueries.map((item, queryIndex) => (
             <li
               key={item.query}
               className="rounded-xl border border-mist-200 bg-mist-50/60 p-4"
@@ -278,7 +300,7 @@ export function ResearchPrepWorkspace({
                   href={buildGooglePatentsUrl(item.query)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => trackExternalSearch("Google Patents")}
+                  onClick={() => trackExternalSearch("Google Patents", queryIndex)}
                   className="rounded-lg border border-teal-300 px-3 py-1.5 text-xs font-medium text-teal-800 hover:bg-teal-50"
                 >
                   Open in Google Patents
@@ -287,14 +309,25 @@ export function ResearchPrepWorkspace({
                   href={buildUsptoSearchUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => trackExternalSearch("USPTO Patent Public Search")}
+                  onClick={() =>
+                    trackExternalSearch("USPTO Patent Public Search", queryIndex)
+                  }
                   className="rounded-lg border border-teal-300 px-3 py-1.5 text-xs font-medium text-teal-800 hover:bg-teal-50"
                 >
                   Open in USPTO Patent Public Search
                 </a>
+                <a
+                  href={buildWebSearchUrl(item.query)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackExternalSearch("Web search", queryIndex)}
+                  className="rounded-lg border border-teal-300 px-3 py-1.5 text-xs font-medium text-teal-800 hover:bg-teal-50"
+                >
+                  Open web search
+                </a>
                 <button
                   type="button"
-                  onClick={() => void copyQuery(item.query)}
+                  onClick={() => void copyQuery(item.query, queryIndex)}
                   className="rounded-lg border border-mist-300 px-3 py-1.5 text-xs font-medium text-navy-700 hover:bg-white"
                 >
                   Copy query

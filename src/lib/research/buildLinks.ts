@@ -13,6 +13,10 @@ export function buildUsptoSearchUrl(): string {
   return USPTO_PATENT_PUBLIC_SEARCH;
 }
 
+export function buildWebSearchUrl(query: string): string {
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+}
+
 function whyQueryMayHelp(query: string, index: number): string {
   if (index === 0) {
     return "This broad query may help you explore possible similar references in your general topic area.";

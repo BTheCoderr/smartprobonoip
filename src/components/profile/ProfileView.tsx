@@ -30,7 +30,6 @@ import { getTriggeredMiniPrepSections } from "@/lib/miniPrepSections";
 import { MiniPrepSectionCard } from "@/components/profile/MiniPrepSectionCard";
 import {
   buildPatentSearchPrep,
-  PATENT_SEARCH_PREP_INTRO,
   WORKSHEET_HEADERS,
 } from "@/lib/patentSearchPrep";
 import { ResearchPrepWorkspace } from "@/components/research/ResearchPrepWorkspace";
@@ -538,6 +537,7 @@ export function ProfileView({
           </Card>
 
           <ResearchPrepWorkspace
+            key={record.id}
             record={record}
             onReferencesChange={onReferencesChange}
           />

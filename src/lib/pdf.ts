@@ -430,7 +430,7 @@ export function buildPacketPdf(
   text(searchPrep.safeDisclaimer, { size: 9, color: AMBER, gap: 6 });
 
   if (savedReferences.length > 0) {
-    heading("Saved research references");
+    heading(PACKET_COPY.savedSimilarReferencesTitle);
     text(
       "User-saved possible similar references — not a legal conclusion about patentability, novelty, clearance, or infringement.",
       { size: 9, color: GRAY, gap: 4 },

@@ -22,6 +22,7 @@ const ALLOWED_KEYS = new Set([
   "referenceType",
   "label",
   "savedReferenceCount",
+  "queryIndex",
   "resourceKey",
   "validationField",
   "eventCount",
