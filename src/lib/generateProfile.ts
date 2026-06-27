@@ -1,6 +1,11 @@
 import { DISCLAIMER } from "./disclaimer";
+import { normalizeAnswersForPacket } from "./intakeValidation";
 import { assertSafeLanguage, collectProfileText } from "./safety";
 import { ITEM_TYPE_LABELS } from "./labels";
+import {
+  assertSignalCatalogSafe,
+  deriveSignals,
+} from "./signals";
 import {
   cleanText,
   extractBrandName,
@@ -26,26 +31,19 @@ function isPubliclyShared(answers: IntakeAnswers): boolean {
   return answers.sharedChannels.some((c) => c !== "none");
 }
 
-function isConfidential(answers: IntakeAnswers): boolean {
-  return (
-    !isPubliclyShared(answers) &&
-    (answers.sharedChannels.length === 0 ||
-      answers.sharedChannels.every((c) => c === "none"))
-  );
-}
-
 function stripTrailingPunctuation(value: string): string {
   return value.replace(/[.!?]+$/, "").trim();
 }
 
 function buildSummary(answers: IntakeAnswers): string {
   const brand = extractBrandName(answers.whatCreated);
-  const created = hasText(answers.whatCreated)
-    ? preserveBrandInText(
-        stripTrailingPunctuation(clean(answers.whatCreated)),
-        brand,
-      )
-    : "an idea";
+  const createdRaw = hasText(answers.whatCreated)
+    ? stripTrailingPunctuation(clean(answers.whatCreated))
+    : "";
+  const created =
+    createdRaw && !/https?:\/\//i.test(createdRaw) && !/smartprobonoip/i.test(createdRaw)
+      ? preserveBrandInText(createdRaw, brand)
+      : "your idea";
 
   const parts: string[] = [`You described ${lowerFirst(created)}`];
 
@@ -71,51 +69,92 @@ function lowerFirst(value: string): string {
   return value.charAt(0).toLowerCase() + value.slice(1);
 }
 
-function deriveSignals(answers: IntakeAnswers): IpSignal[] {
-  const signals = new Set<IpSignal>();
-
-  const functional =
-    ["physical_product", "process", "recipe", "design"].includes(
-      answers.itemType,
-    ) ||
-    (hasText(answers.howItWorks) && hasText(answers.mainParts));
-  if (functional) signals.add("patent_invention");
-
-  if (answers.hasBrandIdentity || answers.itemType === "brand") {
-    signals.add("trademark_brand");
+function deriveExpertQuestions(
+  answers: IntakeAnswers,
+  signals: IpSignal[],
+): string[] {
+  const questions: string[] = [];
+  if (signals.includes("patent_invention")) {
+    questions.push(
+      "Which parts of how my idea works might be most important to describe in detail?",
+    );
   }
+  if (signals.includes("trademark_brand")) {
+    questions.push(
+      "What should I check before committing to my name, logo, or slogan?",
+    );
+  }
+  if (signals.includes("copyright_creative")) {
+    questions.push(
+      "How should I document and organize my creative work?",
+    );
+  }
+  if (signals.includes("software_code")) {
+    questions.push(
+      "How should I organize my app screens, code notes, and technical documentation?",
+    );
+  }
+  if (signals.includes("trade_secret")) {
+    questions.push(
+      "What should I keep confidential, and how should I handle conversations about it?",
+    );
+  }
+  if (signals.includes("nda_confidentiality")) {
+    questions.push(
+      "Who am I planning to share with, and what should I prepare before those conversations?",
+    );
+  }
+  if (signals.includes("public_disclosure") || isPubliclyShared(answers)) {
+    questions.push(
+      "I have already shared this publicly — how might that affect my options and timing?",
+    );
+  }
+  if (signals.includes("prior_art_search")) {
+    questions.push(
+      "What search terms or similar products should I bring when discussing possible references?",
+    );
+  }
+  questions.push(
+    "Given my situation, what is the most useful next preparation step for me?",
+  );
+  return questions;
+}
+
+function deriveResources(
+  answers: IntakeAnswers,
+  signals: IpSignal[],
+): ResourceCategory[] {
+  const resources = new Set<ResourceCategory>(["education"]);
 
   if (
-    answers.itemType === "creative_work" ||
-    answers.itemType === "software" ||
-    answers.assets.includes("code")
+    signals.includes("patent_invention") ||
+    signals.includes("prior_art_search")
   ) {
-    signals.add("copyright_creative_software");
+    resources.add("ptrc");
+    resources.add(answers.wantsProBono ? "patent_pro_bono" : "patent_agent_attorney");
   }
-
-  if (isConfidential(answers) && (hasText(answers.howItWorks) || hasText(answers.mainParts))) {
-    signals.add("trade_secret");
-  }
-
-  const wantsSharing = answers.goals.some((g) =>
-    ["funding", "licensing", "business_support"].includes(g),
-  );
-  const willShare = answers.sharedChannels.some((c) =>
-    ["investors", "customers", "pitch"].includes(c),
-  );
-  if (wantsSharing || willShare) {
-    signals.add("nda_business_support");
-  }
-
   if (
-    answers.goals.includes("expert_review") ||
-    answers.goals.includes("protection") ||
-    signals.size === 0
+    signals.includes("trademark_brand") ||
+    signals.includes("domain_digital_identity")
   ) {
-    signals.add("expert_review");
+    resources.add("trademark_search");
   }
-
-  return Array.from(signals);
+  if (signals.includes("copyright_creative")) {
+    resources.add("copyright_registration");
+  }
+  if (
+    signals.includes("nda_confidentiality") ||
+    signals.includes("business_formation") ||
+    signals.includes("licensing_commercialization") ||
+    answers.goals.includes("funding") ||
+    answers.goals.includes("business_support")
+  ) {
+    resources.add("business_accelerator");
+  }
+  if (answers.wantsProBono) {
+    resources.add("law_school_clinic");
+  }
+  return Array.from(resources);
 }
 
 function deriveComplete(answers: IntakeAnswers): string[] {
@@ -149,71 +188,6 @@ function deriveMissing(answers: IntakeAnswers): string[] {
   return out;
 }
 
-function deriveExpertQuestions(
-  answers: IntakeAnswers,
-  signals: IpSignal[],
-): string[] {
-  const questions: string[] = [];
-  if (signals.includes("patent_invention")) {
-    questions.push(
-      "Which parts of how my idea works might be most important to describe in detail?",
-    );
-  }
-  if (signals.includes("trademark_brand")) {
-    questions.push(
-      "What should I check before committing to my name, logo, or slogan?",
-    );
-  }
-  if (signals.includes("copyright_creative_software")) {
-    questions.push(
-      "How should I document and organize my creative work or code?",
-    );
-  }
-  if (signals.includes("trade_secret")) {
-    questions.push(
-      "What should I keep confidential, and how should I handle conversations about it?",
-    );
-  }
-  if (isPubliclyShared(answers)) {
-    questions.push(
-      "I have already shared this publicly — how might that affect my options and timing?",
-    );
-  }
-  questions.push(
-    "Given my situation, what is the most useful next preparation step for me?",
-  );
-  return questions;
-}
-
-function deriveResources(
-  answers: IntakeAnswers,
-  signals: IpSignal[],
-): ResourceCategory[] {
-  const resources = new Set<ResourceCategory>(["education"]);
-
-  if (signals.includes("patent_invention")) {
-    resources.add("ptrc");
-    resources.add(answers.wantsProBono ? "patent_pro_bono" : "patent_agent_attorney");
-  }
-  if (signals.includes("trademark_brand")) {
-    resources.add("trademark_search");
-  }
-  if (signals.includes("copyright_creative_software")) {
-    resources.add("copyright_registration");
-  }
-  if (
-    signals.includes("nda_business_support") ||
-    answers.goals.includes("funding") ||
-    answers.goals.includes("business_support")
-  ) {
-    resources.add("business_accelerator");
-  }
-  if (answers.wantsProBono) {
-    resources.add("law_school_clinic");
-  }
-  return Array.from(resources);
-}
-
 function buildNextStep(
   answers: IntakeAnswers,
   signals: IpSignal[],
@@ -234,7 +208,9 @@ function buildNextStep(
   return "Based on your answers, your next preparation step may be to gather your materials and consider discussing them with one of the recommended resources below.";
 }
 
-export function generateProfile(answers: IntakeAnswers): ReadinessProfile {
+export function generateProfile(rawAnswers: IntakeAnswers): ReadinessProfile {
+  assertSignalCatalogSafe();
+  const answers = normalizeAnswersForPacket(rawAnswers);
   const signals = deriveSignals(answers);
   const completeInfo = deriveComplete(answers);
   const missingInfo = deriveMissing(answers);

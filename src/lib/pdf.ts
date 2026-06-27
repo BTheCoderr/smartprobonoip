@@ -1,11 +1,11 @@
 import { jsPDF } from "jspdf";
 import { BRAND } from "./brand";
+import { PACKET_COPY } from "./copy";
 import {
   RESOURCE_DESCRIPTIONS,
   RESOURCE_LABELS,
-  SIGNAL_DESCRIPTIONS,
-  SIGNAL_LABELS,
 } from "./labels";
+import { SIGNAL_CATALOG } from "./signals";
 import {
   buildDifferenceMap,
   buildExpertHandoff,
@@ -196,12 +196,18 @@ export function buildPacketPdf(
   }
 
   // 3. Readiness snapshot
-  heading("Readiness snapshot");
+  heading(PACKET_COPY.readinessSnapshotTitle);
   if (profile.signals.length > 0) {
-    text("Possible IP signals", { size: 10, bold: true, gap: 1 });
+    text(PACKET_COPY.signalsSection, { size: 10, bold: true, gap: 1 });
     for (const s of profile.signals) {
-      text(SIGNAL_LABELS[s], { bold: true, gap: 1 });
-      text(SIGNAL_DESCRIPTIONS[s], { color: GRAY });
+      const guide = SIGNAL_CATALOG[s];
+      text(guide.label, { bold: true, gap: 1 });
+      text(`Why it may matter: ${guide.whyItMatters}`, { color: GRAY, gap: 1 });
+      text(`What to prepare: ${guide.whatToPrepare}`, { color: GRAY, gap: 1 });
+      text(`Suggested resource type: ${guide.suggestedResourceType}`, {
+        color: GRAY,
+        gap: 4,
+      });
     }
   }
   for (const item of buildReadinessSnapshot(record)) {
@@ -212,7 +218,7 @@ export function buildPacketPdf(
   }
 
   // 4. Missing information checklist
-  heading("Missing information checklist");
+  heading(PACKET_COPY.missingInfoTitle);
   text(missingStatus.statusMessage, { bold: true, gap: 4 });
   if (missingStatus.coreMissing.length > 0) {
     text("Core intake", { size: 10, bold: true, gap: 2 });
@@ -234,11 +240,11 @@ export function buildPacketPdf(
   text(profile.publicDisclosureNote, { color: GRAY });
 
   // 6. Expert conversation prep
-  heading("Expert conversation prep — questions to bring to an expert");
+  heading(PACKET_COPY.expertPrepTitle);
   bullets(profile.expertQuestions, "?");
 
   // 7. Suggested next resources
-  heading("Suggested next resources");
+  heading(PACKET_COPY.resourcesTitle);
   for (const r of profile.recommendedResources) {
     text(RESOURCE_LABELS[r], { bold: true, gap: 1 });
     text(RESOURCE_DESCRIPTIONS[r], { color: GRAY });
@@ -256,7 +262,7 @@ export function buildPacketPdf(
   // ---------------------------------------------------------------------------
   doc.addPage();
   y = MARGIN;
-  text("Patent Prep Mode", { size: 14, color: NAVY, bold: true, gap: 2 });
+  text(PACKET_COPY.patentPrepTitle, { size: 14, color: NAVY, bold: true, gap: 2 });
   text(PATENT_PREP_INTRO, { size: 9, color: GRAY, gap: 6 });
 
   // Patent prep checklist
@@ -319,7 +325,7 @@ export function buildPacketPdf(
   const searchPrep = buildPatentSearchPrep(record);
   doc.addPage();
   y = MARGIN;
-  text("Similar Patent Discovery Prep", { size: 14, color: NAVY, bold: true, gap: 2 });
+  text(PACKET_COPY.similarRefPrepTitle, { size: 14, color: NAVY, bold: true, gap: 2 });
   text(PATENT_SEARCH_PREP_INTRO, { size: 9, color: GRAY, gap: 6 });
 
   heading("Search keywords");
@@ -362,14 +368,14 @@ export function buildPacketPdf(
   }
 
   // Readiness metrics
-  heading("Readiness Metrics");
+  heading(PACKET_COPY.readinessSnapshotTitle);
   text("Preparation only — not legal outcomes.", { size: 9, color: GRAY, gap: 4 });
   for (const metric of readinessMetrics) {
     labeledBlock(metric.label, metric.value);
   }
 
   // Next best action
-  heading("Next Best Action");
+  heading(PACKET_COPY.nextBestStepTitle);
   text(nextBestAction, { gap: 6 });
 
   // Full legal disclaimer

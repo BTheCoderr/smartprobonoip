@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createRecord } from "@/lib/db/records";
+import { validateForGeneration } from "@/lib/intakeValidation";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 import type { IntakeAnswers, ReadinessProfile } from "@/lib/types";
 
@@ -23,6 +24,14 @@ export async function POST(request: Request) {
       preClarity: number;
       isDemo?: boolean;
     };
+
+    const validationErrors = validateForGeneration(body.answers);
+    if (validationErrors.length > 0) {
+      return NextResponse.json(
+        { error: validationErrors[0].message, field: validationErrors[0].field },
+        { status: 422 },
+      );
+    }
 
     const record = await createRecord({
       answers: body.answers,

@@ -35,6 +35,17 @@ export type Goal =
   | "business_support"
   | "expert_review";
 
+export type IdeaInclude =
+  | "brand_name"
+  | "software_app"
+  | "how_it_works"
+  | "creative_files"
+  | "keep_private"
+  | "share_with_partners"
+  | "license_commercialize"
+  | "look_and_design"
+  | "online_identity";
+
 export interface IntakeAnswers {
   whatCreated: string;
   problemSolved: string;
@@ -47,6 +58,7 @@ export interface IntakeAnswers {
   assets: AssetType[];
   sharedChannels: SharingChannel[];
   hasBrandIdentity: boolean;
+  ideaIncludes?: IdeaInclude[];
   goals: Goal[];
   location: string;
   wantsProBono: boolean;
@@ -56,9 +68,16 @@ export interface IntakeAnswers {
 export type IpSignal =
   | "patent_invention"
   | "trademark_brand"
-  | "copyright_creative_software"
+  | "copyright_creative"
+  | "software_code"
   | "trade_secret"
-  | "nda_business_support"
+  | "nda_confidentiality"
+  | "public_disclosure"
+  | "licensing_commercialization"
+  | "business_formation"
+  | "domain_digital_identity"
+  | "design_appearance"
+  | "prior_art_search"
   | "expert_review";
 
 export type ResourceCategory =

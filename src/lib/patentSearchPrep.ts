@@ -1,5 +1,18 @@
 import { ITEM_TYPE_LABELS } from "./labels";
-import { cleanSearchQuery, cleanText, extractBrandName } from "./textCleanup";
+import {
+  extractProductNameFromAnswers,
+  filterBlockedTokens,
+  isBlockedToken,
+  isMostlyUrl,
+  isUrlOrRoute,
+  normalizeAnswersForPacket,
+} from "./intakeValidation";
+import {
+  cleanSearchQuery,
+  cleanText,
+  extractBrandName,
+  stripBlockedTokensFromQuery,
+} from "./textCleanup";
 import { containsForbiddenLanguage } from "./safety";
 import type { IntakeAnswers, ProjectRecord } from "./types";
 
@@ -69,15 +82,20 @@ const MATERIAL_TERMS = [
 ];
 
 function extractKeywords(text: string, limit = 8): string[] {
+  if (!text?.trim() || isUrlOrRoute(text) || isMostlyUrl(text)) return [];
+
   const brand = extractBrandName(text);
   const words = text
     .toLowerCase()
+    .replace(/https?:\/\/[^\s]+/g, " ")
+    .replace(/www\.[^\s]+/g, " ")
     .replace(/[^\w\s-]/g, " ")
     .split(/\s+/)
     .filter(
       (w) =>
         w.length > 2 &&
         !STOP_WORDS.has(w) &&
+        !isBlockedToken(w) &&
         !(brand && w === brand.toLowerCase()),
     );
 
@@ -90,7 +108,7 @@ function extractKeywords(text: string, limit = 8): string[] {
     }
     if (result.length >= limit) break;
   }
-  return result;
+  return filterBlockedTokens(result);
 }
 
 function phraseJoin(...groups: string[][]): string {
@@ -105,7 +123,7 @@ function phraseJoin(...groups: string[][]): string {
       }
     }
   }
-  return cleanSearchQuery(words.join(" "));
+  return stripBlockedTokensFromQuery(words.join(" "));
 }
 
 function productNouns(answers: IntakeAnswers): string[] {
@@ -135,8 +153,10 @@ function mentions(text: string, ...terms: string[]): boolean {
 }
 
 function buildSuggestedQueries(record: ProjectRecord): string[] {
-  const { answers } = record;
-  const brand = extractBrandName(answers.whatCreated);
+  const answers = normalizeAnswersForPacket(record.answers);
+  const brand =
+    extractBrandName(answers.whatCreated) ??
+    extractProductNameFromAnswers(answers);
   const blob = textBlob(answers);
 
   const problemKw = extractKeywords(answers.problemSolved, 4);
@@ -160,11 +180,19 @@ function buildSuggestedQueries(record: ProjectRecord): string[] {
     workflow = "inline drinking water filter bottle";
     material = "carbon ceramic filter cartridge bottle";
     difference = "inline filter drinking no pump battery compostable cartridge";
-  } else if (mentions(blob, "software", "app", "application")) {
-    broad = phraseJoin(problemKw.slice(0, 3), ["software", "application"]);
+  } else if (
+    mentions(blob, "property", "renovation", "real estate", "upgrade", "contractor", "homeowner")
+  ) {
+    broad = "AI property upgrade planning software";
+    component = "property photo renovation planning app";
+    workflow = "automated materials checklist budget estimator";
+    material = "real estate upgrade plan PDF generator";
+    difference = "contractor handoff property improvement software";
+  } else if (mentions(blob, "software", "app", "application", "platform")) {
+    broad = phraseJoin(problemKw.slice(0, 3), ["software", "platform"]);
     component = phraseJoin(partsKw.slice(0, 4), ["module", "feature"]);
-    workflow = phraseJoin(worksKw.slice(0, 4), ["user", "workflow"]);
-    material = phraseJoin(worksKw.slice(0, 3), ["interface", "data"]);
+    workflow = phraseJoin(worksKw.slice(0, 4), ["workflow", "process"]);
+    material = phraseJoin(diffKw.slice(0, 3), ["interface", "automation"]);
     difference = phraseJoin(diffKw.slice(0, 5));
   } else {
     broad = phraseJoin(problemKw.slice(0, 3), createdKw.slice(0, 4));
@@ -182,13 +210,16 @@ function buildSuggestedQueries(record: ProjectRecord): string[] {
   }
 
   const queries = [broad, component, workflow, material, difference].map(
-    cleanSearchQuery,
+    stripBlockedTokensFromQuery,
   );
 
   if (brand && answers.hasBrandIdentity) {
-    queries[4] = cleanSearchQuery(
-      `${brand.toLowerCase()} ${partsKw[0] ?? createdKw[0] ?? "portable filter"}`,
-    );
+    const suffix =
+      mentions(blob, "property", "renovation", "real estate")
+        ? "property upgrade planning software"
+        : problemKw.filter((w) => !brand.toLowerCase().includes(w))[0] ??
+          "software platform";
+    queries[4] = stripBlockedTokensFromQuery(`${brand.toLowerCase()} ${suffix}`);
   }
 
   const unique: string[] = [];
@@ -288,7 +319,7 @@ function buildExternalSearchLinks(
 }
 
 export function buildPatentSearchPrep(record: ProjectRecord): PatentSearchPrep {
-  const { answers } = record;
+  const answers = normalizeAnswersForPacket(record.answers);
 
   const searchKeywords = uniqueKeywords([
     extractKeywords(answers.whatCreated),
@@ -297,9 +328,12 @@ export function buildPatentSearchPrep(record: ProjectRecord): PatentSearchPrep {
     extractKeywords(answers.mainParts),
     extractKeywords(answers.whatDifferent),
     productNouns(answers),
-  ]);
+  ]).filter((kw) => !isBlockedToken(kw));
 
-  const suggestedQueries = buildSuggestedQueries(record);
+  const suggestedQueries = buildSuggestedQueries({
+    ...record,
+    answers,
+  });
   const externalSearchLinks = buildExternalSearchLinks(suggestedQueries);
   const worksheetRows = buildWorksheetRows(suggestedQueries);
   const expertPrepQuestions = buildExpertPrepQuestions(record);

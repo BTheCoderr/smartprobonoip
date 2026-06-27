@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { RESOURCE_LABELS, SIGNAL_LABELS } from "@/lib/labels";
+import { normalizeProfileSignals, SIGNAL_KEYS } from "@/lib/signals";
 import type {
-  IpSignal,
   ReadinessProfile,
   ResourceCategory,
 } from "@/lib/types";
 
-const SIGNAL_KEYS = Object.keys(SIGNAL_LABELS) as IpSignal[];
 const RESOURCE_KEYS = Object.keys(RESOURCE_LABELS) as ResourceCategory[];
 
 function linesToList(value: string): string[] {
@@ -39,7 +38,10 @@ export function ProfileEditor({
   onCancel: () => void;
   saving: boolean;
 }) {
-  const [draft, setDraft] = useState<ReadinessProfile>(profile);
+  const [draft, setDraft] = useState<ReadinessProfile>(() => ({
+    ...profile,
+    signals: normalizeProfileSignals(profile.signals),
+  }));
   const [complete, setComplete] = useState(profile.completeInfo.join("\n"));
   const [missing, setMissing] = useState(profile.missingInfo.join("\n"));
   const [questions, setQuestions] = useState(

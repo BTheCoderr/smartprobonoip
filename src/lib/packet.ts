@@ -1,6 +1,12 @@
 import { ASSET_LABELS, SHARING_LABELS } from "./labels";
+import { PACKET_COPY } from "./copy";
 import { assertPatentSearchPrepSafe } from "./patentSearchPrep";
 import { containsForbiddenLanguage } from "./safety";
+import {
+  extractProductNameFromAnswers,
+  getIdeaLabel as resolveIdeaLabel,
+  normalizeAnswersForPacket,
+} from "./intakeValidation";
 import {
   cleanText,
   extractBrandName,
@@ -84,20 +90,19 @@ export const DEVELOPMENT_TIMELINE_FIELDS = [
 ];
 
 export function getIdeaLabel(answers: IntakeAnswers): string {
-  const raw = answers.whatCreated?.trim();
-  if (!raw) return "Untitled idea";
-  const firstSentence = raw.split(/[.!?\n]/)[0].trim();
-  const base = firstSentence.length > 0 ? firstSentence : raw;
-  return base.length > 70 ? `${base.slice(0, 67)}…` : base;
+  return resolveIdeaLabel(normalizeAnswersForPacket(answers));
 }
 
 export function buildIdeaSummaryFields(answers: IntakeAnswers): SummaryField[] {
-  const brand = extractBrandName(answers.whatCreated);
+  const normalized = normalizeAnswersForPacket(answers);
+  const brand =
+    extractBrandName(normalized.whatCreated) ??
+    extractBrandName(normalized.problemSolved);
   const fields: SummaryField[] = [
-    { label: "What you created", value: answers.whatCreated },
-    { label: "What problem it solves", value: answers.problemSolved },
-    { label: "Who it is for", value: answers.whoFor },
-    { label: "How it works", value: answers.howItWorks },
+    { label: "What you created", value: normalized.whatCreated },
+    { label: "What problem it solves", value: normalized.problemSolved },
+    { label: "Who it is for", value: normalized.whoFor },
+    { label: "How it works", value: normalized.howItWorks },
   ];
   return fields
     .map((f) => ({
@@ -291,8 +296,11 @@ export function buildMaterialsChecklist(record: ProjectRecord): MaterialItem[] {
 }
 
 export function buildExpertHandoff(record: ProjectRecord): ExpertHandoff {
-  const { answers, profile } = record;
-  const brand = extractBrandName(answers.whatCreated);
+  const { profile } = record;
+  const answers = normalizeAnswersForPacket(record.answers);
+  const brand =
+    extractBrandName(answers.whatCreated) ??
+    extractProductNameFromAnswers(answers);
   const clip = (value: string, max = 240) => {
     const text = preserveBrandInText(cleanText(value), brand);
     return text.length > max ? `${text.slice(0, max - 1)}…` : text;
@@ -353,11 +361,11 @@ export function buildMissingInfoStatus(
 
   let statusMessage: string;
   if (coreMissing.length > 0) {
-    statusMessage = `${coreMissing.length} core intake item${coreMissing.length === 1 ? "" : "s"} still need attention.`;
+    statusMessage = PACKET_COPY.coreNeedsAttention(coreMissing.length);
   } else if (optionalGaps.length > 0) {
-    statusMessage = "Core intake is complete. Optional prep areas remain.";
+    statusMessage = PACKET_COPY.coreCompleteOptionalGaps;
   } else {
-    statusMessage = "Core intake is complete.";
+    statusMessage = PACKET_COPY.coreComplete;
   }
 
   return { coreMissing, optionalGaps, statusMessage };

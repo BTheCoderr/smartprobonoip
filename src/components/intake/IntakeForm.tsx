@@ -7,14 +7,22 @@ import { ProgressIndicator } from "@/components/ui/ProgressIndicator";
 import {
   ASSET_OPTIONS,
   GOAL_OPTIONS,
+  IDEA_INCLUDE_OPTIONS,
   ITEM_TYPE_OPTIONS,
   SHARING_OPTIONS,
 } from "@/lib/labels";
+import { suggestIdeaIncludes } from "@/lib/signals";
 import { getStore } from "@/lib/store";
 import { activateDemoFromQuery, DEMO_INVENTION, isDemoMode } from "@/lib/demo";
+import {
+  REVIEW_FIELDS,
+  validateForGeneration,
+  validateIntakeStep,
+} from "@/lib/intakeValidation";
 import type {
   AssetType,
   Goal,
+  IdeaInclude,
   IntakeAnswers,
   ReadinessProfile,
   SharingChannel,
@@ -33,6 +41,7 @@ const STEP_LABELS = [
   "Type & prototype",
   "Materials & sharing",
   "Goals & support",
+  "Review your answers",
   "Readiness",
 ];
 
@@ -74,6 +83,7 @@ export function IntakeForm() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldError, setFieldError] = useState<string | null>(null);
   const demoActive =
     demoFromUrl ||
     isDemoMode() ||
@@ -83,6 +93,7 @@ export function IntakeForm() {
 
   function update<K extends keyof IntakeAnswers>(key: K, value: IntakeAnswers[K]) {
     setAnswers((prev) => ({ ...prev, [key]: value }));
+    setFieldError(null);
   }
 
   function toggleSharing(value: SharingChannel) {
@@ -93,18 +104,63 @@ export function IntakeForm() {
     });
   }
 
+  function goNext() {
+    if (demoActive) {
+      setStep((s) => Math.min(last, s + 1));
+      return;
+    }
+    if (step === 5) {
+      const validationErrors = validateForGeneration(answers);
+      if (validationErrors.length > 0) {
+        setFieldError(validationErrors[0].message);
+        return;
+      }
+    } else {
+      const validation = validateIntakeStep(step, answers);
+      if (validation) {
+        setFieldError(validation.message);
+        return;
+      }
+    }
+    setFieldError(null);
+    if (
+      step === 1 &&
+      (!answers.ideaIncludes || answers.ideaIncludes.length === 0)
+    ) {
+      setAnswers((prev) => ({
+        ...prev,
+        ideaIncludes: suggestIdeaIncludes(prev),
+      }));
+    }
+    setStep((s) => Math.min(last, s + 1));
+  }
+
   const canProceed = step !== 0 || answers.whatCreated.trim().length > 0;
 
   async function handleSubmit() {
+    if (!demoActive) {
+      const validationErrors = validateForGeneration(answers);
+      if (validationErrors.length > 0) {
+        setFieldError(validationErrors[0].message);
+        return;
+      }
+    }
+
     setSubmitting(true);
     setError(null);
+    setFieldError(null);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers }),
       });
-      if (!res.ok) throw new Error("Generation failed");
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        throw new Error(err.error ?? "Generation failed");
+      }
       const data = (await res.json()) as { profile: ReadinessProfile };
       const record = await getStore().saveRecord({
         answers,
@@ -113,9 +169,11 @@ export function IntakeForm() {
         isDemo: demoActive,
       });
       router.push(`/smartprobonoip/profile/${record.id}`);
-    } catch {
+    } catch (err) {
       setError(
-        "Something went wrong generating your profile. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Something went wrong generating your profile. Please try again.",
       );
       setSubmitting(false);
     }
@@ -193,6 +251,18 @@ export function IntakeForm() {
               value={answers.hasBrandIdentity}
               onChange={(v) => update("hasBrandIdentity", v)}
             />
+            <CheckboxGroup<IdeaInclude>
+              label="What does your idea include?"
+              hint="Optional — check anything that fits. We use this to suggest what your packet may touch."
+              options={IDEA_INCLUDE_OPTIONS}
+              selected={answers.ideaIncludes ?? []}
+              onToggle={(v) =>
+                update(
+                  "ideaIncludes",
+                  toggle(answers.ideaIncludes ?? [], v),
+                )
+              }
+            />
           </div>
         )}
 
@@ -240,6 +310,24 @@ export function IntakeForm() {
         )}
 
         {step === 5 && (
+          <div className="space-y-5">
+            <p className="text-sm text-navy-600">
+              Review your answers before we generate your IP Readiness Packet.
+              Edit anything that looks wrong.
+            </p>
+            {REVIEW_FIELDS.map(({ key, label }) => (
+              <TextField
+                key={key}
+                label={label}
+                value={String(answers[key] ?? "")}
+                onChange={(v) => update(key, v)}
+                rows={key === "whatCreated" || key === "howItWorks" ? 3 : 2}
+              />
+            ))}
+          </div>
+        )}
+
+        {step === 6 && (
           <div className="space-y-6">
             <ClarityScale
               label="Before we generate your profile: how clear are you on your next IP step?"
@@ -252,6 +340,12 @@ export function IntakeForm() {
             </p>
           </div>
         )}
+
+        {fieldError ? (
+          <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+            {fieldError}
+          </p>
+        ) : null}
 
         {error ? (
           <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
@@ -272,7 +366,7 @@ export function IntakeForm() {
           {step < last ? (
             <button
               type="button"
-              onClick={() => setStep((s) => Math.min(last, s + 1))}
+              onClick={goNext}
               disabled={!canProceed}
               className="rounded-lg bg-teal-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-mist-300 disabled:text-navy-500"
             >

@@ -1,3 +1,4 @@
+import { COACH_COPY } from "./copy";
 import { SHARING_LABELS } from "./labels";
 import {
   buildExpertHandoff,
@@ -34,9 +35,9 @@ export interface CoachAction {
 }
 
 export const COACH_ACTIONS: CoachAction[] = [
-  { mode: "missing_info", label: "What information am I missing?" },
+  { mode: "missing_info", label: "What should I strengthen?" },
   { mode: "expert_questions", label: "What might an expert ask me?" },
-  { mode: "explain_better", label: "Help me explain my idea better" },
+  { mode: "explain_better", label: "Help me explain this clearer" },
   {
     mode: "difference_map",
     label: "Help me describe what makes this different",
@@ -47,14 +48,14 @@ export const COACH_ACTIONS: CoachAction[] = [
     label: "Help me organize drawings and materials",
   },
   { mode: "expert_handoff", label: "Create a short expert handoff summary" },
-  { mode: "search_terms", label: "Generate patent search terms" },
+  { mode: "search_terms", label: "Generate similar-reference search terms" },
   {
     mode: "compare_reference",
-    label: "Help me compare my idea to a similar patent",
+    label: "Help me compare my idea to a similar reference",
   },
   {
     mode: "similar_ref_questions",
-    label: "What should I ask an expert about similar references?",
+    label: "What should I ask about similar references?",
   },
   {
     mode: "user_differences",
@@ -63,8 +64,7 @@ export const COACH_ACTIONS: CoachAction[] = [
   { mode: "prior_art_checklist", label: "Create a prior art prep checklist" },
 ];
 
-export const COACH_INTRO =
-  "Need help preparing for your expert conversation? Ask the AI Packet Coach to help you clarify your answers, identify missing information, and prepare for a patent agent, attorney, clinic, mentor, or innovation partner.";
+export const COACH_INTRO = COACH_COPY.intro;
 
 export const COACH_SAFETY_NOTE =
   "This is preparation help only — not legal advice and not a legal conclusion. A professional may want to review the details with you.";

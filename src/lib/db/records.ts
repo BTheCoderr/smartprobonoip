@@ -2,6 +2,7 @@ import "server-only";
 import { RESOURCE_LABELS } from "@/lib/labels";
 import { getIdeaLabel } from "@/lib/packet";
 import { DEFAULT_FOLLOW_UP } from "@/lib/records";
+import { normalizeProfileSignals } from "@/lib/signals";
 import { getSupabaseService } from "@/lib/supabaseServer";
 import type {
   FollowUpStatus,
@@ -140,7 +141,10 @@ export function rowToRecord(row: ProjectRow): ProjectRecord | null {
     id: row.id,
     createdAt: row.created_at,
     answers,
-    profile,
+    profile: {
+      ...profile,
+      signals: normalizeProfileSignals(profile.signals, answers),
+    },
     preClarity:
       metrics?.pre_clarity_score ??
       row.smartprobonoip_answers[0]?.pre_clarity_score ??

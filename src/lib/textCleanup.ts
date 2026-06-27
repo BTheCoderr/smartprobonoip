@@ -30,14 +30,39 @@ export function cleanSearchQuery(query: string): string {
       .toLowerCase()
       .replace(/\bpatent\b/g, "")
       .replace(/\binvention\b/g, "")
-      .replace(/\bprior art\b/g, ""),
+      .replace(/\bprior art\b/g, "")
+      .replace(/https?:\/\/[^\s]+/g, " ")
+      .replace(/www\.[^\s]+/g, " "),
   );
   return cleaned.replace(/\s+/g, " ").trim();
+}
+
+export function stripBlockedTokensFromQuery(query: string): string {
+  const blocked = new Set([
+    "https",
+    "http",
+    "www",
+    "netlify",
+    "vercel",
+    "localhost",
+    "smartprobonoip",
+    "app",
+    "start",
+    "com",
+    "netlifyapp",
+  ]);
+  return cleanSearchQuery(
+    query
+      .split(/\s+/)
+      .filter((w) => !blocked.has(w.toLowerCase()))
+      .join(" "),
+  );
 }
 
 export function extractBrandName(whatCreated: string): string | null {
   const raw = whatCreated.trim();
   if (!raw) return null;
+  if (/^https?:\/\//i.test(raw) || /smartprobonoip/i.test(raw)) return null;
 
   const emDash = raw.split("—")[0]?.split(" - ")[0]?.trim();
   if (emDash && emDash.length <= 40 && /^[A-Z]/.test(emDash)) {

@@ -4,9 +4,10 @@ import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import {
   RESOURCE_DESCRIPTIONS,
   RESOURCE_LABELS,
-  SIGNAL_DESCRIPTIONS,
   SIGNAL_LABELS,
 } from "@/lib/labels";
+import { PACKET_COPY } from "@/lib/copy";
+import { SIGNAL_CATALOG } from "@/lib/signals";
 import {
   buildDifferenceMap,
   buildExpertHandoff,
@@ -80,7 +81,7 @@ export function ProfileView({
         {profile.signals.length > 0 ? (
           <div className="mb-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">
-              Possible IP signals
+              {PACKET_COPY.signalsSection}
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {profile.signals.map((s) => (
@@ -112,18 +113,39 @@ export function ProfileView({
 
       <Card>
         <CardHeader
-          title="Possible IP category signals"
-          subtitle="These are starting points, not conclusions."
+          title={PACKET_COPY.signalsSection}
+          subtitle={PACKET_COPY.signalsSubtitle}
         />
-        <ul className="space-y-2">
-          {profile.signals.map((s) => (
-            <li key={s} className="text-sm text-navy-600">
-              <span className="font-medium text-navy-800">
-                {SIGNAL_LABELS[s]}:
-              </span>{" "}
-              {SIGNAL_DESCRIPTIONS[s]}
-            </li>
-          ))}
+        <ul className="space-y-4">
+          {profile.signals.map((s) => {
+            const guide = SIGNAL_CATALOG[s];
+            return (
+              <li
+                key={s}
+                className="rounded-lg border border-mist-200 bg-mist-50 p-4 text-sm text-navy-600"
+              >
+                <p className="font-semibold text-navy-900">{guide.label}</p>
+                <p className="mt-2">
+                  <span className="font-medium text-navy-800">
+                    Why it may matter:
+                  </span>{" "}
+                  {guide.whyItMatters}
+                </p>
+                <p className="mt-2">
+                  <span className="font-medium text-navy-800">
+                    What to prepare:
+                  </span>{" "}
+                  {guide.whatToPrepare}
+                </p>
+                <p className="mt-2">
+                  <span className="font-medium text-navy-800">
+                    Suggested resource type:
+                  </span>{" "}
+                  {guide.suggestedResourceType}
+                </p>
+              </li>
+            );
+          })}
         </ul>
       </Card>
 
@@ -144,7 +166,7 @@ export function ProfileView({
           )}
         </Card>
         <Card>
-          <CardHeader title="Missing information checklist" />
+          <CardHeader title={PACKET_COPY.missingInfoTitle} />
           <p className="mb-3 text-sm font-medium text-navy-800">
             {missingStatus.statusMessage}
           </p>
@@ -206,12 +228,15 @@ export function ProfileView({
       </Card>
 
       <Card className="border-teal-200 bg-teal-50">
-        <CardHeader title="Suggested next step" />
+        <CardHeader title={PACKET_COPY.nextBestStepTitle} />
         <p className="text-navy-800">{profile.suggestedNextStep}</p>
       </Card>
 
       <Card>
-        <CardHeader title="Expert conversation prep" subtitle="Questions to bring to an expert." />
+        <CardHeader
+          title={PACKET_COPY.expertPrepTitle}
+          subtitle="Questions to bring with you."
+        />
         <ul className="space-y-2 text-sm text-navy-700">
           {profile.expertQuestions.map((q) => (
             <li key={q} className="flex gap-2">
@@ -224,7 +249,7 @@ export function ProfileView({
 
       <Card>
         <CardHeader
-          title="Suggested next resources"
+          title={PACKET_COPY.resourcesTitle}
           subtitle="Consider exploring these to prepare."
         />
         <div className="grid gap-3 sm:grid-cols-2">
@@ -274,7 +299,9 @@ export function ProfileView({
 
       <div className="rounded-xl border border-navy-200 bg-navy-50/40 p-1">
         <div className="px-3 py-2">
-          <h2 className="text-lg font-bold text-navy-900">Patent Prep Mode</h2>
+          <h2 className="text-lg font-bold text-navy-900">
+            {PACKET_COPY.patentPrepTitle}
+          </h2>
           <p className="mt-1 text-sm text-navy-600">{PATENT_PREP_INTRO}</p>
         </div>
 
@@ -419,7 +446,7 @@ export function ProfileView({
       <div className="rounded-xl border border-teal-200 bg-teal-50/20 p-1">
         <div className="px-3 py-2">
           <h2 className="text-lg font-bold text-navy-900">
-            Similar Patent Discovery Prep
+            {PACKET_COPY.similarRefPrepTitle}
           </h2>
           <p className="mt-1 text-sm text-navy-600">
             {PATENT_SEARCH_PREP_INTRO}
@@ -539,7 +566,10 @@ export function ProfileView({
       </div>
 
       <Card className="border-teal-200 bg-teal-50">
-        <CardHeader title="Readiness Metrics" subtitle="Preparation only — not legal outcomes." />
+        <CardHeader
+          title={PACKET_COPY.readinessSnapshotTitle}
+          subtitle="Preparation only — not legal outcomes."
+        />
         <dl className="grid gap-3 sm:grid-cols-2">
           {readinessMetrics.map((metric) => (
             <div key={metric.label}>
@@ -555,7 +585,7 @@ export function ProfileView({
       </Card>
 
       <Card className="border-navy-200 bg-navy-50">
-        <CardHeader title="Next Best Action" />
+        <CardHeader title={PACKET_COPY.nextBestStepTitle} />
         <p className="text-sm text-navy-800">{nextBestAction}</p>
       </Card>
 

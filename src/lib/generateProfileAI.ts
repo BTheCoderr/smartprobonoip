@@ -1,20 +1,19 @@
 import { DISCLAIMER } from "./disclaimer";
 import { generateProfile } from "./generateProfile";
+import { RESOURCE_LABELS } from "./labels";
 import {
-  RESOURCE_LABELS,
-  SIGNAL_LABELS,
-} from "./labels";
+  normalizeProfileSignals,
+  SIGNAL_KEYS,
+} from "./signals";
+
+import { containsForbiddenLanguage } from "./safety";
 import type {
   IntakeAnswers,
-  IpSignal,
   ReadinessProfile,
   ResourceCategory,
 } from "./types";
 
-const SIGNAL_KEYS = Object.keys(SIGNAL_LABELS) as IpSignal[];
 const RESOURCE_KEYS = Object.keys(RESOURCE_LABELS) as ResourceCategory[];
-
-import { containsForbiddenLanguage } from "./safety";
 
 export function isAIConfigured(): boolean {
   return Boolean(process.env.OPENAI_API_KEY);
@@ -114,16 +113,14 @@ export async function generateProfileAI(
 
   const parsed = JSON.parse(content) as Partial<AiProfileShape>;
 
-  const signals = asStringArray(parsed.signals).filter((s): s is IpSignal =>
-    SIGNAL_KEYS.includes(s as IpSignal),
-  );
-  const recommendedResources = asStringArray(parsed.recommendedResources).filter(
-    (r): r is ResourceCategory => RESOURCE_KEYS.includes(r as ResourceCategory),
+  const parsedSignals = normalizeProfileSignals(
+    asStringArray(parsed.signals),
+    answers,
   );
 
   const profile: ReadinessProfile = {
     ideaSummary: typeof parsed.ideaSummary === "string" ? parsed.ideaSummary : ruleDraft.ideaSummary,
-    signals: signals.length > 0 ? signals : ruleDraft.signals,
+    signals: parsedSignals.length > 0 ? parsedSignals : ruleDraft.signals,
     completeInfo: asStringArray(parsed.completeInfo).length
       ? asStringArray(parsed.completeInfo)
       : ruleDraft.completeInfo,
@@ -142,10 +139,16 @@ export async function generateProfileAI(
     expertQuestions: asStringArray(parsed.expertQuestions).length
       ? asStringArray(parsed.expertQuestions)
       : ruleDraft.expertQuestions,
-    recommendedResources:
-      recommendedResources.length > 0
+    recommendedResources: (() => {
+      const recommendedResources = asStringArray(
+        parsed.recommendedResources,
+      ).filter((r): r is ResourceCategory =>
+        RESOURCE_KEYS.includes(r as ResourceCategory),
+      );
+      return recommendedResources.length > 0
         ? recommendedResources
-        : ruleDraft.recommendedResources,
+        : ruleDraft.recommendedResources;
+    })(),
     disclaimer: DISCLAIMER,
     generator: "ai",
   };

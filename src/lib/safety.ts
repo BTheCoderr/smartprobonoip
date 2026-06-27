@@ -1,13 +1,27 @@
 const FORBIDDEN = [
   /\byou\s+need\s+a\s+patent\b/i,
   /\bis\s+patentable\b/i,
+  /\byour\s+idea\s+is\s+patentable\b/i,
   /\byour\s+idea\s+is\s+protectable\b/i,
   /\byou\s+should\s+(file|patent|trademark|copyright)\b/i,
   /\bwe\s+recommend\s+filing\b/i,
   /\byou\s+have\s+a\s+(valid|strong)\s+(patent|trademark|claim)\b/i,
   /\bthis\s+is\s+(patentable|protectable|copyrightable)\b/i,
+  /\bthis\s+blocks\s+your\s+patent\b/i,
+  /\bblocks\s+your\s+patent\b/i,
+  /\byou\s+are\s+clear\s+to\s+file\b/i,
+  /\bclear\s+to\s+file\b/i,
+  /\bproves\s+novelty\b/i,
+  /\b(this|it)\s+infringes\b/i,
+  /\bdoes\s+not\s+infringe\b/i,
+  /\bclearance\s+opinion\b/i,
+  /\bnot\s+protectable\b/i,
+  /\bthis\s+protects\s+your\s+idea\b/i,
   /\bwe\s+provide\s+legal\s+advice\b/i,
 ];
+
+export const REFERENCE_REVIEW_DISCLAIMER =
+  "These comparisons are preparation notes only. They are not a legal opinion, patentability analysis, infringement analysis, or clearance opinion. A qualified professional should review any references before decisions are made.";
 
 export function containsForbiddenLanguage(text: string): boolean {
   return FORBIDDEN.some((re) => re.test(text));

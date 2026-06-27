@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { generateProfile } from "@/lib/generateProfile";
 import { generateProfileAI, isAIConfigured } from "@/lib/generateProfileAI";
+import { validateForGeneration } from "@/lib/intakeValidation";
 import type { IntakeAnswers } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -29,6 +30,14 @@ export async function POST(request: Request) {
   if (!isValid(answers)) {
     return NextResponse.json(
       { error: "Invalid or incomplete intake answers" },
+      { status: 422 },
+    );
+  }
+
+  const validationErrors = validateForGeneration(answers);
+  if (validationErrors.length > 0) {
+    return NextResponse.json(
+      { error: validationErrors[0].message, field: validationErrors[0].field },
       { status: 422 },
     );
   }

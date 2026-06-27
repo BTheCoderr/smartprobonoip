@@ -1,11 +1,18 @@
 import type {
   AssetType,
   Goal,
-  IpSignal,
+  IdeaInclude,
   ItemType,
   ResourceCategory,
   SharingChannel,
 } from "./types";
+
+export {
+  SIGNAL_CATALOG,
+  SIGNAL_DESCRIPTIONS,
+  SIGNAL_KEYS,
+  SIGNAL_LABELS,
+} from "./signals";
 
 export interface Option<T extends string> {
   value: T;
@@ -47,11 +54,38 @@ export const SHARING_OPTIONS: Option<SharingChannel>[] = [
 ];
 
 export const GOAL_OPTIONS: Option<Goal>[] = [
-  { value: "protection", label: "Protection (patent, trademark, copyright)" },
+  {
+    value: "protection",
+    label: "Get organized before talking about protection",
+  },
   { value: "funding", label: "Funding" },
   { value: "licensing", label: "Licensing" },
   { value: "business_support", label: "Business support" },
   { value: "expert_review", label: "Expert review" },
+];
+
+export const IDEA_INCLUDE_OPTIONS: Option<IdeaInclude>[] = [
+  { value: "brand_name", label: "A name, logo, or brand" },
+  { value: "software_app", label: "Software or an app" },
+  { value: "how_it_works", label: "How something works or is built" },
+  {
+    value: "creative_files",
+    label: "Creative files (writing, art, photos, video, music)",
+  },
+  { value: "keep_private", label: "Something I want to keep private for now" },
+  {
+    value: "share_with_partners",
+    label: "Something I may share with partners, manufacturers, or investors",
+  },
+  {
+    value: "license_commercialize",
+    label: "Something I may license or commercialize",
+  },
+  {
+    value: "look_and_design",
+    label: "How it looks (packaging, shape, UI, design)",
+  },
+  { value: "online_identity", label: "Online name or domain identity" },
 ];
 
 export const ITEM_TYPE_LABELS: Record<ItemType, string> = Object.fromEntries(
@@ -69,30 +103,6 @@ export const SHARING_LABELS: Record<SharingChannel, string> = Object.fromEntries
 export const GOAL_LABELS: Record<Goal, string> = Object.fromEntries(
   GOAL_OPTIONS.map((o) => [o.value, o.label]),
 ) as Record<Goal, string>;
-
-export const SIGNAL_LABELS: Record<IpSignal, string> = {
-  patent_invention: "Patent / invention",
-  trademark_brand: "Trademark / brand",
-  copyright_creative_software: "Copyright (creative work / software code)",
-  trade_secret: "Trade secret / confidential know-how",
-  nda_business_support: "NDA / business support",
-  expert_review: "Expert review needed",
-};
-
-export const SIGNAL_DESCRIPTIONS: Record<IpSignal, string> = {
-  patent_invention:
-    "How your idea works, its parts, and what makes it different may be relevant to invention/patent topics.",
-  trademark_brand:
-    "Your name, logo, or slogan may be relevant to brand and trademark topics.",
-  copyright_creative_software:
-    "Creative works and software code may be relevant to copyright topics.",
-  trade_secret:
-    "Confidential know-how you have not shared may be relevant to trade-secret topics.",
-  nda_business_support:
-    "If you plan to share with others, an NDA or business support resource may be relevant.",
-  expert_review:
-    "Some answers suggest a professional may want to review the details with you.",
-};
 
 export const RESOURCE_LABELS: Record<ResourceCategory, string> = {
   education: "Education & self-guided learning",

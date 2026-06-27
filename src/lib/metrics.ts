@@ -1,19 +1,10 @@
+import { normalizeProfileSignals, SIGNAL_KEYS } from "./signals";
 import type {
   DashboardMetrics,
-  IpSignal,
   ProjectRecord,
   ResourceCategory,
 } from "./types";
 import { withDefaultFollowUp } from "./records";
-
-const SIGNAL_KEYS: IpSignal[] = [
-  "patent_invention",
-  "trademark_brand",
-  "copyright_creative_software",
-  "trade_secret",
-  "nda_business_support",
-  "expert_review",
-];
 
 const RESOURCE_KEYS: ResourceCategory[] = [
   "education",
@@ -54,7 +45,10 @@ export function computeMetrics(records: ProjectRecord[]): DashboardMetrics {
 
   for (const raw of records) {
     const record = withDefaultFollowUp(raw);
-    for (const signal of record.profile.signals) {
+    for (const signal of normalizeProfileSignals(
+      record.profile.signals,
+      record.answers,
+    )) {
       signalCounts[signal] += 1;
     }
     for (const resource of record.profile.recommendedResources) {

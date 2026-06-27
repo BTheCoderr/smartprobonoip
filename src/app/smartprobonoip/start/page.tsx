@@ -19,8 +19,9 @@ export default function StartPage() {
       </p>
       <h1 className="text-3xl font-bold text-navy-900">Guided intake</h1>
       <p className="mt-2 text-navy-500">
-        Answer a few plain-language questions. There are no wrong answers — this
-        is about organizing your idea.
+        You do not need perfect answers yet. Answer a few plain-language questions
+        about your idea — there are no wrong answers. This is about organizing
+        what you already know.
       </p>
 
       <div className="mt-8">

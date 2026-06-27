@@ -11,7 +11,7 @@ import {
   type CoachMode,
   type CoachResponse,
 } from "./coach";
-import { SIGNAL_LABELS } from "./labels";
+import { SIGNAL_CATALOG } from "./signals";
 import type { ProjectRecord } from "./types";
 
 const SYSTEM_PROMPT = `You are the AI Packet Coach for SmartProBonoIP, an educational IP readiness tool for overlooked inventors and creators.
@@ -54,7 +54,13 @@ function buildContext(record: ProjectRecord) {
     },
     profile: {
       ideaSummary: profile.ideaSummary,
-      signals: profile.signals.map((s) => SIGNAL_LABELS[s]),
+      signals: profile.signals.map((s) => ({
+        key: s,
+        label: SIGNAL_CATALOG[s].label,
+        whyItMatters: SIGNAL_CATALOG[s].whyItMatters,
+        whatToPrepare: SIGNAL_CATALOG[s].whatToPrepare,
+        suggestedResourceType: SIGNAL_CATALOG[s].suggestedResourceType,
+      })),
       completeInfo: profile.completeInfo,
       missingInfo: profile.missingInfo,
       publicDisclosure: profile.publicDisclosure,
