@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { MetricCard } from "@/components/ui/MetricCard";
-import { EmptyStateCard } from "@/components/ui/design";
+import { EmptyStateCard, StampLabel } from "@/components/ui/design";
 import { Badge } from "@/components/ui/Badge";
 import { DemoChecklist } from "@/components/DemoChecklist";
 import { DASHBOARD_COPY } from "@/lib/copy";
@@ -183,14 +183,15 @@ export default function DashboardClient() {
 
   return (
     <div className="page-shell py-12 sm:py-16">
-      <div className="rounded-3xl border border-mist-200/80 bg-gradient-to-br from-white to-surface px-6 py-8 shadow-[var(--shadow-soft)] sm:px-8">
+      <div className="paper-card-elevated relative overflow-hidden px-6 py-6 sm:px-8">
+        <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-teal-500 via-teal-600 to-warm-500" />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="section-kicker">Partner impact</p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 sm:text-4xl">
-              Partner dashboard
+            <StampLabel tone="teal">PARTNER IMPACT</StampLabel>
+            <h1 className="headline-editorial mt-4 text-3xl sm:text-4xl">
+              {DASHBOARD_COPY.title}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-navy-600 sm:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-blue sm:text-base">
               {DASHBOARD_COPY.lead}
             </p>
           </div>

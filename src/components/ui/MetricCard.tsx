@@ -18,16 +18,18 @@ export function MetricCard({
   }[accent];
 
   return (
-    <Card variant="elevated" className="relative overflow-hidden">
+    <Card variant="elevated" className="paper-card relative overflow-hidden">
       <div
-        className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${accentClass}`}
+        className={`absolute inset-y-0 left-0 w-1 bg-gradient-to-b ${accentClass}`}
       />
-      <p className="text-sm font-medium text-navy-500">{label}</p>
-      <p className="mt-3 text-3xl font-bold tracking-tight text-navy-900">
+      <p className="pl-3 text-[10px] font-bold uppercase tracking-wide text-muted-blue">
+        {label}
+      </p>
+      <p className="mt-3 pl-3 text-3xl font-bold tracking-tight text-navy-900">
         {value}
       </p>
       {hint ? (
-        <p className="mt-2 text-xs leading-relaxed text-navy-400">{hint}</p>
+        <p className="mt-2 pl-3 text-xs leading-relaxed text-navy-400">{hint}</p>
       ) : null}
     </Card>
   );

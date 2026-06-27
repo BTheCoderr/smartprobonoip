@@ -3,12 +3,12 @@ import { BRAND } from "@/lib/brand";
 import { LANDING_COPY } from "@/lib/copy";
 import {
   CalloutCard,
-  HeroSection,
+  CreativeHeroSection,
   MissionBand,
   PageShell,
   Section,
   SectionHeader,
-  StepCard,
+  StampLabel,
   ValueCard,
 } from "@/components/ui/design";
 import { DemoChecklist } from "@/components/DemoChecklist";
@@ -17,11 +17,12 @@ import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 export default function ProductLanding() {
   return (
     <div>
-      <HeroSection
-        kicker={`${BRAND.product} · ${BRAND.feature}`}
+      <CreativeHeroSection
+        stamp={LANDING_COPY.heroStamp}
         title={BRAND.tagline}
         lead={BRAND.positioning}
         mission={BRAND.coreMessage}
+        safetyLine={LANDING_COPY.heroSafety}
       >
         <div className="flex flex-wrap gap-3">
           <Link href="/smartprobonoip/disclaimer" className="btn-primary">
@@ -33,27 +34,32 @@ export default function ProductLanding() {
           >
             View sample packet
           </Link>
-          <Link href="/smartprobonoip/dashboard" className="btn-ghost">
-            Partner dashboard
-          </Link>
         </div>
-      </HeroSection>
+      </CreativeHeroSection>
+
+      <Section>
+        <PageShell>
+          <SectionHeader
+            kicker="Why this exists"
+            title="The first step should not stop a good idea"
+            lead={LANDING_COPY.whyExists}
+          />
+          <p className="mt-6 max-w-3xl text-base leading-relaxed text-muted-blue">
+            {LANDING_COPY.whyExistsLead}
+          </p>
+        </PageShell>
+      </Section>
 
       <Section soft>
         <PageShell>
           <SectionHeader
-            kicker="Why this exists"
-            title="Access to IP should start with clarity, not confusion"
-            lead={LANDING_COPY.whyExists}
+            kicker="What the packet helps you do"
+            title="From messy idea to organized IP packet"
+            lead="Preparation only — not legal advice and not a legal conclusion."
           />
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {LANDING_COPY.valueCards.map((card, i) => (
-              <ValueCard
-                key={card.title}
-                icon={i + 1}
-                title={card.title}
-                body={card.body}
-              />
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {LANDING_COPY.packetHelps.map((item) => (
+              <ValueCard key={item.title} title={item.title} body={item.body} />
             ))}
           </div>
         </PageShell>
@@ -63,19 +69,16 @@ export default function ProductLanding() {
         <PageShell>
           <SectionHeader
             kicker="Who it helps"
-            title="Built for people the IP system often overlooks"
-            lead="If you have an idea but limited access to the first conversation, this is for you."
+            title="An IP readiness desk for overlooked innovators"
           />
           <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {LANDING_COPY.whoHelps.map((item) => (
               <li
                 key={item}
-                className="flex items-start gap-3 rounded-2xl border border-mist-200/70 bg-white px-4 py-4 text-sm leading-relaxed text-navy-700 shadow-[var(--shadow-soft)]"
+                className="paper-card flex items-start gap-3 px-4 py-4 text-sm leading-relaxed text-navy-700"
               >
-                <span className="mt-0.5 text-teal-600" aria-hidden>
-                  ✓
-                </span>
-                {item}
+                <StampLabel tone="warm">ACCESS</StampLabel>
+                <span className="flex-1 pt-0.5">{item}</span>
               </li>
             ))}
           </ul>
@@ -90,47 +93,11 @@ export default function ProductLanding() {
 
       <Section>
         <PageShell>
-          <SectionHeader
-            kicker="How it works"
-            title="From messy notes to a packet you can bring with you"
+          <CalloutCard
+            tone="warm"
+            title="What SmartProBonoIP does not do"
+            body={LANDING_COPY.whatWeDoNot}
           />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {LANDING_COPY.howItWorks.map((step, i) => (
-              <StepCard key={step} step={i + 1} title={step} />
-            ))}
-          </div>
-        </PageShell>
-      </Section>
-
-      <Section soft>
-        <PageShell>
-          <SectionHeader
-            kicker="What you get"
-            title="Your IP Readiness Packet includes"
-            lead="Preparation only — not legal advice and not a legal conclusion."
-          />
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {LANDING_COPY.whatYouGet.map((item) => (
-              <ValueCard key={item.title} title={item.title} body={item.body} />
-            ))}
-          </div>
-        </PageShell>
-      </Section>
-
-      <Section>
-        <PageShell>
-          <div className="grid gap-8 lg:grid-cols-2">
-            <CalloutCard
-              tone="warm"
-              title="What SmartProBonoIP does not do"
-              body={LANDING_COPY.whatWeDoNot.join(" ")}
-            />
-            <CalloutCard
-              tone="teal"
-              title="Safety first"
-              body={LANDING_COPY.safetyLine}
-            />
-          </div>
         </PageShell>
       </Section>
 
@@ -139,15 +106,18 @@ export default function ProductLanding() {
           <SectionHeader
             light
             kicker="Partners & pilots"
-            title="Support inventors before the first expert conversation"
+            title="Community access to IP readiness"
             lead={LANDING_COPY.partnerCallout}
           />
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/smartprobonoip/dashboard"
               className="btn-secondary border-white/20 bg-white/10 text-white hover:bg-white/20"
             >
-              Open partner dashboard
+              Open Partner Impact Desk
+            </Link>
+            <Link href="/smartprobonoip/start" className="btn-ghost text-navy-100 hover:bg-white/10">
+              Start a packet →
             </Link>
           </div>
         </PageShell>

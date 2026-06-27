@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
+import { PaperCard, StampLabel } from "@/components/ui/design";
 import { ProgressIndicator } from "@/components/ui/ProgressIndicator";
 import {
   ASSET_OPTIONS,
@@ -41,9 +42,9 @@ const STEP_LABELS = [
   "Idea basics",
   "How it works",
   "What it includes",
-  "Sharing and materials",
+  "Sharing + materials",
   "Support goals",
-  "Review before packet",
+  "Review",
   "Readiness",
 ];
 
@@ -264,8 +265,20 @@ export function IntakeForm() {
       ) : null}
 
       <ProgressIndicator steps={STEP_LABELS} current={step} />
+      <p className="text-center text-xs font-medium uppercase tracking-wide text-muted-blue">
+        {INTAKE_COPY.builderProgress} · Step {step + 1} of {STEP_LABELS.length}
+      </p>
 
-      <Card variant="elevated" className="overflow-hidden">
+      <PaperCard elevated className="overflow-hidden p-6 sm:p-8">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-mist-200 pb-5">
+          <div>
+            <StampLabel tone="warm">PREP PACKET</StampLabel>
+            <h2 className="mt-3 text-lg font-semibold text-navy-900">
+              {STEP_LABELS[step]}
+            </h2>
+          </div>
+          <span className="document-tab">{INTAKE_COPY.builderTitle}</span>
+        </div>
         {step !== 5 ? (
           stepHint ? (
             <p className="mb-6 rounded-xl bg-mist-50 px-4 py-3 text-sm leading-relaxed text-navy-600">
@@ -273,11 +286,9 @@ export function IntakeForm() {
             </p>
           ) : null
         ) : (
-          <div className="mb-8 rounded-2xl border border-teal-100 bg-gradient-to-br from-teal-50/70 to-white px-5 py-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-              Checkpoint
-            </p>
-            <h2 className="mt-1 text-xl font-semibold text-navy-900">
+          <div className="mb-8 rounded-2xl border border-dashed border-teal-200 bg-gradient-to-br from-teal-50/60 to-white px-5 py-5 shadow-[var(--shadow-paper)]">
+            <StampLabel tone="teal">PACKET PREVIEW</StampLabel>
+            <h2 className="mt-3 text-xl font-semibold text-navy-900">
               {INTAKE_COPY.reviewTitle}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-navy-600">
@@ -475,7 +486,7 @@ export function IntakeForm() {
           onNext={goNext}
           onSubmit={handleSubmit}
         />
-      </Card>
+      </PaperCard>
     </div>
   );
 }

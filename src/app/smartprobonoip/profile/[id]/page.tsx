@@ -6,12 +6,12 @@ import { ProfileView } from "@/components/profile/ProfileView";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
 import { PacketCoach } from "@/components/profile/PacketCoach";
 import { PacketRecoveryCard } from "@/components/profile/PacketRecoveryCard";
+import { StampLabel } from "@/components/ui/design";
 import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
 import { downloadPacketPdf } from "@/lib/pdf";
 import { getIdeaLabel } from "@/lib/packet";
-import { BRAND } from "@/lib/brand";
 import type { ProjectRecord, ReadinessProfile } from "@/lib/types";
 
 type LoadState = "loading" | "found" | "missing";
@@ -95,19 +95,24 @@ export default function ProfilePage({
 
   return (
     <div className="pb-16">
-      <div className="border-b border-mist-200/80 bg-gradient-to-b from-cream via-white to-surface">
+      <div className="paper-grid border-b border-mist-200/80">
         <div className="page-shell-packet py-10 sm:py-12">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-2xl">
-              <p className="section-kicker">{BRAND.product}</p>
-              <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 sm:text-4xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <StampLabel tone="teal">IP READINESS</StampLabel>
+                <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
+              </div>
+              <p className="mt-4 text-sm font-semibold uppercase tracking-wide text-teal-600">
+                IP Readiness Packet
+              </p>
+              <h1 className="headline-editorial mt-2 text-3xl sm:text-4xl">
                 {ideaLabel}
               </h1>
-              <p className="mt-2 text-lg text-navy-700">IP Readiness Packet</p>
-              <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-navy-600">
+              <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-muted-blue">
                 {record.profile.ideaSummary}
               </p>
-              <p className="mt-3 text-xs text-navy-500">
+              <p className="mt-4 text-xs text-navy-400">
                 Generated {new Date(record.createdAt).toLocaleString()} ·{" "}
                 {record.profile.generator === "ai"
                   ? "AI-assisted"
@@ -115,23 +120,32 @@ export default function ProfilePage({
                 draft · preparation only, not legal advice
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              {!editing ? (
+            <div className="paper-card shrink-0 p-5 lg:max-w-xs">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
+                Handoff packet
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-navy-700">
+                Download or share this packet before your next conversation with
+                a professional, clinic, or partner.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                {!editing ? (
+                  <button
+                    type="button"
+                    onClick={() => setEditing(true)}
+                    className="btn-secondary w-full sm:w-auto"
+                  >
+                    Edit packet
+                  </button>
+                ) : null}
                 <button
                   type="button"
-                  onClick={() => setEditing(true)}
-                  className="btn-secondary"
+                  onClick={() => downloadPacketPdf(record)}
+                  className="btn-primary w-full sm:w-auto"
                 >
-                  Edit packet
+                  Download PDF
                 </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => downloadPacketPdf(record)}
-                className="btn-primary"
-              >
-                Download PDF
-              </button>
+              </div>
             </div>
           </div>
         </div>

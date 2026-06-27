@@ -22,13 +22,17 @@ export const COACH_COPY = {
 } as const;
 
 export const INTAKE_COPY = {
+  builderTitle: "Packet Builder",
+  builderProgress: "Building your packet",
   intro:
     "You do not need perfect answers yet. Start with what you know.",
   introDetail:
-    "SmartProBonoIP will help organize the idea, spot missing pieces, and prepare a packet you can bring to the next person.",
+    "Each step adds another page to your IP Readiness Packet — not a form, but a dossier you can bring to your next conversation.",
   reviewTitle: "Review before we build your packet",
   reviewSubcopy:
     "Make sure the basics look right. You can edit anything before generating your IP Readiness Packet.",
+  safetyLine:
+    "SmartProBonoIP is preparation only and does not create an attorney-client relationship.",
 } as const;
 
 export const RECOVERY_COPY = {
@@ -46,18 +50,62 @@ export const RECOVERY_COPY = {
 } as const;
 
 export const DASHBOARD_COPY = {
-  lead: "See what inventors are preparing, where they need support, and which signals appear most often.",
+  title: "Partner Impact Desk",
+  lead: "See what inventors are preparing, where support is needed, and which signals appear most often.",
 } as const;
 
 export const LANDING_COPY = {
+  heroStamp: "ACCESS TO IP",
+  heroSafety:
+    "SmartProBonoIP is preparation only and does not create an attorney-client relationship.",
   whyExists:
-    "Many people have strong ideas but do not know how to explain them, document them, or prepare for the first IP conversation. SmartProBonoIP helps turn scattered notes into a structured packet.",
+    "People do not always lose ideas because the ideas are weak. Sometimes they lose momentum because the first step is confusing, expensive, or hard to explain.",
+  whyExistsLead:
+    "SmartProBonoIP helps turn scattered notes into a structured packet — so the first step feels possible.",
   whoHelps: [
-    "Inventors with a product, process, or prototype",
-    "Creators building apps, brands, or content",
-    "Founders preparing for clinics, mentors, or partners",
-    "Small businesses organizing before an IP conversation",
-    "Students and community innovators with limited access",
+    "Inventors with rough sketches or prototypes",
+    "Creators with brands, content, or digital work",
+    "Founders building software or hardware",
+    "Small businesses with product or process ideas",
+    "Community programs supporting innovation access",
+    "Clinics and partners reviewing intake before referrals",
+  ],
+  packetHelps: [
+    {
+      title: "Explain the idea",
+      body: "Turn scattered notes into a plain-language summary anyone can follow.",
+    },
+    {
+      title: "Spot what may matter",
+      body: "See which IP topics may be relevant to discuss — starting points, not legal conclusions.",
+    },
+    {
+      title: "Strengthen missing details",
+      body: "Find gaps in your story before a professional or clinic asks about them.",
+    },
+    {
+      title: "Prepare expert questions",
+      body: "Walk in with questions you may want to ask — not answers you have to guess.",
+    },
+    {
+      title: "Compare similar references",
+      body: "Get search terms and prep worksheets for possible similar references only.",
+    },
+    {
+      title: "Leave with a PDF handoff",
+      body: "Download a structured packet to share with a mentor, clinic, or partner.",
+    },
+  ],
+  whatWeDoNot:
+    "We do not tell you whether your idea is patentable. We do not replace experts. We help you show up more prepared.",
+  safetyLine: "We do not replace experts. We help people show up more prepared.",
+  partnerCallout:
+    "For clinics, libraries, innovation hubs, and community partners, SmartProBonoIP creates cleaner intake, stronger referrals, and better pilot data.",
+  howItWorks: [
+    "Answer plain-language questions",
+    "Review and strengthen your idea",
+    "Download an IP Readiness Packet",
+    "Bring it to a professional, clinic, mentor, or partner",
   ],
   valueCards: [
     {
@@ -98,20 +146,5 @@ export const LANDING_COPY = {
       title: "PDF handoff packet",
       body: "Download a structured packet to share with a professional or partner.",
     },
-  ],
-  whatWeDoNot: [
-    "We do not provide legal advice or legal conclusions.",
-    "We do not replace patent agents, attorneys, clinics, or mentors.",
-    "We do not determine patentability, clearance, or infringement.",
-    "We do not file applications or make filing recommendations.",
-  ],
-  safetyLine: "We do not replace experts. We help people show up more prepared.",
-  partnerCallout:
-    "Pilot partners — clinics, libraries, accelerators, and innovation hubs — use SmartProBonoIP to see what inventors are preparing and where they may need support.",
-  howItWorks: [
-    "Answer plain-language questions",
-    "Review and strengthen your idea",
-    "Download an IP Readiness Packet",
-    "Bring it to a professional, clinic, mentor, or partner",
   ],
 } as const;

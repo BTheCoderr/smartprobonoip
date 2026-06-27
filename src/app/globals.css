@@ -41,9 +41,13 @@
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-serif: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", Palatino,
+    Cambria, "Times New Roman", Times, serif;
 
   --shadow-soft: 0 1px 2px rgb(11 31 58 / 0.04), 0 8px 24px rgb(11 31 58 / 0.06);
   --shadow-card: 0 1px 3px rgb(11 31 58 / 0.05), 0 12px 32px rgb(11 31 58 / 0.08);
+  --shadow-paper: 2px 3px 0 rgb(11 31 58 / 0.06), 0 10px 28px rgb(11 31 58 / 0.08);
+  --shadow-paper-offset: 4px 6px 0 rgb(11 31 58 / 0.07), 0 16px 40px rgb(11 31 58 / 0.1);
 }
 
 html {
@@ -53,6 +57,11 @@ html {
 body {
   background: var(--color-cream);
   color: var(--color-foreground);
+  background-image:
+    linear-gradient(rgb(11 31 58 / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(11 31 58 / 0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-attachment: fixed;
 }
 
 @layer utilities {
@@ -98,5 +107,71 @@ body {
 
   .mission-band {
     @apply rounded-3xl bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 px-8 py-10 text-white shadow-[var(--shadow-card)] sm:px-12 sm:py-12;
+  }
+
+  .headline-editorial {
+    font-family: var(--font-serif);
+    @apply font-bold tracking-tight text-navy-900;
+  }
+
+  .paper-grid {
+    background-color: var(--color-cream);
+    background-image:
+      linear-gradient(rgb(11 31 58 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(11 31 58 / 0.04) 1px, transparent 1px),
+      radial-gradient(circle at 20% 10%, rgb(20 163 163 / 0.06), transparent 45%),
+      radial-gradient(circle at 90% 80%, rgb(217 119 6 / 0.05), transparent 40%);
+    background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%;
+  }
+
+  .paper-card {
+    @apply rounded-2xl border border-mist-200/90 bg-white shadow-[var(--shadow-paper)];
+  }
+
+  .paper-card-elevated {
+    @apply rounded-2xl border border-mist-200/90 bg-white shadow-[var(--shadow-paper-offset)];
+  }
+
+  .stamp-label {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 0.375rem;
+    border-width: 2px;
+    border-style: dashed;
+    padding: 0.25rem 0.75rem;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  .stamp-label-teal {
+    border-color: rgb(15 133 133 / 0.5);
+    background-color: rgb(230 246 246 / 0.8);
+    color: var(--color-teal-700);
+  }
+
+  .stamp-label-warm {
+    border-color: rgb(217 119 6 / 0.5);
+    background-color: rgb(255 249 243 / 0.9);
+    color: var(--color-warm-700);
+  }
+
+  .stamp-label-navy {
+    border-color: rgb(74 116 168 / 0.4);
+    background-color: rgb(238 242 248 / 0.8);
+    color: var(--color-navy-700);
+  }
+
+  .document-tab {
+    @apply inline-flex rounded-t-lg border border-b-0 border-mist-200/90 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-navy-600;
+  }
+
+  .dashed-rule {
+    @apply border-t border-dashed border-mist-300;
+  }
+
+  .text-muted-blue {
+    @apply text-navy-500;
   }
 }

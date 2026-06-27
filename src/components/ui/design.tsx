@@ -1,6 +1,137 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+export function StampLabel({
+  children,
+  tone = "teal",
+}: {
+  children: ReactNode;
+  tone?: "teal" | "warm" | "navy";
+}) {
+  const toneClass = {
+    teal: "stamp-label-teal",
+    warm: "stamp-label-warm",
+    navy: "stamp-label-navy",
+  }[tone];
+  return <span className={`stamp-label ${toneClass}`}>{children}</span>;
+}
+
+export function PaperCard({
+  children,
+  className = "",
+  elevated,
+}: {
+  children: ReactNode;
+  className?: string;
+  elevated?: boolean;
+}) {
+  return (
+    <div className={`${elevated ? "paper-card-elevated" : "paper-card"} ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+export function PacketMockup() {
+  const sections = [
+    "Idea summary",
+    "What may matter",
+    "Questions to ask",
+    "Next best step",
+  ];
+
+  return (
+    <div
+      className="relative mx-auto w-full max-w-[320px]"
+      aria-hidden
+    >
+      <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-2xl border border-mist-200/60 bg-mist-100/80" />
+      <div className="absolute inset-0 translate-x-2 translate-y-2 rounded-2xl border border-mist-200/70 bg-white/90 shadow-sm" />
+      <div className="paper-card-elevated relative overflow-hidden p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <StampLabel tone="warm">PREP PACKET</StampLabel>
+          <StampLabel tone="teal">IP READINESS</StampLabel>
+        </div>
+        <p className="headline-editorial mt-4 text-lg leading-snug">
+          Your idea, organized
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-muted-blue">
+          From messy notes to a handoff you can bring with you.
+        </p>
+        <ul className="mt-5 space-y-2">
+          {sections.map((label, i) => (
+            <li
+              key={label}
+              className="flex items-center gap-3 rounded-lg border border-dashed border-mist-200 bg-cream/60 px-3 py-2.5"
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-teal-50 text-[10px] font-bold text-teal-700 ring-1 ring-teal-100">
+                {i + 1}
+              </span>
+              <span className="text-xs font-medium text-navy-700">{label}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="dashed-rule mt-5 pt-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-navy-400">
+            Preparation only · Not legal advice
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function CreativeHeroSection({
+  stamp,
+  title,
+  lead,
+  mission,
+  safetyLine,
+  children,
+}: {
+  stamp: string;
+  title: string;
+  lead: string;
+  mission?: string;
+  safetyLine?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <section className="paper-grid relative overflow-hidden border-b border-mist-200/70">
+      <div className="page-shell relative py-16 sm:py-20 lg:py-24">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+          <div>
+            <StampLabel tone="teal">{stamp}</StampLabel>
+            <h1 className="headline-editorial mt-6 text-4xl leading-[1.08] sm:text-5xl lg:text-[3.25rem]">
+              {title}
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-blue sm:text-xl">
+              {lead}
+            </p>
+            {mission ? (
+              <p className="mt-5 max-w-lg border-l-4 border-warm-400/80 pl-4 text-base italic leading-relaxed text-navy-700">
+                {mission}
+              </p>
+            ) : null}
+            {children ? <div className="mt-10">{children}</div> : null}
+            {safetyLine ? (
+              <p className="mt-5 max-w-lg text-xs leading-relaxed text-navy-400">
+                {safetyLine}
+              </p>
+            ) : null}
+          </div>
+          <div className="hidden sm:block lg:justify-self-end">
+            <PacketMockup />
+          </div>
+        </div>
+        <div className="mt-10 sm:hidden">
+          <PacketMockup />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function PageShell({
   children,
   narrow,
@@ -151,13 +282,16 @@ export function ValueCard({
   body: string;
 }) {
   return (
-    <div className="flex h-full flex-col rounded-3xl border border-mist-200/80 bg-white p-6 shadow-[var(--shadow-card)] sm:p-8">
+    <div className="flex h-full flex-col rounded-2xl border border-mist-200/90 bg-white p-6 shadow-[var(--shadow-paper)] sm:p-8">
+      <div className="h-1 w-12 rounded-full bg-gradient-to-r from-teal-500 to-teal-600" />
       {icon ? (
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-50 text-teal-700 ring-1 ring-teal-100">
+        <span className="mt-5 flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 text-teal-700 ring-1 ring-teal-100">
           {icon}
         </span>
       ) : null}
-      <h3 className="mt-5 text-xl font-semibold text-navy-900">{title}</h3>
+      <h3 className={`${icon ? "mt-4" : "mt-5"} text-xl font-semibold text-navy-900`}>
+        {title}
+      </h3>
       <p className="mt-3 flex-1 text-sm leading-relaxed text-navy-600">{body}</p>
     </div>
   );
@@ -194,8 +328,9 @@ export function SignalCard({
   suggestedResourceType: string;
 }) {
   return (
-    <article className="overflow-hidden rounded-2xl border border-mist-200/80 bg-white shadow-[var(--shadow-soft)]">
-      <div className="border-l-4 border-teal-500 bg-gradient-to-r from-teal-50/50 to-white px-5 py-4">
+    <article className="overflow-hidden rounded-2xl border border-mist-200/90 bg-white shadow-[var(--shadow-paper)]">
+      <div className="flex items-center gap-3 border-b border-dashed border-mist-200 bg-gradient-to-r from-warm-50/50 via-white to-teal-50/40 px-5 py-3">
+        <StampLabel tone="navy">REVIEW NOTE</StampLabel>
         <h4 className="text-base font-semibold text-navy-900">{label}</h4>
       </div>
       <dl className="space-y-4 px-5 py-5 text-sm leading-relaxed text-navy-600">
@@ -276,11 +411,9 @@ export function RecoveryCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-teal-200/80 bg-gradient-to-br from-teal-50/70 via-white to-warm-50/30 p-6 shadow-[var(--shadow-soft)] sm:p-8">
-      <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-        Save access
-      </p>
-      <h3 className="mt-1 text-xl font-semibold text-navy-900">{title}</h3>
+    <div className="rounded-2xl border border-teal-200/80 bg-gradient-to-br from-teal-50/50 via-white to-warm-50/40 p-6 shadow-[var(--shadow-paper)] sm:p-8">
+      <StampLabel tone="teal">SAVE ACCESS</StampLabel>
+      <h3 className="mt-3 text-xl font-semibold text-navy-900">{title}</h3>
       <div className="mt-4">{children}</div>
     </div>
   );
@@ -307,20 +440,24 @@ export function PacketSection({
   }[accent];
   return (
     <section
-      className={`overflow-hidden rounded-3xl border p-6 shadow-[var(--shadow-soft)] sm:p-8 ${styles}`}
+      className={`overflow-hidden rounded-2xl border shadow-[var(--shadow-paper)] sm:p-8 ${styles}`}
     >
-      {kicker ? (
-        <p className="text-xs font-semibold uppercase tracking-wide text-teal-600">
-          {kicker}
-        </p>
-      ) : null}
-      <h2 className="mt-1 text-xl font-bold text-navy-900 sm:text-2xl">
-        {title}
-      </h2>
-      {subtitle ? (
-        <p className="mt-2 text-sm leading-relaxed text-navy-500">{subtitle}</p>
-      ) : null}
-      <div className="mt-6">{children}</div>
+      <div className="flex flex-wrap items-center gap-2 border-b border-dashed border-mist-200/80 px-6 pb-4 pt-6 sm:px-8">
+        {kicker ? (
+          <span className="document-tab border-0 bg-teal-50/80 text-teal-700">
+            {kicker}
+          </span>
+        ) : null}
+      </div>
+      <div className="px-6 sm:px-8">
+        <h2 className="mt-4 text-xl font-bold text-navy-900 sm:text-2xl">
+          {title}
+        </h2>
+        {subtitle ? (
+          <p className="mt-2 text-sm leading-relaxed text-muted-blue">{subtitle}</p>
+        ) : null}
+        <div className="mt-6 pb-6">{children}</div>
+      </div>
     </section>
   );
 }

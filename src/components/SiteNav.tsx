@@ -3,10 +3,10 @@ import { BRAND } from "@/lib/brand";
 
 export function SiteNav() {
   return (
-    <header className="sticky top-0 z-30 border-b border-mist-200/80 bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-mist-200/80 bg-cream/95 backdrop-blur-md">
       <nav className="page-shell flex items-center justify-between gap-4 py-3.5">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-navy-900 to-navy-700 text-sm font-bold text-white shadow-sm">
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-navy-900 to-navy-700 text-sm font-bold text-white shadow-[var(--shadow-paper)]">
             iP
           </span>
           <span className="flex flex-col leading-tight">
@@ -14,7 +14,7 @@ export function SiteNav() {
               {BRAND.umbrella}
               <span className="text-teal-600">IP</span>
             </span>
-            <span className="text-[11px] text-navy-500">{BRAND.feature}</span>
+            <span className="text-[11px] text-muted-blue">{BRAND.feature}</span>
           </span>
         </Link>
         <div className="flex items-center gap-1 text-sm sm:gap-2">

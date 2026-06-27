@@ -54,8 +54,12 @@ export function ProfileView({
 
   return (
     <div className="space-y-8">
-      <Card variant="elevated" className="relative overflow-hidden border-teal-100">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 to-teal-600" />
+      <div className="paper-card-elevated relative overflow-hidden border-teal-100 p-0">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 to-warm-400" />
+        <div className="border-b border-dashed border-mist-200 px-6 py-4 sm:px-8">
+          <span className="document-tab">Section 01</span>
+        </div>
+        <div className="px-6 pb-6 sm:px-8">
         <CardHeader
           kicker="IP Readiness Packet"
           title={PACKET_COPY.ideaAtGlance}
@@ -81,9 +85,14 @@ export function ProfileView({
             ))}
           </dl>
         ) : null}
-      </Card>
+        </div>
+      </div>
 
-      <Card variant="soft">
+      <div className="paper-card overflow-hidden p-0">
+        <div className="border-b border-dashed border-mist-200 px-6 py-4 sm:px-8">
+          <span className="document-tab">Readiness report</span>
+        </div>
+        <div className="px-6 pb-6 sm:px-8">
         <CardHeader
           title={PACKET_COPY.readinessSnapshotTitle}
           subtitle="A quick view of where your idea stands today."
@@ -119,9 +128,14 @@ export function ProfileView({
             </div>
           ))}
         </dl>
-      </Card>
+        </div>
+      </div>
 
-      <Card variant="elevated">
+      <div className="paper-card overflow-hidden p-0">
+        <div className="border-b border-dashed border-mist-200 px-6 py-4 sm:px-8">
+          <span className="document-tab">Review notes</span>
+        </div>
+        <div className="px-6 pb-6 sm:px-8">
         <CardHeader
           title={PACKET_COPY.signalsSection}
           subtitle={PACKET_COPY.signalsSubtitle}
@@ -141,7 +155,8 @@ export function ProfileView({
             );
           })}
         </ul>
-      </Card>
+        </div>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
