@@ -13,7 +13,10 @@ import {
   buildFollowUpPlan,
   buildIdeaSummaryFields,
   buildMaterialsChecklist,
+  buildMissingInfoStatus,
+  buildNextBestAction,
   buildPatentPrepChecklist,
+  buildReadinessMetrics,
   buildReadinessSnapshot,
   DEVELOPMENT_TIMELINE_FIELDS,
   DIFFERENCE_MAP_NOTE,
@@ -27,12 +30,21 @@ import {
 } from "@/lib/patentSearchPrep";
 import type { ProjectRecord } from "@/lib/types";
 
-export function ProfileView({ record }: { record: ProjectRecord }) {
+export function ProfileView({
+  record,
+  savedReferenceCount = 0,
+}: {
+  record: ProjectRecord;
+  savedReferenceCount?: number;
+}) {
   const { profile } = record;
   const summaryFields = buildIdeaSummaryFields(record.answers);
   const snapshot = buildReadinessSnapshot(record);
   const followUpPlan = buildFollowUpPlan();
   const patentPrep = buildPatentPrepChecklist(record);
+  const missingStatus = buildMissingInfoStatus(record, savedReferenceCount);
+  const readinessMetrics = buildReadinessMetrics(record, savedReferenceCount);
+  const nextBestAction = buildNextBestAction(record, savedReferenceCount);
   const differenceMap = buildDifferenceMap(record);
   const materials = buildMaterialsChecklist(record);
   const handoff = buildExpertHandoff(record);
@@ -133,20 +145,47 @@ export function ProfileView({ record }: { record: ProjectRecord }) {
         </Card>
         <Card>
           <CardHeader title="Missing information checklist" />
-          {profile.missingInfo.length ? (
-            <ul className="space-y-1.5 text-sm text-navy-700">
-              {profile.missingInfo.map((item) => (
-                <li key={item} className="flex gap-2">
-                  <span className="text-amber-600">•</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-navy-500">
-              Looks complete — nice work.
-            </p>
-          )}
+          <p className="mb-3 text-sm font-medium text-navy-800">
+            {missingStatus.statusMessage}
+          </p>
+          {missingStatus.coreMissing.length > 0 ? (
+            <>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-navy-500">
+                Core intake
+              </p>
+              <ul className="space-y-1.5 text-sm text-navy-700">
+                {missingStatus.coreMissing.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span className="text-amber-600">•</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+          {missingStatus.optionalGaps.length > 0 ? (
+            <>
+              <p
+                className={`mb-2 text-xs font-semibold uppercase tracking-wide text-navy-500 ${
+                  missingStatus.coreMissing.length > 0 ? "mt-4" : ""
+                }`}
+              >
+                Optional prep areas
+              </p>
+              <ul className="space-y-1.5 text-sm text-navy-700">
+                {missingStatus.optionalGaps.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span className="text-navy-400">○</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+          {missingStatus.coreMissing.length === 0 &&
+          missingStatus.optionalGaps.length === 0 ? (
+            <p className="text-sm text-navy-500">Core intake is complete.</p>
+          ) : null}
         </Card>
       </div>
 
@@ -334,9 +373,10 @@ export function ProfileView({ record }: { record: ProjectRecord }) {
             />
             <dl className="space-y-3 text-sm">
               {[
-                { label: "Idea summary", value: handoff.ideaSummary },
-                { label: "Main components", value: handoff.mainComponents },
+                { label: "Idea", value: handoff.idea },
+                { label: "Problem", value: handoff.problem },
                 { label: "How it works", value: handoff.howItWorks },
+                { label: "Main components", value: handoff.mainComponents },
                 {
                   label: "User-described differences",
                   value: handoff.differences,
@@ -497,6 +537,27 @@ export function ProfileView({ record }: { record: ProjectRecord }) {
           </Card>
         </div>
       </div>
+
+      <Card className="border-teal-200 bg-teal-50">
+        <CardHeader title="Readiness Metrics" subtitle="Preparation only — not legal outcomes." />
+        <dl className="grid gap-3 sm:grid-cols-2">
+          {readinessMetrics.map((metric) => (
+            <div key={metric.label}>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-navy-500">
+                {metric.label}
+              </dt>
+              <dd className="mt-0.5 text-sm font-medium text-navy-800">
+                {metric.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </Card>
+
+      <Card className="border-navy-200 bg-navy-50">
+        <CardHeader title="Next Best Action" />
+        <p className="text-sm text-navy-800">{nextBestAction}</p>
+      </Card>
 
       <DisclaimerNotice />
     </div>

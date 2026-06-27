@@ -209,7 +209,8 @@ function ruleMaterialsChecklist(record: ProjectRecord): string[] {
 function ruleExpertHandoff(record: ProjectRecord): string[] {
   const h = buildExpertHandoff(record);
   const bullets = [
-    `Idea: ${h.ideaSummary}`,
+    `Idea: ${h.idea}`,
+    `Problem: ${h.problem}`,
     `Main components: ${h.mainComponents}`,
     `How it works: ${h.howItWorks}`,
     `User-described differences: ${h.differences}`,

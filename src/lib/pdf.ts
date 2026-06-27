@@ -12,7 +12,10 @@ import {
   buildFollowUpPlan,
   buildIdeaSummaryFields,
   buildMaterialsChecklist,
+  buildMissingInfoStatus,
+  buildNextBestAction,
   buildPatentPrepChecklist,
+  buildReadinessMetrics,
   buildReadinessSnapshot,
   DEVELOPMENT_TIMELINE_FIELDS,
   DIFFERENCE_MAP_NOTE,
@@ -35,7 +38,10 @@ const TEAL: [number, number, number] = [15, 133, 133];
 const AMBER: [number, number, number] = [146, 64, 14];
 const GRAY: [number, number, number] = [90, 105, 120];
 
-export function buildPacketPdf(record: ProjectRecord): jsPDF {
+export function buildPacketPdf(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): jsPDF {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -106,6 +112,9 @@ export function buildPacketPdf(record: ProjectRecord): jsPDF {
   }
 
   const profile = record.profile;
+  const missingStatus = buildMissingInfoStatus(record, savedReferenceCount);
+  const readinessMetrics = buildReadinessMetrics(record, savedReferenceCount);
+  const nextBestAction = buildNextBestAction(record, savedReferenceCount);
   const ideaLabel = getIdeaLabel(record.answers);
 
   // ---------------------------------------------------------------------------
@@ -204,7 +213,15 @@ export function buildPacketPdf(record: ProjectRecord): jsPDF {
 
   // 4. Missing information checklist
   heading("Missing information checklist");
-  bullets(profile.missingInfo, "-");
+  text(missingStatus.statusMessage, { bold: true, gap: 4 });
+  if (missingStatus.coreMissing.length > 0) {
+    text("Core intake", { size: 10, bold: true, gap: 2 });
+    bullets(missingStatus.coreMissing, "-");
+  }
+  if (missingStatus.optionalGaps.length > 0) {
+    text("Optional prep areas", { size: 10, bold: true, gap: 2 });
+    bullets(missingStatus.optionalGaps, "o");
+  }
 
   // 5. Public sharing / disclosure note
   heading("Public sharing / disclosure note");
@@ -287,9 +304,10 @@ export function buildPacketPdf(record: ProjectRecord): jsPDF {
     "For review by a patent agent, patent attorney, clinic, mentor, or innovation partner.",
     { size: 9, color: GRAY, gap: 6 },
   );
-  labeledBlock("Idea summary", handoff.ideaSummary);
-  labeledBlock("Main components", handoff.mainComponents);
+  labeledBlock("Idea", handoff.idea);
+  labeledBlock("Problem", handoff.problem);
   labeledBlock("How it works", handoff.howItWorks);
+  labeledBlock("Main components", handoff.mainComponents);
   labeledBlock("User-described differences", handoff.differences);
   labeledBlock("Prototype status", handoff.prototypeStatus);
   labeledBlock("Public sharing timeline", handoff.publicSharingTimeline);
@@ -343,7 +361,18 @@ export function buildPacketPdf(record: ProjectRecord): jsPDF {
     });
   }
 
-  // 9. Full legal disclaimer
+  // Readiness metrics
+  heading("Readiness Metrics");
+  text("Preparation only — not legal outcomes.", { size: 9, color: GRAY, gap: 4 });
+  for (const metric of readinessMetrics) {
+    labeledBlock(metric.label, metric.value);
+  }
+
+  // Next best action
+  heading("Next Best Action");
+  text(nextBestAction, { gap: 6 });
+
+  // Full legal disclaimer
   heading("Important — please read");
   for (const para of profile.disclaimer.split("\n\n")) {
     text(para, { size: 9, color: AMBER });

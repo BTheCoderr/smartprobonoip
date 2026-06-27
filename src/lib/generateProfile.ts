@@ -1,6 +1,12 @@
 import { DISCLAIMER } from "./disclaimer";
 import { assertSafeLanguage, collectProfileText } from "./safety";
 import { ITEM_TYPE_LABELS } from "./labels";
+import {
+  cleanText,
+  extractBrandName,
+  joinSentences,
+  preserveBrandInText,
+} from "./textCleanup";
 import type {
   IntakeAnswers,
   IpSignal,
@@ -28,18 +34,36 @@ function isConfidential(answers: IntakeAnswers): boolean {
   );
 }
 
+function stripTrailingPunctuation(value: string): string {
+  return value.replace(/[.!?]+$/, "").trim();
+}
+
 function buildSummary(answers: IntakeAnswers): string {
+  const brand = extractBrandName(answers.whatCreated);
   const created = hasText(answers.whatCreated)
-    ? clean(answers.whatCreated)
+    ? preserveBrandInText(
+        stripTrailingPunctuation(clean(answers.whatCreated)),
+        brand,
+      )
     : "an idea";
-  const problem = hasText(answers.problemSolved)
-    ? ` It aims to address ${lowerFirst(clean(answers.problemSolved))}.`
-    : "";
-  const audience = hasText(answers.whoFor)
-    ? ` It is intended for ${lowerFirst(clean(answers.whoFor))}.`
-    : "";
-  const kind = `It is described as a ${ITEM_TYPE_LABELS[answers.itemType].toLowerCase()}.`;
-  return `You described ${lowerFirst(created)}.${problem}${audience} ${kind}`.trim();
+
+  const parts: string[] = [`You described ${lowerFirst(created)}`];
+
+  if (hasText(answers.problemSolved)) {
+    parts.push(
+      `It aims to address ${lowerFirst(stripTrailingPunctuation(clean(answers.problemSolved)))}`,
+    );
+  }
+  if (hasText(answers.whoFor)) {
+    parts.push(
+      `It is intended for ${lowerFirst(stripTrailingPunctuation(clean(answers.whoFor)))}`,
+    );
+  }
+  parts.push(
+    `It is described as a ${ITEM_TYPE_LABELS[answers.itemType].toLowerCase()}`,
+  );
+
+  return preserveBrandInText(joinSentences(parts), brand);
 }
 
 function lowerFirst(value: string): string {
@@ -199,7 +223,10 @@ function buildNextStep(
     return "Based on your answers, your next preparation step may be to fill in the missing details above — especially how your idea works and what makes it different — so an expert can quickly understand it.";
   }
   if (signals.includes("patent_invention")) {
-    return "Based on your answers, your next preparation step may be to organize a clear written and visual description of how your idea works and consider discussing it with a patent resource before any public disclosure.";
+    const disclosurePhrase = isPubliclyShared(answers)
+      ? "before any additional public disclosure or filing decision"
+      : "before public disclosure";
+    return `Based on your answers, your next preparation step may be to organize a clear written and visual description of how your idea works and consider discussing it with a patent resource ${disclosurePhrase}.`;
   }
   if (signals.includes("trademark_brand") && signals.length === 1) {
     return "Based on your answers, your next preparation step may be to run an informal trademark search and consider discussing brand protection with a professional.";
@@ -214,14 +241,14 @@ export function generateProfile(answers: IntakeAnswers): ReadinessProfile {
   const publicDisclosure = isPubliclyShared(answers);
 
   const profile: ReadinessProfile = {
-    ideaSummary: buildSummary(answers),
+    ideaSummary: cleanText(buildSummary(answers)),
     signals,
     completeInfo,
     missingInfo,
     publicDisclosure,
     publicDisclosureNote: publicDisclosure
-      ? "Your answers indicate this idea may already have been shared publicly. Public sharing can affect timing and options in some situations, so a professional may want to review when and how it was shared."
-      : "Your answers do not indicate public sharing yet. If you plan to share it, consider discussing timing with a professional first.",
+      ? "Your answers indicate this idea may already have been shared publicly. A professional may want to review when and how it was shared before any additional public disclosure or filing decision."
+      : "Your answers do not indicate public sharing yet. If you plan to share it, consider discussing timing with a professional before public disclosure.",
     suggestedNextStep: buildNextStep(answers, signals, missingInfo.length),
     expertQuestions: deriveExpertQuestions(answers, signals),
     recommendedResources: deriveResources(answers, signals),

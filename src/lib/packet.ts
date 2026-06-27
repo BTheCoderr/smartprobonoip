@@ -1,6 +1,11 @@
 import { ASSET_LABELS, SHARING_LABELS } from "./labels";
 import { assertPatentSearchPrepSafe } from "./patentSearchPrep";
 import { containsForbiddenLanguage } from "./safety";
+import {
+  cleanText,
+  extractBrandName,
+  preserveBrandInText,
+} from "./textCleanup";
 import type { AssetType, IntakeAnswers, ProjectRecord } from "./types";
 
 export interface SummaryField {
@@ -38,14 +43,26 @@ export interface DifferenceRow {
 }
 
 export interface ExpertHandoff {
-  ideaSummary: string;
-  mainComponents: string;
+  idea: string;
+  problem: string;
   howItWorks: string;
+  mainComponents: string;
   differences: string;
   prototypeStatus: string;
   publicSharingTimeline: string;
   materialsAvailable: string;
   expertQuestions: string[];
+}
+
+export interface MissingInfoStatus {
+  coreMissing: string[];
+  optionalGaps: string[];
+  statusMessage: string;
+}
+
+export interface ReadinessMetric {
+  label: string;
+  value: string;
 }
 
 export const PATENT_PREP_INTRO =
@@ -75,6 +92,7 @@ export function getIdeaLabel(answers: IntakeAnswers): string {
 }
 
 export function buildIdeaSummaryFields(answers: IntakeAnswers): SummaryField[] {
+  const brand = extractBrandName(answers.whatCreated);
   const fields: SummaryField[] = [
     { label: "What you created", value: answers.whatCreated },
     { label: "What problem it solves", value: answers.problemSolved },
@@ -82,7 +100,10 @@ export function buildIdeaSummaryFields(answers: IntakeAnswers): SummaryField[] {
     { label: "How it works", value: answers.howItWorks },
   ];
   return fields
-    .map((f) => ({ label: f.label, value: f.value?.trim() ?? "" }))
+    .map((f) => ({
+      label: f.label,
+      value: preserveBrandInText(cleanText(f.value?.trim() ?? ""), brand),
+    }))
     .filter((f) => f.value.length > 0);
 }
 
@@ -271,21 +292,193 @@ export function buildMaterialsChecklist(record: ProjectRecord): MaterialItem[] {
 
 export function buildExpertHandoff(record: ProjectRecord): ExpertHandoff {
   const { answers, profile } = record;
-  const fallback = (v: string, alt: string) =>
-    v?.trim().length > 0 ? v.trim() : alt;
+  const brand = extractBrandName(answers.whatCreated);
+  const clip = (value: string, max = 240) => {
+    const text = preserveBrandInText(cleanText(value), brand);
+    return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+  };
+  const fallback = (value: string, alt: string) =>
+    value?.trim().length > 0 ? clip(value) : alt;
 
   return {
-    ideaSummary: profile.ideaSummary,
-    mainComponents: fallback(answers.mainParts, "Not yet described."),
+    idea: fallback(answers.whatCreated, "Not yet described."),
+    problem: fallback(answers.problemSolved, "Not yet described."),
     howItWorks: fallback(answers.howItWorks, "Not yet described."),
+    mainComponents: fallback(answers.mainParts, "Not yet described."),
     differences: fallback(answers.whatDifferent, "Not yet described."),
     prototypeStatus: answers.hasPrototype
-      ? "Prototype or working demonstration exists"
+      ? "Prototype exists"
       : "No prototype yet",
     publicSharingTimeline: sharingTimeline(answers),
     materialsAvailable: materialsSummary(answers),
-    expertQuestions: profile.expertQuestions,
+    expertQuestions: profile.expertQuestions.slice(0, 6).map((q) => cleanText(q)),
   };
+}
+
+export function deriveOptionalGaps(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): string[] {
+  const materials = buildMaterialsChecklist(record);
+  const gaps: string[] = [];
+
+  gaps.push("Development timeline");
+
+  const testing = materials.find((m) => m.label === "Testing notes");
+  if (testing && !testing.available) gaps.push("Testing notes");
+
+  const pitch = materials.find((m) => m.label === "Customer / pitch notes");
+  if (pitch && !pitch.available) gaps.push("Customer feedback / pitch notes");
+
+  const flowcharts = materials.find((m) => m.label === "Flowcharts");
+  if (flowcharts && !flowcharts.available) gaps.push("Flowcharts");
+
+  if (record.profile.publicDisclosure) {
+    gaps.push("Public sharing details");
+  }
+
+  if (savedReferenceCount === 0) {
+    gaps.push("Similar references saved");
+  }
+
+  return gaps;
+}
+
+export function buildMissingInfoStatus(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): MissingInfoStatus {
+  const coreMissing = record.profile.missingInfo;
+  const optionalGaps = deriveOptionalGaps(record, savedReferenceCount);
+
+  let statusMessage: string;
+  if (coreMissing.length > 0) {
+    statusMessage = `${coreMissing.length} core intake item${coreMissing.length === 1 ? "" : "s"} still need attention.`;
+  } else if (optionalGaps.length > 0) {
+    statusMessage = "Core intake is complete. Optional prep areas remain.";
+  } else {
+    statusMessage = "Core intake is complete.";
+  }
+
+  return { coreMissing, optionalGaps, statusMessage };
+}
+
+export function buildReadinessMetrics(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): ReadinessMetric[] {
+  const { answers, profile, preClarity, postClarity } = record;
+  const optionalGaps = deriveOptionalGaps(record, savedReferenceCount);
+  const coreMissing = profile.missingInfo;
+  const prep = buildPatentPrepChecklist(record);
+  const materials = buildMaterialsChecklist(record);
+
+  const clarityBefore = `${preClarity}/5 before`;
+  const clarityAfter =
+    postClarity && postClarity > 0 ? `${postClarity}/5 after` : "pending after";
+
+  const prepComplete = prep.filter((row) => row.complete).length;
+  const materialsAvailable = materials.filter((item) => item.available).length;
+  const packetCompletion = Math.round(
+    ((prepComplete / prep.length) * 0.65 +
+      (materialsAvailable / materials.length) * 0.35) *
+      100,
+  );
+
+  const missingInfoCount =
+    coreMissing.length > 0
+      ? `${coreMissing.length} core item${coreMissing.length === 1 ? "" : "s"}`
+      : `${optionalGaps.length} optional gap${optionalGaps.length === 1 ? "" : "s"}`;
+
+  let materialsReadiness = "Needs materials";
+  if (materialsAvailable >= 5) materialsReadiness = "Strong";
+  else if (materialsAvailable >= 2) materialsReadiness = "Medium";
+
+  const handoffFields = [
+    answers.whatCreated,
+    answers.problemSolved,
+    answers.howItWorks,
+    answers.mainParts,
+    answers.whatDifferent,
+  ].filter((value) => value?.trim()).length;
+
+  let expertHandoffReadiness = "Low";
+  if (handoffFields >= 5) expertHandoffReadiness = "Strong";
+  else if (handoffFields >= 3) expertHandoffReadiness = "Medium";
+
+  let referralReadiness = "Low";
+  if (answers.location?.trim() && answers.goals.length > 0) {
+    referralReadiness = answers.wantsProBono
+      ? "Strong (pro bono interest noted)"
+      : "Medium";
+  }
+
+  return [
+    { label: "Clarity Score", value: `${clarityBefore}, ${clarityAfter}` },
+    { label: "Packet Completion Score", value: `${packetCompletion}%` },
+    { label: "Missing Info Count", value: missingInfoCount },
+    { label: "Timeline Readiness", value: "Needs dates" },
+    { label: "Materials Readiness", value: materialsReadiness },
+    {
+      label: "Similar Reference Prep",
+      value: savedReferenceCount > 0 ? "Started" : "Not started",
+    },
+    { label: "Expert Handoff Readiness", value: expertHandoffReadiness },
+    { label: "Referral Readiness", value: referralReadiness },
+  ];
+}
+
+export function buildNextBestAction(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): string {
+  const { profile } = record;
+  const optionalGaps = deriveOptionalGaps(record, savedReferenceCount);
+  const coreMissing = profile.missingInfo;
+
+  if (coreMissing.length >= 2) {
+    return cleanText(
+      "Consider filling in the core gaps listed above — especially how your idea works and what makes it different — so a professional may want to review a clearer description.",
+    );
+  }
+
+  if (coreMissing.length === 1) {
+    return cleanText(
+      `Consider completing the remaining core item (${coreMissing[0].toLowerCase()}) before speaking with a patent professional or PTRC resource.`,
+    );
+  }
+
+  const steps: string[] = [];
+  if (optionalGaps.includes("Development timeline")) {
+    steps.push("organize your development timeline");
+  }
+  if (
+    optionalGaps.includes("Testing notes") ||
+    optionalGaps.includes("Customer feedback / pitch notes")
+  ) {
+    steps.push("gather prototype and testing notes");
+  }
+  if (optionalGaps.includes("Similar references saved")) {
+    steps.push(
+      "review possible similar references using the suggested search queries",
+    );
+  }
+  if (optionalGaps.includes("Flowcharts")) {
+    steps.push("add flowcharts or diagrams if you have them");
+  }
+  if (optionalGaps.includes("Public sharing details")) {
+    steps.push("note when and how you shared this publicly");
+  }
+
+  if (steps.length === 0) {
+    return cleanText(
+      "Consider bringing this packet and your materials to a patent resource, clinic, mentor, or innovation partner for review.",
+    );
+  }
+
+  return cleanText(
+    `Consider your next preparation step: ${steps.join(", ")}, before speaking with a patent professional or PTRC resource.`,
+  );
 }
 
 export function assertPacketContentSafe(): void {
@@ -297,6 +490,47 @@ export function assertPacketContentSafe(): void {
     TIMELINE_NOTE,
     ...DEVELOPMENT_TIMELINE_FIELDS,
     ...MATERIAL_DEFS.map((m) => m.label),
+    buildNextBestAction(
+      {
+        id: "safety-check",
+        createdAt: new Date().toISOString(),
+        answers: {
+          whatCreated: "Sample product",
+          problemSolved: "Sample problem",
+          whoFor: "Sample users",
+          howItWorks: "Sample process",
+          mainParts: "Sample parts",
+          whatDifferent: "Sample difference",
+          itemType: "physical_product",
+          hasPrototype: true,
+          assets: ["drawings"],
+          sharedChannels: ["none"],
+          hasBrandIdentity: false,
+          goals: ["expert_review"],
+          location: "Sample City",
+          wantsProBono: false,
+          preClarity: 2,
+        },
+        profile: {
+          ideaSummary: "Sample summary.",
+          signals: ["expert_review"],
+          completeInfo: [],
+          missingInfo: [],
+          publicDisclosure: false,
+          publicDisclosureNote: "Sample note.",
+          suggestedNextStep: "Sample step.",
+          expertQuestions: ["Sample question?"],
+          recommendedResources: ["education"],
+          disclaimer: "Sample disclaimer.",
+          generator: "rule",
+        },
+        preClarity: 2,
+        postClarity: null,
+        followUpStatus: { day30: "pending", day60: "pending", day90: "pending" },
+      },
+      0,
+    ),
+    "Core intake is complete. Optional prep areas remain.",
   ].join(" \n ");
   if (containsForbiddenLanguage(text)) {
     throw new Error("Patent prep content contains forbidden language");

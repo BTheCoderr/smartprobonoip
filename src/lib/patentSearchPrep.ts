@@ -1,6 +1,7 @@
-import { ITEM_TYPE_LABELS, SIGNAL_LABELS } from "./labels";
+import { ITEM_TYPE_LABELS } from "./labels";
+import { cleanSearchQuery, cleanText, extractBrandName } from "./textCleanup";
 import { containsForbiddenLanguage } from "./safety";
-import type { ProjectRecord } from "./types";
+import type { IntakeAnswers, ProjectRecord } from "./types";
 
 export interface ExternalSearchLink {
   label: string;
@@ -43,109 +44,42 @@ const USPTO_PATENT_PUBLIC_SEARCH =
   "https://ppubs.uspto.gov/pubwebapp/static/pages/ppubsbasic.html";
 
 const STOP_WORDS = new Set([
-  "a",
-  "an",
-  "the",
-  "and",
-  "or",
-  "but",
-  "in",
-  "on",
-  "at",
-  "to",
-  "for",
-  "of",
-  "with",
-  "by",
-  "from",
-  "as",
-  "is",
-  "are",
-  "was",
-  "were",
-  "be",
-  "been",
-  "being",
-  "have",
-  "has",
-  "had",
-  "do",
-  "does",
-  "did",
-  "will",
-  "would",
-  "could",
-  "should",
-  "may",
-  "might",
-  "can",
-  "that",
-  "this",
-  "these",
-  "those",
-  "it",
-  "its",
-  "my",
-  "your",
-  "our",
-  "their",
-  "what",
-  "which",
-  "who",
-  "how",
-  "when",
-  "where",
-  "why",
-  "not",
-  "also",
-  "just",
-  "very",
-  "about",
-  "into",
-  "through",
-  "during",
-  "before",
-  "after",
-  "above",
-  "below",
-  "between",
-  "under",
-  "over",
-  "such",
-  "some",
-  "any",
-  "all",
-  "each",
-  "other",
-  "more",
-  "most",
-  "than",
-  "then",
-  "there",
-  "here",
-  "they",
-  "them",
-  "you",
-  "your",
-  "we",
-  "our",
+  "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for", "of",
+  "with", "by", "from", "as", "is", "are", "was", "were", "be", "been", "being",
+  "have", "has", "had", "do", "does", "did", "will", "would", "could", "should",
+  "may", "might", "can", "that", "this", "these", "those", "it", "its", "my",
+  "your", "our", "their", "what", "which", "who", "how", "when", "where", "why",
+  "not", "also", "just", "very", "about", "into", "through", "during", "before",
+  "after", "above", "below", "between", "under", "over", "such", "some", "any",
+  "all", "each", "other", "more", "most", "than", "then", "there", "here", "they",
+  "them", "you", "we", "often", "lets", "let", "without", "extra", "like", "unlike",
+  "while", "through", "using", "used", "uses",
 ]);
 
-function snippet(text: string, maxWords = 6): string {
-  const words = text
-    .trim()
-    .split(/\s+/)
-    .filter((w) => w.length > 0);
-  if (words.length === 0) return "";
-  return words.slice(0, maxWords).join(" ");
-}
+const MATERIAL_TERMS = [
+  "carbon",
+  "ceramic",
+  "filter",
+  "cartridge",
+  "mesh",
+  "silicone",
+  "bpa-free",
+  "compostable",
+  "activated",
+];
 
-function extractKeywords(text: string, limit = 10): string[] {
+function extractKeywords(text: string, limit = 8): string[] {
+  const brand = extractBrandName(text);
   const words = text
     .toLowerCase()
     .replace(/[^\w\s-]/g, " ")
     .split(/\s+/)
-    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+    .filter(
+      (w) =>
+        w.length > 2 &&
+        !STOP_WORDS.has(w) &&
+        !(brand && w === brand.toLowerCase()),
+    );
 
   const seen = new Set<string>();
   const result: string[] = [];
@@ -157,6 +91,125 @@ function extractKeywords(text: string, limit = 10): string[] {
     if (result.length >= limit) break;
   }
   return result;
+}
+
+function phraseJoin(...groups: string[][]): string {
+  const seen = new Set<string>();
+  const words: string[] = [];
+  for (const group of groups) {
+    for (const w of group) {
+      const key = w.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        words.push(w);
+      }
+    }
+  }
+  return cleanSearchQuery(words.join(" "));
+}
+
+function productNouns(answers: IntakeAnswers): string[] {
+  const fromCreated = extractKeywords(answers.whatCreated, 6);
+  const fromParts = extractKeywords(answers.mainParts, 5);
+  const item = ITEM_TYPE_LABELS[answers.itemType]?.toLowerCase() ?? "product";
+  const nouns = [...fromCreated, ...fromParts];
+  if (item.includes("physical")) nouns.push("portable", "device");
+  if (item.includes("software")) nouns.push("software", "application");
+  return nouns.slice(0, 8);
+}
+
+function textBlob(answers: IntakeAnswers): string {
+  return [
+    answers.whatCreated,
+    answers.problemSolved,
+    answers.howItWorks,
+    answers.mainParts,
+    answers.whatDifferent,
+  ]
+    .join(" ")
+    .toLowerCase();
+}
+
+function mentions(text: string, ...terms: string[]): boolean {
+  return terms.some((term) => text.includes(term));
+}
+
+function buildSuggestedQueries(record: ProjectRecord): string[] {
+  const { answers } = record;
+  const brand = extractBrandName(answers.whatCreated);
+  const blob = textBlob(answers);
+
+  const problemKw = extractKeywords(answers.problemSolved, 4);
+  const createdKw = extractKeywords(answers.whatCreated, 5);
+  const partsKw = extractKeywords(answers.mainParts, 5);
+  const worksKw = extractKeywords(answers.howItWorks, 4);
+  const diffKw = extractKeywords(answers.whatDifferent, 5);
+  const materialKw = [...partsKw, ...worksKw].filter((w) =>
+    MATERIAL_TERMS.some((m) => w.includes(m) || m.includes(w)),
+  );
+
+  let broad: string;
+  let component: string;
+  let workflow: string;
+  let material: string;
+  let difference: string;
+
+  if (mentions(blob, "water", "filter", "bottle", "hydration")) {
+    broad = "portable water filtration bottle replaceable cartridge";
+    component = "twist lock replaceable filter cartridge bottle";
+    workflow = "inline drinking water filter bottle";
+    material = "carbon ceramic filter cartridge bottle";
+    difference = "inline filter drinking no pump battery compostable cartridge";
+  } else if (mentions(blob, "software", "app", "application")) {
+    broad = phraseJoin(problemKw.slice(0, 3), ["software", "application"]);
+    component = phraseJoin(partsKw.slice(0, 4), ["module", "feature"]);
+    workflow = phraseJoin(worksKw.slice(0, 4), ["user", "workflow"]);
+    material = phraseJoin(worksKw.slice(0, 3), ["interface", "data"]);
+    difference = phraseJoin(diffKw.slice(0, 5));
+  } else {
+    broad = phraseJoin(problemKw.slice(0, 3), createdKw.slice(0, 4));
+    component = phraseJoin(partsKw.slice(0, 4), createdKw.slice(0, 2));
+    workflow = phraseJoin(worksKw.slice(0, 4), ["process", "method"]);
+    material =
+      materialKw.length > 0
+        ? phraseJoin(materialKw.slice(0, 4), ["structure", "material"])
+        : phraseJoin(partsKw.slice(0, 2), worksKw.slice(0, 2));
+    difference = phraseJoin(diffKw.slice(0, 5));
+  }
+
+  if (mentions(blob, "outdoor", "hiker", "camp", "backcountry")) {
+    broad = phraseJoin(["outdoor", "hydration", "bottle", "water", "purification"]);
+  }
+
+  const queries = [broad, component, workflow, material, difference].map(
+    cleanSearchQuery,
+  );
+
+  if (brand && answers.hasBrandIdentity) {
+    queries[4] = cleanSearchQuery(
+      `${brand.toLowerCase()} ${partsKw[0] ?? createdKw[0] ?? "portable filter"}`,
+    );
+  }
+
+  const unique: string[] = [];
+  const seen = new Set<string>();
+  for (const q of queries) {
+    if (q.length > 0 && !seen.has(q)) {
+      seen.add(q);
+      unique.push(q);
+    }
+  }
+
+  while (unique.length < 5) {
+    const filler = cleanSearchQuery(
+      `${ITEM_TYPE_LABELS[answers.itemType].toLowerCase()} ${createdKw.join(" ")}`,
+    );
+    if (!filler || seen.has(filler)) break;
+    seen.add(filler);
+    unique.push(filler);
+  }
+
+  return unique.slice(0, 5);
 }
 
 function uniqueKeywords(keywordLists: string[][]): string[] {
@@ -174,47 +227,7 @@ function uniqueKeywords(keywordLists: string[][]): string[] {
   return result.slice(0, 20);
 }
 
-function buildSuggestedQueries(record: ProjectRecord): string[] {
-  const { answers, profile } = record;
-  const problem = snippet(answers.problemSolved);
-  const created = snippet(answers.whatCreated);
-  const parts = snippet(answers.mainParts, 4);
-  const workflow = snippet(answers.howItWorks, 4);
-  const different = snippet(answers.whatDifferent, 5);
-  const itemLabel = ITEM_TYPE_LABELS[answers.itemType] ?? "invention";
-  const queries: string[] = [];
-
-  if (problem && created) {
-    queries.push(`${problem} ${created} patent`);
-  }
-  if (parts && workflow) {
-    queries.push(`${parts} ${workflow} ${itemLabel.toLowerCase()}`);
-  }
-  if (different) {
-    queries.push(`${different} invention`);
-  }
-  if (problem && parts) {
-    queries.push(`${problem} ${parts} prior art`);
-  }
-  if (
-    profile.signals.includes("patent_invention") &&
-    created &&
-    !queries.some((q) => q.includes(created))
-  ) {
-    queries.push(`${created} similar patent references`);
-  }
-
-  if (queries.length === 0) {
-    queries.push(
-      `${itemLabel.toLowerCase()} invention search terms`,
-      "problem solution patent search",
-    );
-  }
-
-  return queries.slice(0, 5);
-}
-
-function buildWorksheetRows(suggestedQueries: string[]): WorksheetRow[] {
+function buildWorksheetRows(suggestedQueries: WorksheetRow["searchQueryUsed"][]): WorksheetRow[] {
   const blank = (): WorksheetRow => ({
     searchQueryUsed: "(Search query you tried)",
     referenceFound: "(Patent or publication title / number)",
@@ -231,19 +244,19 @@ function buildWorksheetRows(suggestedQueries: string[]): WorksheetRow[] {
     questionsForExpert: "(Questions to ask a professional)",
   }));
 
-  while (rows.length < 3) {
-    rows.push(blank());
-  }
+  while (rows.length < 3) rows.push(blank());
   return rows;
 }
 
 function buildExpertPrepQuestions(record: ProjectRecord): string[] {
-  const { answers } = record;
+  const { answers, profile } = record;
   const questions = [
-    "How should I explain the differences between my idea and this reference?",
-    "Which parts of my invention should I describe more clearly?",
-    "What should a professional review before I share this publicly?",
-    "What materials should I bring to make the comparison easier?",
+    "How should I explain the differences between my idea and a possible similar reference?",
+    "Which parts of my description should I clarify before an expert conversation?",
+    profile.publicDisclosure
+      ? "What should a professional review about my public sharing timeline?"
+      : "What should I consider before any public sharing?",
+    "What materials should I bring to make a comparison easier?",
     "What search terms might help me find other possible similar references?",
   ];
 
@@ -252,19 +265,14 @@ function buildExpertPrepQuestions(record: ProjectRecord): string[] {
       "How can I best describe my user-stated differences when comparing to a reference?",
     );
   }
-  if (record.profile.publicDisclosure) {
-    questions.push(
-      "This may be relevant to discuss with a professional: what should I note about my public sharing timeline?",
-    );
-  }
 
-  return questions.slice(0, 7);
+  return questions.slice(0, 6).map(cleanText);
 }
 
 function buildExternalSearchLinks(
   suggestedQueries: string[],
 ): ExternalSearchLink[] {
-  const primary = suggestedQueries[0] ?? "invention patent search";
+  const primary = suggestedQueries[0] ?? "portable water filtration bottle";
   return [
     {
       label: "Google Patents",
@@ -280,7 +288,7 @@ function buildExternalSearchLinks(
 }
 
 export function buildPatentSearchPrep(record: ProjectRecord): PatentSearchPrep {
-  const { answers, profile } = record;
+  const { answers } = record;
 
   const searchKeywords = uniqueKeywords([
     extractKeywords(answers.whatCreated),
@@ -288,10 +296,7 @@ export function buildPatentSearchPrep(record: ProjectRecord): PatentSearchPrep {
     extractKeywords(answers.howItWorks),
     extractKeywords(answers.mainParts),
     extractKeywords(answers.whatDifferent),
-    [ITEM_TYPE_LABELS[answers.itemType].toLowerCase()],
-    ...profile.signals.map((s) =>
-      SIGNAL_LABELS[s].toLowerCase().split(/\s+/).slice(0, 3),
-    ),
+    productNouns(answers),
   ]);
 
   const suggestedQueries = buildSuggestedQueries(record);
