@@ -48,6 +48,9 @@ export const ANALYTICS_EVENTS = [
   "reference_updated",
   "reference_deleted",
   "comparison_helper_used",
+  "contact_form_viewed",
+  "interest_submitted",
+  "gap_map_saved",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];

@@ -4,6 +4,7 @@ import "./globals.css";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { PartnerTrackingInit } from "@/components/PartnerTrackingInit";
+import { Ga4Provider } from "@/components/analytics/Ga4Provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col font-sans">
         <SiteNav />
         <PartnerTrackingInit />
+        <Ga4Provider />
         <main className="flex-1">{children}</main>
         <SiteFooter />
       </body>
