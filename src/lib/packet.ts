@@ -276,13 +276,15 @@ export function buildDifferenceMap(record: ProjectRecord): DifferenceRow[] {
 }
 
 const MATERIAL_DEFS: { label: string; assets: AssetType[] }[] = [
-  { label: "Sketches", assets: ["drawings"] },
+  { label: "Drawings", assets: ["drawings"] },
   { label: "Diagrams", assets: ["diagrams"] },
-  { label: "Flowcharts", assets: [] },
   { label: "Wireframes", assets: ["wireframes"] },
   { label: "Screenshots", assets: ["screenshots"] },
-  { label: "Prototype photos", assets: ["photos"] },
-  { label: "Code or technical notes", assets: ["code", "notes"] },
+  { label: "Photos", assets: ["photos"] },
+  { label: "Recordings", assets: ["recordings"] },
+  { label: "Written notes", assets: ["notes"] },
+  { label: "Code", assets: ["code"] },
+  { label: "Flowcharts", assets: [] },
   { label: "Testing notes", assets: [] },
   { label: "Customer / pitch notes", assets: [] },
 ];
@@ -291,7 +293,9 @@ export function buildMaterialsChecklist(record: ProjectRecord): MaterialItem[] {
   const owned = new Set(record.answers.assets);
   return MATERIAL_DEFS.map((def) => ({
     label: def.label,
-    available: def.assets.some((a) => owned.has(a)),
+    available:
+      def.assets.length > 0 &&
+      def.assets.every((asset) => owned.has(asset)),
   }));
 }
 

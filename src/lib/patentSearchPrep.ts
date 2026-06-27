@@ -152,6 +152,64 @@ function mentions(text: string, ...terms: string[]): boolean {
   return terms.some((term) => text.includes(term));
 }
 
+function isBackpackSafetyDevice(blob: string, answers: IntakeAnswers): boolean {
+  if (answers.itemType !== "physical_product") return false;
+  const hasWearableMount = mentions(
+    blob,
+    "backpack",
+    "clip",
+    "clip-on",
+    "clip on",
+    "wearable",
+  );
+  const hasLightFeature = mentions(
+    blob,
+    "light",
+    "led",
+    "visibility",
+    "visible",
+    "flashing",
+    "illumination",
+    "beacon",
+  );
+  const hasSafetyContext = mentions(
+    blob,
+    "safety",
+    "child",
+    "children",
+    "pedestrian",
+    "school",
+    "student",
+    "automatic",
+    "motion",
+    "sensor",
+  );
+  return hasWearableMount && hasLightFeature && hasSafetyContext;
+}
+
+function buildPhysicalProductQueries(answers: IntakeAnswers): string[] {
+  const problemKw = extractKeywords(answers.problemSolved, 4);
+  const createdKw = extractKeywords(answers.whatCreated, 5);
+  const partsKw = extractKeywords(answers.mainParts, 4);
+  const worksKw = extractKeywords(answers.howItWorks, 4);
+
+  const subject = phraseJoin(createdKw.slice(0, 3), partsKw.slice(0, 2));
+  const problem = phraseJoin(problemKw.slice(0, 3));
+  const mechanism = phraseJoin(worksKw.slice(0, 4), partsKw.slice(0, 2));
+
+  return [
+    stripBlockedTokensFromQuery(`${subject} ${problem}`.trim()),
+    stripBlockedTokensFromQuery(`${mechanism} ${createdKw.slice(0, 2).join(" ")}`.trim()),
+    stripBlockedTokensFromQuery(
+      `${problem} ${partsKw.slice(0, 3).join(" ")} device`.trim(),
+    ),
+    stripBlockedTokensFromQuery(
+      `${createdKw.slice(0, 3).join(" ")} ${worksKw.slice(0, 2).join(" ")}`.trim(),
+    ),
+    stripBlockedTokensFromQuery(`${subject} portable device`.trim()),
+  ].filter((query) => query.length > 0);
+}
+
 function buildSuggestedQueries(record: ProjectRecord): string[] {
   const answers = normalizeAnswersForPacket(record.answers);
   const brand =
@@ -174,6 +232,16 @@ function buildSuggestedQueries(record: ProjectRecord): string[] {
   let material: string;
   let difference: string;
 
+  if (isBackpackSafetyDevice(blob, answers)) {
+    return [
+      "automatic backpack safety light for children",
+      "motion sensing clip-on LED safety light",
+      "light sensor backpack visibility device",
+      "child pedestrian safety backpack light",
+      "automatic flashing backpack clip light",
+    ];
+  }
+
   if (mentions(blob, "water", "filter", "bottle", "hydration")) {
     broad = "portable water filtration bottle replaceable cartridge";
     component = "twist lock replaceable filter cartridge bottle";
@@ -193,6 +261,16 @@ function buildSuggestedQueries(record: ProjectRecord): string[] {
     component = phraseJoin(partsKw.slice(0, 4), ["module", "feature"]);
     workflow = phraseJoin(worksKw.slice(0, 4), ["workflow", "process"]);
     material = phraseJoin(diffKw.slice(0, 3), ["interface", "automation"]);
+    difference = phraseJoin(diffKw.slice(0, 5));
+  } else if (answers.itemType === "physical_product") {
+    const physicalQueries = buildPhysicalProductQueries(answers);
+    if (physicalQueries.length >= 3) {
+      return physicalQueries.slice(0, 5);
+    }
+    broad = phraseJoin(problemKw.slice(0, 3), createdKw.slice(0, 4));
+    component = phraseJoin(partsKw.slice(0, 4), createdKw.slice(0, 2));
+    workflow = phraseJoin(worksKw.slice(0, 4), ["process", "method"]);
+    material = phraseJoin(partsKw.slice(0, 2), worksKw.slice(0, 2));
     difference = phraseJoin(diffKw.slice(0, 5));
   } else {
     broad = phraseJoin(problemKw.slice(0, 3), createdKw.slice(0, 4));
