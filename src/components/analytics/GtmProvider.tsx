@@ -4,7 +4,7 @@ import Script from "next/script";
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { captureCampaignAttribution } from "@/lib/analytics/campaignAttribution";
-import { ga4MeasurementId, trackGa4PageView } from "@/lib/analytics/ga4";
+import { gtmContainerId, trackGtmPageView } from "@/lib/analytics/gtm";
 
 const CONSENT_KEY = "smartprobonoip:analytics-notice";
 
@@ -19,19 +19,19 @@ function CampaignCapture() {
   return null;
 }
 
-function Ga4RouteTracker() {
+function GtmRouteTracker() {
   const pathname = usePathname();
 
   useEffect(() => {
     if (!pathname) return;
-    trackGa4PageView(pathname);
+    trackGtmPageView(pathname);
   }, [pathname]);
 
   return null;
 }
 
 function readNoticeVisible(): boolean {
-  if (!ga4MeasurementId()) return false;
+  if (!gtmContainerId()) return false;
   try {
     return !window.localStorage.getItem(CONSENT_KEY);
   } catch {
@@ -54,7 +54,7 @@ function AnalyticsNotice() {
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-mist-200 bg-white/95 p-4 shadow-lg backdrop-blur sm:px-6">
       <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm leading-relaxed text-navy-700">
-          We use Google Analytics on public pages to understand traffic and campaign
+          We use Google Tag Manager on public pages to understand traffic and campaign
           performance. We do not send your invention details or private packet content
           to Google Analytics.
         </p>
@@ -73,27 +73,24 @@ function AnalyticsNotice() {
   );
 }
 
-export function Ga4Provider() {
-  const measurementId = ga4MeasurementId();
-  if (!measurementId) return null;
+export function GtmProvider() {
+  const containerId = gtmContainerId();
+  if (!containerId) return null;
 
   return (
     <>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-        strategy="afterInteractive"
-      />
-      <Script id="ga4-init" strategy="afterInteractive">
+      <Script id="gtm-init" strategy="afterInteractive">
         {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${measurementId}', { send_page_view: false });
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','${containerId}');
         `}
       </Script>
       <Suspense fallback={null}>
         <CampaignCapture />
-        <Ga4RouteTracker />
+        <GtmRouteTracker />
       </Suspense>
       <AnalyticsNotice />
     </>

@@ -1,0 +1,111 @@
+import type { AnalyticsEventName } from "./events";
+import { campaignAttributionParams } from "./campaignAttribution";
+
+declare global {
+  interface Window {
+    dataLayer?: Record<string, unknown>[];
+  }
+}
+
+const PUBLIC_MARKETING_PATHS = new Set([
+  "/",
+  "/smartprobonoip",
+  "/smartprobonoip/pilot",
+  "/smartprobonoip/sample",
+  "/smartprobonoip/start",
+  "/contact",
+]);
+
+const BLOCKED_PATH_PREFIXES = [
+  "/smartprobonoip/profile/",
+  "/smartprobonoip/recover",
+  "/smartprobonoip/dashboard",
+];
+
+/** Public marketing events only — private app events stay in Supabase analytics. */
+const GTM_EVENT_MAP: Partial<Record<AnalyticsEventName, string>> = {
+  start_clicked: "start_packet_clicked",
+  demo_started: "start_packet_clicked",
+  sample_packet_viewed: "sample_packet_clicked",
+  pilot_page_viewed: "pilot_page_viewed",
+  contact_form_viewed: "contact_form_viewed",
+  interest_submitted: "contact_form_submitted",
+};
+
+const SAFE_GTM_PARAMS = new Set([
+  "demo",
+  "interest_type",
+  "page_path",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+  "referrer",
+  "landing_page",
+]);
+
+export function gtmContainerId(): string | null {
+  const id = process.env.NEXT_PUBLIC_GTM_ID?.trim();
+  return id || null;
+}
+
+export function isGtmEnabled(): boolean {
+  return Boolean(gtmContainerId());
+}
+
+export function isPublicMarketingPath(pathname: string): boolean {
+  if (BLOCKED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return false;
+  }
+  return PUBLIC_MARKETING_PATHS.has(pathname);
+}
+
+function pushDataLayer(payload: Record<string, unknown>): void {
+  if (typeof window === "undefined" || !isGtmEnabled()) return;
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push(payload);
+}
+
+function sanitizeGtmParams(
+  metadata?: Record<string, string | number | boolean | undefined>,
+): Record<string, string | number | boolean> {
+  if (!metadata) return {};
+  const out: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(metadata)) {
+    if (value === undefined) continue;
+    const snake = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+    if (!SAFE_GTM_PARAMS.has(snake)) continue;
+    if (typeof value === "boolean" || typeof value === "number") {
+      out[snake] = value;
+      continue;
+    }
+    const trimmed = String(value).trim().slice(0, 120);
+    if (!trimmed || trimmed.includes("@")) continue;
+    out[snake] = trimmed;
+  }
+  return out;
+}
+
+export function trackGtmPageView(path: string): void {
+  if (!isPublicMarketingPath(path)) return;
+  pushDataLayer({
+    event: "page_view",
+    page_path: path.slice(0, 200),
+    ...campaignAttributionParams(),
+  });
+}
+
+export function trackGtmEvent(
+  eventName: AnalyticsEventName,
+  metadata?: Record<string, string | number | boolean | undefined>,
+): void {
+  const gtmEvent = GTM_EVENT_MAP[eventName];
+  if (!gtmEvent) return;
+
+  pushDataLayer({
+    event: gtmEvent,
+    ...campaignAttributionParams(),
+    ...sanitizeGtmParams(metadata),
+  });
+}

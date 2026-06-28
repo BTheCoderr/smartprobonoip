@@ -4,7 +4,8 @@ import "./globals.css";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { PartnerTrackingInit } from "@/components/PartnerTrackingInit";
-import { Ga4Provider } from "@/components/analytics/Ga4Provider";
+import { GtmProvider } from "@/components/analytics/GtmProvider";
+import { gtmContainerId } from "@/lib/analytics/gtm";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,15 +28,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gtmId = gtmContainerId();
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
+        {gtmId ? (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+              title="Google Tag Manager"
+            />
+          </noscript>
+        ) : null}
         <SiteNav />
         <PartnerTrackingInit />
-        <Ga4Provider />
+        <GtmProvider />
         <main className="flex-1">{children}</main>
         <SiteFooter />
       </body>

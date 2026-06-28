@@ -6,7 +6,7 @@ export const DISCLAIMER = [
 
 export const PRIVACY_NOTICE = [
   "What we collect: your intake answers, optional clarity ratings (before and after), generated readiness profiles, optional pilot feedback, saved research prep notes you choose to store, and first-party analytics events (event names, routes, signal keys, and safe counts — not your full invention text).",
-  "Google Analytics (GA4): when enabled, we use GA4 on public pages to measure visitor traffic and campaign attribution (UTM parameters, referrer, landing page). GA4 receives page paths and safe event names only — not your invention descriptions, saved research notes, emails, recovery tokens, or private packet content.",
+  "Google Tag Manager (GTM): when enabled, we load GTM on public marketing pages only to measure visitor traffic and campaign attribution (UTM parameters, referrer, landing page). GA4 measurement (configured inside GTM) receives public page paths and safe event names only — not your invention descriptions, saved research notes, emails, recovery tokens, or private packet content. Private app activity stays in our internal Supabase analytics.",
   "Where it is stored: on your device (local mode) or in our database when Supabase is configured for a pilot. Demo data is clearly marked and excluded from live pilot reporting.",
   "Partner pilot reporting: authorized partners with a dashboard secret may view aggregated pilot metrics and export CSV summaries for readiness reporting. CSV exports exclude raw invention descriptions and free-text feedback notes.",
   "Recovery links: if you create a recovery link, we store only a hashed token (never the raw link text). Anyone with the private link can access your packet until the link expires or you create a new one.",

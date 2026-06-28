@@ -1,6 +1,6 @@
 import { getStoredTracking } from "@/lib/partnerTracking";
 import { getAnonymousId, pilotSessionHeaders } from "@/lib/pilotSession";
-import { trackGa4Event } from "./ga4";
+import { trackGtmEvent } from "./gtm";
 import type { AnalyticsEventName } from "./events";
 
 export interface TrackOptions {
@@ -28,7 +28,7 @@ export function trackEvent(
   };
 
   try {
-    trackGa4Event(eventName, {
+    trackGtmEvent(eventName, {
       ...options.metadata,
       route_name: body.route?.slice(0, 120),
     });
