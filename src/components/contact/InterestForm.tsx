@@ -7,6 +7,8 @@ import { getCampaignAttribution } from "@/lib/analytics/campaignAttribution";
 import { INTEREST_TYPES, type InterestType } from "@/lib/interest";
 import { CONSENT_CONFIDENTIAL } from "@/lib/disclaimer";
 
+const NETLIFY_FORM_NAME = "smartprobonoip-interest";
+
 const EMPTY = {
   name: "",
   email: "",
@@ -70,6 +72,13 @@ export function InterestForm({ id }: { id?: string }) {
         return;
       }
 
+      submitNetlifyForm(form, attr).catch((netlifyError) => {
+        console.warn(
+          "Netlify Forms interest backup failed",
+          netlifyError instanceof Error ? netlifyError.message : "Unknown Netlify Forms error",
+        );
+      });
+
       setSuccess(
         data.message ?? "Thanks — we received your interest. We'll follow up soon.",
       );
@@ -86,6 +95,7 @@ export function InterestForm({ id }: { id?: string }) {
 
   return (
     <Card id={id} variant="soft">
+      <HiddenNetlifyInterestForm />
       <CardHeader
         title="Interested in partnering, piloting, or supporting SmartProBonoIP?"
         subtitle="Tell us how you want to connect. Please do not submit confidential invention details through this form."
@@ -108,6 +118,7 @@ export function InterestForm({ id }: { id?: string }) {
         <label className="text-sm">
           <span className="font-medium text-navy-800">Name</span>
           <input
+            name="name"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
@@ -117,6 +128,7 @@ export function InterestForm({ id }: { id?: string }) {
           <span className="font-medium text-navy-800">Email</span>
           <input
             required
+            name="email"
             type="email"
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -126,6 +138,7 @@ export function InterestForm({ id }: { id?: string }) {
         <label className="text-sm">
           <span className="font-medium text-navy-800">Organization</span>
           <input
+            name="organization"
             value={form.organization}
             onChange={(e) =>
               setForm((f) => ({ ...f, organization: e.target.value }))
@@ -136,6 +149,7 @@ export function InterestForm({ id }: { id?: string }) {
         <label className="text-sm">
           <span className="font-medium text-navy-800">Role</span>
           <input
+            name="role"
             value={form.role}
             onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
             className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
@@ -145,6 +159,7 @@ export function InterestForm({ id }: { id?: string }) {
           <span className="font-medium text-navy-800">Interest type</span>
           <select
             required
+            name="interest_type"
             value={form.interestType}
             onChange={(e) =>
               setForm((f) => ({
@@ -164,6 +179,7 @@ export function InterestForm({ id }: { id?: string }) {
         <label className="text-sm sm:col-span-2">
           <span className="font-medium text-navy-800">Message</span>
           <textarea
+            name="message"
             value={form.message}
             onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
             rows={4}
@@ -174,6 +190,7 @@ export function InterestForm({ id }: { id?: string }) {
         <label className="flex items-start gap-2 text-sm sm:col-span-2">
           <input
             required
+            name="consent"
             type="checkbox"
             checked={form.consent}
             onChange={(e) => setForm((f) => ({ ...f, consent: e.target.checked }))}
@@ -199,4 +216,64 @@ export function InterestForm({ id }: { id?: string }) {
       </form>
     </Card>
   );
+}
+
+function HiddenNetlifyInterestForm() {
+  return (
+    <form
+      name={NETLIFY_FORM_NAME}
+      method="POST"
+      data-netlify="true"
+      data-netlify-honeypot="company_website"
+      hidden
+      aria-hidden="true"
+    >
+      <input type="hidden" name="form-name" value={NETLIFY_FORM_NAME} />
+      <input name="name" />
+      <input name="email" />
+      <input name="organization" />
+      <input name="role" />
+      <input name="interest_type" />
+      <textarea name="message" />
+      <input name="consent" />
+      <input name="source" />
+      <input name="medium" />
+      <input name="campaign" />
+      <input name="referrer" />
+      <input name="landing_page" />
+      <input name="company_website" />
+    </form>
+  );
+}
+
+async function submitNetlifyForm(
+  form: typeof EMPTY,
+  attr: ReturnType<typeof getCampaignAttribution>,
+): Promise<void> {
+  const params = new URLSearchParams({
+    "form-name": NETLIFY_FORM_NAME,
+    name: form.name,
+    email: form.email,
+    organization: form.organization,
+    role: form.role,
+    interest_type: form.interestType,
+    message: form.message,
+    consent: form.consent ? "yes" : "no",
+    source: attr?.utm_source ?? "",
+    medium: attr?.utm_medium ?? "",
+    campaign: attr?.utm_campaign ?? "",
+    referrer: attr?.referrer ?? "",
+    landing_page: attr?.landing_page ?? "",
+    company_website: form.companyWebsite,
+  });
+
+  const res = await fetch("/", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Netlify Forms submit failed with status ${res.status}`);
+  }
 }
