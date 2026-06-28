@@ -10,6 +10,22 @@ export const INTEREST_TYPES = [
 
 export type InterestType = (typeof INTEREST_TYPES)[number]["value"];
 
+export interface InterestLead {
+  id: string;
+  name: string | null;
+  email: string;
+  organization: string | null;
+  role: string | null;
+  interestType: string | null;
+  message: string | null;
+  source: string | null;
+  medium: string | null;
+  campaign: string | null;
+  referrer: string | null;
+  landingPage: string | null;
+  createdAt: string;
+}
+
 export interface InterestLeadInput {
   name?: string;
   email: string;

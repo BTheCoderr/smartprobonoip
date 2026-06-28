@@ -34,9 +34,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    await saveInterestLead(body);
+    const createdAt = await saveInterestLead(body);
     try {
-      await sendInterestNotification(body);
+      await sendInterestNotification(body, createdAt);
     } catch {
       // Notification is optional when email is not configured.
     }

@@ -26,6 +26,7 @@ const BLOCKED_PATH_PREFIXES = [
   "/smartprobonoip/profile/",
   "/smartprobonoip/recover",
   "/smartprobonoip/dashboard",
+  "/smartprobonoip/leads",
 ];
 
 /** Public marketing events only — private app events stay in Supabase analytics. */
