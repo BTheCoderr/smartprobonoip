@@ -1,6 +1,6 @@
 import "server-only";
-import net from "node:net";
-import tls from "node:tls";
+import * as net from "node:net";
+import * as tls from "node:tls";
 import type { InterestLeadInput } from "@/lib/interest";
 import { sanitizeInterestText } from "@/lib/interest";
 import { getSupabaseService } from "@/lib/supabaseServer";
@@ -133,7 +133,7 @@ async function sendSmtpEmail(message: SmtpMessage): Promise<void> {
   const toAddress = extractEmailAddress(message.to);
   const clientName = process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "") || "smartprobono.org";
 
-  const connection = await createSmtpConnection(host, port, secure);
+  let connection = await createSmtpConnection(host, port, secure);
 
   try {
     await expectSmtp(connection, 220);
@@ -141,11 +141,9 @@ async function sendSmtpEmail(message: SmtpMessage): Promise<void> {
 
     if (!secure) {
       await sendSmtpCommand(connection, "STARTTLS", 220);
-      const tlsConnection = tls.connect({ socket: connection, servername: host });
-      await onceSecure(tlsConnection);
-      await sendSmtpCommand(tlsConnection, `EHLO ${clientName}`, 250);
-      await authenticateAndSend(tlsConnection, user, pass, fromAddress, toAddress, message);
-      return;
+      connection = tls.connect({ socket: connection, servername: host });
+      await onceSecure(connection as tls.TLSSocket);
+      await sendSmtpCommand(connection, `EHLO ${clientName}`, 250);
     }
 
     await authenticateAndSend(connection, user, pass, fromAddress, toAddress, message);
@@ -175,16 +173,13 @@ async function authenticateAndSend(
 function createSmtpConnection(host: string, port: number, secure: boolean): Promise<net.Socket | tls.TLSSocket> {
   return new Promise((resolve, reject) => {
     const socket = secure ? tls.connect({ host, port, servername: host }) : net.connect({ host, port });
+    const readyEvent = secure ? "secureConnect" : "connect";
     const timer = setTimeout(() => {
       socket.destroy();
       reject(new Error("SMTP connection timed out"));
     }, 15_000);
 
-    socket.once("connect", () => {
-      clearTimeout(timer);
-      resolve(socket);
-    });
-    socket.once("secureConnect", () => {
+    socket.once(readyEvent, () => {
       clearTimeout(timer);
       resolve(socket);
     });
