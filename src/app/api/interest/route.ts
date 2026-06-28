@@ -37,8 +37,13 @@ export async function POST(request: Request) {
     await saveInterestLead(body);
     try {
       await sendInterestNotification(body);
-    } catch {
-      // Notification is optional when email is not configured.
+      console.info("Interest notification sent");
+    } catch (error) {
+      // Notification is optional. Do not fail the lead capture if SMTP/email is down.
+      console.warn(
+        "Interest notification failed",
+        error instanceof Error ? error.message : "Unknown email notification error",
+      );
     }
 
     await trackServerEvent("interest_submitted", {
