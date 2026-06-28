@@ -194,10 +194,10 @@ export function IntakeForm() {
   }, [step, demoActive]);
 
   useEffect(() => {
-    if (intakeStarted.current) return;
+    if (step !== 0 || intakeStarted.current) return;
     intakeStarted.current = true;
     trackEvent("intake_started", { metadata: { demo: demoActive } });
-  }, [demoActive]);
+  }, [step, demoActive]);
 
   useEffect(() => {
     trackEvent("intake_step_viewed", {
@@ -231,6 +231,13 @@ export function IntakeForm() {
   function goNext() {
     if (demoActive) {
       setStep((s) => Math.min(last, s + 1));
+      trackEvent("intake_step_completed", {
+        metadata: {
+          stepNumber: step + 1,
+          stepName: STEP_LABELS[step],
+          demo: demoActive,
+        },
+      });
       return;
     }
     if (step === 5) {
@@ -275,7 +282,7 @@ export function IntakeForm() {
     trackEvent("intake_step_completed", {
       metadata: {
         stepNumber: step + 1,
-        completionPercent: Math.round(((step + 2) / STEP_LABELS.length) * 100),
+        stepName: STEP_LABELS[step],
         demo: demoActive,
       },
     });
@@ -318,16 +325,14 @@ export function IntakeForm() {
         isDemo: demoActive,
         tracking: demoActive ? null : getStoredTracking(),
       });
-      if (demoActive) {
-        trackEvent("intake_completed", {
-          projectId: record.id,
-          metadata: {
-            demo: true,
-            clarityRating: answers.preClarity,
-            signalKeys: data.profile.signals.join(","),
-          },
-        });
-      }
+      trackEvent("intake_completed", {
+        route: "/smartprobonoip/start",
+        projectId: record.id,
+        metadata: {
+          totalSteps: STEP_LABELS.length,
+          demo: demoActive,
+        },
+      });
       if (data.profile.signals.includes("ownership_collaborator")) {
         trackEvent("ownership_signal_triggered", {
           projectId: record.id,

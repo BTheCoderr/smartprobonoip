@@ -16,6 +16,12 @@ const PUBLIC_MARKETING_PATHS = new Set([
   "/contact",
 ]);
 
+/** Public funnel routes where intake/disclaimer events may fire. */
+const PUBLIC_FUNNEL_PATHS = new Set([
+  ...PUBLIC_MARKETING_PATHS,
+  "/smartprobonoip/disclaimer",
+]);
+
 const BLOCKED_PATH_PREFIXES = [
   "/smartprobonoip/profile/",
   "/smartprobonoip/recover",
@@ -30,12 +36,26 @@ const GTM_EVENT_MAP: Partial<Record<AnalyticsEventName, string>> = {
   pilot_page_viewed: "pilot_page_viewed",
   contact_form_viewed: "contact_form_viewed",
   interest_submitted: "contact_form_submitted",
+  disclaimer_accepted: "disclaimer_accepted",
+  intake_started: "intake_started",
+  intake_step_completed: "intake_step_completed",
+  intake_completed: "intake_completed",
+  partner_interest_clicked: "partner_interest_clicked",
 };
 
 const SAFE_GTM_PARAMS = new Set([
   "demo",
   "interest_type",
   "page_path",
+  "step_number",
+  "step_name",
+  "route",
+  "partner",
+  "source",
+  "campaign",
+  "total_steps",
+  "cta_name",
+  "page_section",
   "utm_source",
   "utm_medium",
   "utm_campaign",
@@ -44,6 +64,9 @@ const SAFE_GTM_PARAMS = new Set([
   "referrer",
   "landing_page",
 ]);
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function gtmContainerId(): string | null {
   const id = process.env.NEXT_PUBLIC_GTM_ID?.trim();
@@ -59,6 +82,13 @@ export function isPublicMarketingPath(pathname: string): boolean {
     return false;
   }
   return PUBLIC_MARKETING_PATHS.has(pathname);
+}
+
+export function isPublicGtmEventPath(pathname: string): boolean {
+  if (BLOCKED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return false;
+  }
+  return PUBLIC_FUNNEL_PATHS.has(pathname);
 }
 
 function pushDataLayer(payload: Record<string, unknown>): void {
@@ -82,6 +112,8 @@ function sanitizeGtmParams(
     }
     const trimmed = String(value).trim().slice(0, 120);
     if (!trimmed || trimmed.includes("@")) continue;
+    if (UUID_PATTERN.test(trimmed)) continue;
+    if (/^[A-Za-z0-9_-]{24,}$/.test(trimmed)) continue;
     out[snake] = trimmed;
   }
   return out;
@@ -102,6 +134,15 @@ export function trackGtmEvent(
 ): void {
   const gtmEvent = GTM_EVENT_MAP[eventName];
   if (!gtmEvent) return;
+
+  const route =
+    typeof metadata?.route === "string"
+      ? metadata.route
+      : typeof window !== "undefined"
+        ? window.location.pathname
+        : "";
+
+  if (!isPublicGtmEventPath(route)) return;
 
   pushDataLayer({
     event: gtmEvent,

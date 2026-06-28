@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/design";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import { InterestForm } from "@/components/contact/InterestForm";
+import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
 
 function trackedLinks(
   links: readonly {
@@ -51,12 +52,14 @@ export default function PilotKitPage() {
             <Link href="/smartprobonoip/sample" className="btn-primary">
               View sample packet
             </Link>
-            <Link
+            <PartnerInterestLink
               href="/smartprobonoip/disclaimer?partner=smartprobonoip-ri-pilot&source=qr&campaign=pilot-2026"
+              ctaName="Start RI pilot intake"
+              pageSection="pilot_hero"
               className="btn-secondary"
             >
               Start RI pilot intake
-            </Link>
+            </PartnerInterestLink>
             <Link href="/smartprobonoip/dashboard?demo=1" className="btn-ghost px-0">
               Partner Impact Desk →
             </Link>

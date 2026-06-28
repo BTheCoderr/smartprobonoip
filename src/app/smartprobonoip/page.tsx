@@ -16,6 +16,7 @@ import {
 import { DemoChecklist } from "@/components/DemoChecklist";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import { InterestForm } from "@/components/contact/InterestForm";
+import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
 
 export default function ProductLanding() {
   return (
@@ -113,12 +114,22 @@ export default function ProductLanding() {
         lead={LANDING_COPY.partnerCallout}
       >
         <div className="flex flex-wrap gap-3">
-          <Link
+          <PartnerInterestLink
             href="/smartprobonoip/pilot"
+            ctaName="Pilot demo kit"
+            pageSection="partner_band"
             className="btn-secondary border-white/25 bg-white/10 text-white hover:bg-white/20"
           >
             Pilot demo kit
-          </Link>
+          </PartnerInterestLink>
+          <PartnerInterestLink
+            href="/smartprobonoip#interest"
+            ctaName="Partner interest form"
+            pageSection="partner_band"
+            className="btn-secondary border-white/25 bg-white/10 text-white hover:bg-white/20"
+          >
+            Partner with us
+          </PartnerInterestLink>
           <Link
             href="/smartprobonoip/dashboard"
             className="btn-secondary border-white/25 bg-white/10 text-white hover:bg-white/20"

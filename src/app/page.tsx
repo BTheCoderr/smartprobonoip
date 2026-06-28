@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { Card } from "@/components/ui/Card";
 import { InterestForm } from "@/components/contact/InterestForm";
+import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
 
 const PRODUCTS = [
   {
@@ -52,12 +53,14 @@ export default function UmbrellaLanding() {
             >
               Try demo intake
             </Link>
-            <Link
-              href="/smartprobonoip/start"
+            <PartnerInterestLink
+              href="/contact"
+              ctaName="Contact"
+              pageSection="homepage_hero"
               className="rounded-lg border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
             >
-              Start the readiness check
-            </Link>
+              Partner or contact us
+            </PartnerInterestLink>
           </div>
         </div>
       </section>

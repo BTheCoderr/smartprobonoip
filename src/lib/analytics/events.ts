@@ -50,6 +50,7 @@ export const ANALYTICS_EVENTS = [
   "comparison_helper_used",
   "contact_form_viewed",
   "interest_submitted",
+  "partner_interest_clicked",
   "gap_map_saved",
   "timeline_saved",
 ] as const;
