@@ -221,19 +221,19 @@ async function sendSmtpEmail(message: SmtpMessage): Promise<void> {
 
   const fromAddress = extractEmailAddress(message.from);
   const toAddress = extractEmailAddress(message.to);
-  const clientName = process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "") || "smartprobono.org";
+  const clientName = getSmtpClientName();
 
   let connection = await createSmtpConnection(host, port, secure);
 
   try {
-    await expectSmtp(connection, 220);
-    await sendSmtpCommand(connection, `EHLO ${clientName}`, 250);
+    await expectSmtp(connection, 220, "greeting");
+    await sendSmtpCommand(connection, `EHLO ${clientName}`, 250, "EHLO");
 
     if (!secure) {
-      await sendSmtpCommand(connection, "STARTTLS", 220);
+      await sendSmtpCommand(connection, "STARTTLS", 220, "STARTTLS");
       connection = tls.connect({ socket: connection, servername: host });
       await onceSecure(connection as tls.TLSSocket);
-      await sendSmtpCommand(connection, `EHLO ${clientName}`, 250);
+      await sendSmtpCommand(connection, `EHLO ${clientName}`, 250, "EHLO after STARTTLS");
     }
 
     await authenticateAndSend(connection, user, pass, fromAddress, toAddress, message);
@@ -250,14 +250,14 @@ async function authenticateAndSend(
   toAddress: string,
   message: SmtpMessage,
 ): Promise<void> {
-  await sendSmtpCommand(connection, "AUTH LOGIN", 334);
-  await sendSmtpCommand(connection, Buffer.from(user).toString("base64"), 334);
-  await sendSmtpCommand(connection, Buffer.from(pass).toString("base64"), 235);
-  await sendSmtpCommand(connection, `MAIL FROM:<${fromAddress}>`, 250);
-  await sendSmtpCommand(connection, `RCPT TO:<${toAddress}>`, 250);
-  await sendSmtpCommand(connection, "DATA", 354);
-  await sendSmtpCommand(connection, buildSmtpData(message), 250);
-  await sendSmtpCommand(connection, "QUIT", 221);
+  await sendSmtpCommand(connection, "AUTH LOGIN", 334, "AUTH LOGIN");
+  await sendSmtpCommand(connection, Buffer.from(user).toString("base64"), 334, "AUTH username");
+  await sendSmtpCommand(connection, Buffer.from(pass).toString("base64"), 235, "AUTH password");
+  await sendSmtpCommand(connection, `MAIL FROM:<${fromAddress}>`, 250, "MAIL FROM");
+  await sendSmtpCommand(connection, `RCPT TO:<${toAddress}>`, 250, "RCPT TO");
+  await sendSmtpCommand(connection, "DATA", 354, "DATA");
+  await sendSmtpCommand(connection, buildSmtpData(message), 250, "message body");
+  await sendSmtpCommand(connection, "QUIT", 221, "QUIT");
 }
 
 function createSmtpConnection(host: string, port: number, secure: boolean): Promise<net.Socket | tls.TLSSocket> {
@@ -288,17 +288,18 @@ function sendSmtpCommand(
   connection: net.Socket | tls.TLSSocket,
   command: string,
   expectedCode: number,
+  step: string,
 ): Promise<string> {
   connection.write(`${command}\r\n`);
-  return expectSmtp(connection, expectedCode);
+  return expectSmtp(connection, expectedCode, step);
 }
 
-function expectSmtp(connection: net.Socket | tls.TLSSocket, expectedCode: number): Promise<string> {
+function expectSmtp(connection: net.Socket | tls.TLSSocket, expectedCode: number, step: string): Promise<string> {
   return new Promise((resolve, reject) => {
     let buffer = "";
     const timer = setTimeout(() => {
       cleanup();
-      reject(new Error("SMTP response timed out"));
+      reject(new Error(`SMTP ${step} response timed out`));
     }, 15_000);
 
     const onData = (chunk: Buffer) => {
@@ -310,7 +311,11 @@ function expectSmtp(connection: net.Socket | tls.TLSSocket, expectedCode: number
       cleanup();
       const code = Number(lastLine.slice(0, 3));
       if (code !== expectedCode) {
-        reject(new Error(`SMTP expected ${expectedCode} but received ${code}`));
+        reject(
+          new Error(
+            `SMTP ${step} expected ${expectedCode} but received ${code}: ${sanitizeSmtpResponse(lastLine)}`,
+          ),
+        );
         return;
       }
       resolve(buffer);
@@ -333,8 +338,8 @@ function expectSmtp(connection: net.Socket | tls.TLSSocket, expectedCode: number
 }
 
 function buildSmtpData(message: SmtpMessage): string {
-  const from = sanitizeHeaderValue(message.from);
-  const to = sanitizeHeaderValue(message.to);
+  const from = formatMailboxHeader(message.from);
+  const to = extractEmailAddress(message.to);
   const subject = sanitizeHeaderValue(message.subject);
   const text = message.text.replace(/^\./gm, "..");
 
@@ -352,6 +357,39 @@ function buildSmtpData(message: SmtpMessage): string {
 }
 
 function extractEmailAddress(value: string): string {
-  const match = value.match(/<([^>]+)>/);
-  return (match?.[1] ?? value).trim();
+  const angleMatch = value.match(/<([^>]+)>/);
+  const emailMatch = value.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  const email = (angleMatch?.[1] ?? emailMatch?.[0] ?? value).trim();
+
+  if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email)) {
+    throw new Error("Invalid SMTP email address configuration");
+  }
+
+  return email;
+}
+
+function formatMailboxHeader(value: string): string {
+  const email = extractEmailAddress(value);
+  const displayName = value.includes("<") ? value.split("<")[0]?.trim() : "";
+  const safeDisplayName = (displayName ?? "").replace(/["<>\r\n]/g, "").slice(0, 80);
+
+  return safeDisplayName ? `${safeDisplayName} <${email}>` : email;
+}
+
+function getSmtpClientName(): string {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) return "smartprobono.org";
+
+  try {
+    return new URL(appUrl).hostname || "smartprobono.org";
+  } catch {
+    return appUrl
+      .replace(/^https?:\/\//, "")
+      .split("/")[0]
+      .replace(/[^A-Z0-9.-]/gi, "") || "smartprobono.org";
+  }
+}
+
+function sanitizeSmtpResponse(value: string): string {
+  return value.replace(/[\r\n]/g, " ").slice(0, 180);
 }
