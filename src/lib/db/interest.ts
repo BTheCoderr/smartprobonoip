@@ -194,7 +194,7 @@ function buildInterestEmailText(input: InterestLeadInput): string {
 }
 
 function safeLine(value: string | undefined): string {
-  return sanitizeInterestText(value, 2000).replace(/[\r\n]+/g, " ").trim();
+  return (sanitizeInterestText(value, 2000) ?? "").replace(/[\r\n]+/g, " ").trim();
 }
 
 function sanitizeHeaderValue(value: string | undefined): string {
