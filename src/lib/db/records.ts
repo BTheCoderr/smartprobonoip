@@ -395,20 +395,28 @@ export async function updateDevelopmentTimeline(
 
   const sb = getSupabaseService();
   const sanitized = sanitizeDevelopmentTimeline(timeline);
-  const { error } = await sb
+  const { data, error } = await sb
     .from("smartprobonoip_projects")
     .update({
       development_timeline: sanitized,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("pilot_session_id", pilotSessionId);
+    .eq("pilot_session_id", pilotSessionId)
+    .select("development_timeline")
+    .single();
 
   if (error) throw new Error(error.message);
+  if (!data) throw new Error("Record not found");
 
   const record = await getRecordById(id, pilotSessionId);
   if (!record) throw new Error("Record not found");
-  return record;
+
+  return {
+    ...record,
+    developmentTimeline:
+      (data.development_timeline as DevelopmentTimeline | null) ?? sanitized,
+  };
 }
 
 export function verifyPartnerSecret(secret: string | null): boolean {

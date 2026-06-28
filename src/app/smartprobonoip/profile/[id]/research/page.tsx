@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { DossierPageHeader, StampLabel } from "@/components/ui/design";
 import { ResearchPrepWorkspace } from "@/components/research/ResearchPrepWorkspace";
+import { ResearchErrorBoundary } from "@/components/research/ResearchErrorBoundary";
 import { getStore } from "@/lib/store";
 import { getIdeaLabel } from "@/lib/packet";
 import { PACKET_COPY } from "@/lib/copy";
@@ -73,7 +74,9 @@ export default function ResearchPage({
         >
           ← Back to IP Readiness Packet
         </Link>
-        <ResearchPrepWorkspace key={record.id} record={record} routeName="research" />
+        <ResearchErrorBoundary>
+          <ResearchPrepWorkspace key={record.id} record={record} routeName="research" />
+        </ResearchErrorBoundary>
       </div>
     </div>
   );

@@ -19,6 +19,7 @@ import {
   type ResearchWorkspaceData,
   type SavedReference,
 } from "@/lib/research/types";
+import { normalizeSavedReferences } from "@/lib/research/normalizeReference";
 import type { ProjectRecord } from "@/lib/types";
 
 const EMPTY_FORM = {
@@ -51,12 +52,14 @@ export function ResearchPrepWorkspace({
   const [saving, setSaving] = useState(false);
   const [comparingId, setComparingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const viewedTracked = useRef<string | null>(null);
 
   const syncReferences = useCallback(
     (refs: SavedReference[]) => {
-      setWorkspace((current) => ({ ...current, savedReferences: refs }));
-      onReferencesChange?.(refs);
+      const normalized = normalizeSavedReferences(refs);
+      setWorkspace((current) => ({ ...current, savedReferences: normalized }));
+      onReferencesChange?.(normalized);
     },
     [onReferencesChange],
   );
@@ -141,6 +144,7 @@ export function ResearchPrepWorkspace({
     if (!form.title.trim()) return;
     setSaving(true);
     setError(null);
+    setSaveSuccess(null);
     try {
       const payload = {
         title: form.title.trim(),
@@ -172,6 +176,9 @@ export function ResearchPrepWorkspace({
 
       setForm(EMPTY_FORM);
       setEditingId(null);
+      setSaveSuccess(
+        editingId ? "Reference updated." : "Reference saved — it will appear in your PDF.",
+      );
       await refreshSavedReferences();
     } catch {
       setError("Could not save reference.");
@@ -278,7 +285,7 @@ export function ResearchPrepWorkspace({
 
       <QuerySearchLauncher
         record={record}
-        queryGroups={workspace.queryGroups}
+        queryGroups={workspace.queryGroups ?? []}
         onCopyQuery={(query, queryIndex) => void copyQuery(query, queryIndex)}
         onPrefillQuery={prefillFromQuery}
       />
@@ -398,6 +405,9 @@ export function ResearchPrepWorkspace({
             ) : null}
           </div>
         </form>
+        {saveSuccess ? (
+          <p className="mt-3 text-sm font-medium text-teal-700">{saveSuccess}</p>
+        ) : null}
       </Card>
 
       <Card>
@@ -496,16 +506,16 @@ export function ResearchPrepWorkspace({
                 {ref.comparison ? (
                   <div className="mt-3 rounded-lg border border-teal-100 bg-teal-50/40 p-3 text-xs text-navy-700">
                     <p className="font-semibold text-teal-800">Comparison helper</p>
-                    {ref.comparison.whatAppearsRelated.length > 0 ? (
+                    {(ref.comparison.whatAppearsRelated?.length ?? 0) > 0 ? (
                       <p className="mt-2">
                         <span className="font-medium">What appears related: </span>
-                        {ref.comparison.whatAppearsRelated.join(" ")}
+                        {(ref.comparison.whatAppearsRelated ?? []).join(" ")}
                       </p>
                     ) : null}
-                    {ref.comparison.clarifyFurther.length > 0 ? (
+                    {(ref.comparison.clarifyFurther?.length ?? 0) > 0 ? (
                       <p className="mt-1">
                         <span className="font-medium">What you may want to clarify: </span>
-                        {ref.comparison.clarifyFurther.join(" ")}
+                        {(ref.comparison.clarifyFurther ?? []).join(" ")}
                       </p>
                     ) : null}
                   </div>

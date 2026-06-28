@@ -9,6 +9,7 @@ import {
   saveLocalReference,
   updateLocalReference,
 } from "@/lib/research/localResearch";
+import { normalizeSavedReference, normalizeSavedReferences } from "@/lib/research/normalizeReference";
 import type {
   CompareReferenceOutput,
   ResearchWorkspaceData,
@@ -47,7 +48,7 @@ export async function loadWorkspace(
     const local = readLocalResearch(record.id);
     return {
       ...base,
-      savedReferences: local.savedReferences,
+      savedReferences: normalizeSavedReferences(local.savedReferences),
     };
   }
 
@@ -57,7 +58,10 @@ export async function loadWorkspace(
 
   if (res.status === 503) {
     const local = initLocalWorkspace(record);
-    return { ...base, savedReferences: local.savedReferences };
+    return {
+      ...base,
+      savedReferences: normalizeSavedReferences(local.savedReferences),
+    };
   }
 
   if (res.status === 401 || res.status === 404) {
@@ -72,7 +76,11 @@ export async function loadWorkspace(
   }
 
   const data = (await res.json()) as { workspace: ResearchWorkspaceData };
-  return data.workspace;
+  return {
+    ...data.workspace,
+    queryGroups: data.workspace.queryGroups ?? base.queryGroups,
+    savedReferences: normalizeSavedReferences(data.workspace.savedReferences),
+  };
 }
 
 export async function saveReference(
@@ -95,7 +103,7 @@ export async function saveReference(
 
   if (!res.ok) throw new Error("Failed to save reference");
   const data = (await res.json()) as { reference: SavedReference };
-  return data.reference;
+  return normalizeSavedReference(data.reference);
 }
 
 export async function updateReference(
@@ -120,7 +128,7 @@ export async function updateReference(
 
   if (!res.ok) throw new Error("Failed to update reference");
   const data = (await res.json()) as { reference: SavedReference };
-  return data.reference;
+  return normalizeSavedReference(data.reference);
 }
 
 export async function removeReference(

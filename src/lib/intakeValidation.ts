@@ -368,6 +368,57 @@ export function validateProblemField(
   return null;
 }
 
+const MIN_STEP_DETAIL_LENGTH = 12;
+
+export function validateHowItWorksStep(
+  answers: IntakeAnswers,
+): FieldValidationError | null {
+  const howItWorks = answers.howItWorks.trim();
+  if (!howItWorks) {
+    return {
+      field: "howItWorks",
+      message: "Please add a few sentences describing how it works.",
+    };
+  }
+  if (howItWorks.length < MIN_STEP_DETAIL_LENGTH) {
+    return {
+      field: "howItWorks",
+      message: "Please add a bit more detail about how it works.",
+    };
+  }
+
+  const mainParts = answers.mainParts.trim();
+  if (!mainParts) {
+    return {
+      field: "mainParts",
+      message: "Please list the main parts or components.",
+    };
+  }
+  if (mainParts.length < MIN_STEP_DETAIL_LENGTH) {
+    return {
+      field: "mainParts",
+      message: "Please add a bit more detail about the main parts or components.",
+    };
+  }
+
+  const whatDifferent = answers.whatDifferent.trim();
+  if (!whatDifferent) {
+    return {
+      field: "whatDifferent",
+      message:
+        "Please describe what makes it different from what already exists.",
+    };
+  }
+  if (whatDifferent.length < MIN_STEP_DETAIL_LENGTH) {
+    return {
+      field: "whatDifferent",
+      message: "Please add a bit more detail about what makes it different.",
+    };
+  }
+
+  return null;
+}
+
 export function validateIntakeStep(
   step: number,
   answers: IntakeAnswers,
@@ -398,17 +449,8 @@ export function validateIntakeStep(
     if (problemError) return problemError;
   }
 
-  if (step === 1 && answers.howItWorks.trim().length > 0) {
-    if (
-      looksLikeAudienceAnswer(answers.howItWorks) &&
-      !WORKFLOW_HINTS.test(answers.howItWorks)
-    ) {
-      return {
-        field: "howItWorks",
-        message:
-          "This sounds like your audience. Please describe how the idea works.",
-      };
-    }
+  if (step === 1) {
+    return validateHowItWorksStep(answers);
   }
 
   return null;
@@ -420,8 +462,8 @@ export function validateForGeneration(
   const errors: FieldValidationError[] = [];
   const step0 = validateIntakeStep(0, answers);
   if (step0) errors.push(step0);
-  const step1 = validateIntakeStep(1, answers);
-  if (step1) errors.push(step1);
+  const howItWorksStep = validateHowItWorksStep(answers);
+  if (howItWorksStep) errors.push(howItWorksStep);
   return errors;
 }
 

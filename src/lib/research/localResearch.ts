@@ -4,6 +4,7 @@ import type {
   SavedReference,
   UpdateReferenceInput,
 } from "./types";
+import { normalizeSavedReference } from "./normalizeReference";
 
 const PREFIX = "smartprobonoip:research:";
 
@@ -46,21 +47,7 @@ export function readLocalResearch(projectId: string): ResearchWorkspaceData {
 }
 
 function normalizeLocalReference(ref: SavedReference): SavedReference {
-  return {
-    id: ref.id,
-    title: ref.title ?? "",
-    url: ref.url ?? "",
-    referenceType: ref.referenceType ?? "",
-    searchQueryUsed: ref.searchQueryUsed ?? "",
-    looksSimilar: ref.looksSimilar ?? "",
-    seemsDifferent: ref.seemsDifferent ?? "",
-    expertQuestions: ref.expertQuestions ?? "",
-    notes: ref.notes ?? "",
-    comparison: ref.comparison,
-    gapMap: ref.gapMap,
-    createdAt: ref.createdAt ?? new Date().toISOString(),
-    updatedAt: ref.updatedAt,
-  };
+  return normalizeSavedReference(ref);
 }
 
 export function writeLocalResearch(data: ResearchWorkspaceData): void {

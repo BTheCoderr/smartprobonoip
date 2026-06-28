@@ -9,6 +9,7 @@ import type {
   SavedReference,
   UpdateReferenceInput,
 } from "@/lib/research/types";
+import { normalizeSavedReference, normalizeSavedReferences } from "@/lib/research/normalizeReference";
 import {
   computeResearchMetrics,
   type ProjectResearchSummary,
@@ -31,7 +32,7 @@ function mapReference(row: {
   created_at: string;
   updated_at: string;
 }): SavedReference {
-  return {
+  return normalizeSavedReference({
     id: row.id,
     title: row.reference_title ?? "",
     url: row.reference_url ?? "",
@@ -45,7 +46,7 @@ function mapReference(row: {
     gapMap: row.gap_map ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-  };
+  });
 }
 
 async function loadReferencesForProject(projectId: string): Promise<SavedReference[]> {
@@ -77,7 +78,7 @@ export async function getResearchWorkspace(
     searchKeywords: prep.searchKeywords,
     suggestedQueries: prep.suggestedQueries,
     queryGroups: buildQueryGroups(record),
-    savedReferences,
+    savedReferences: normalizeSavedReferences(savedReferences),
   };
 }
 
@@ -141,8 +142,8 @@ export async function updateResearchReference(
       what_seems_different: input.seemsDifferent ?? owned.seemsDifferent,
       expert_questions: input.expertQuestions ?? owned.expertQuestions,
       notes: input.notes ?? owned.notes,
-      comparison_notes: input.comparison ?? owned.comparison ?? {},
-      gap_map: input.gapMap ?? owned.gapMap ?? {},
+      comparison_notes: input.comparison ?? owned.comparison ?? null,
+      gap_map: input.gapMap ?? owned.gapMap ?? null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", input.id)

@@ -81,29 +81,29 @@ export function ReferenceGapMapForm({
       </button>
       {reference.gapMap?.output ? (
         <div className="space-y-2 text-xs text-navy-700">
-          {reference.gapMap.output.possibleSimilarity.length > 0 ? (
+          {(reference.gapMap.output.possibleSimilarity?.length ?? 0) > 0 ? (
             <p>
               <span className="font-semibold">Possible similarity: </span>
-              {reference.gapMap.output.possibleSimilarity.join(" ")}
+              {(reference.gapMap.output.possibleSimilarity ?? []).join(" ")}
             </p>
           ) : null}
-          {reference.gapMap.output.possibleDifference.length > 0 ? (
+          {(reference.gapMap.output.possibleDifference?.length ?? 0) > 0 ? (
             <p>
               <span className="font-semibold">Possible difference to clarify: </span>
-              {reference.gapMap.output.possibleDifference.join(" ")}
+              {(reference.gapMap.output.possibleDifference ?? []).join(" ")}
             </p>
           ) : null}
-          {reference.gapMap.output.documentNext.length > 0 ? (
+          {(reference.gapMap.output.documentNext?.length ?? 0) > 0 ? (
             <p>
               <span className="font-semibold">What to document next: </span>
-              {reference.gapMap.output.documentNext.join(" ")}
+              {(reference.gapMap.output.documentNext ?? []).join(" ")}
             </p>
           ) : null}
-          {reference.gapMap.output.expertQuestions.length > 0 ? (
+          {(reference.gapMap.output.expertQuestions?.length ?? 0) > 0 ? (
             <div>
               <p className="font-semibold">Questions to ask an expert:</p>
               <ul className="mt-1 list-disc pl-4">
-                {reference.gapMap.output.expertQuestions.map((question) => (
+                {(reference.gapMap.output.expertQuestions ?? []).map((question) => (
                   <li key={question}>{question}</li>
                 ))}
               </ul>

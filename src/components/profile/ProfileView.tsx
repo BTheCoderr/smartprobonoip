@@ -32,6 +32,7 @@ import {
   WORKSHEET_HEADERS,
 } from "@/lib/patentSearchPrep";
 import { ResearchPrepWorkspace } from "@/components/research/ResearchPrepWorkspace";
+import { ResearchErrorBoundary } from "@/components/research/ResearchErrorBoundary";
 import type { ProjectRecord } from "@/lib/types";
 import type { SavedReference } from "@/lib/research/types";
 
@@ -533,11 +534,13 @@ export function ProfileView({
             </div>
           </Card>
 
-          <ResearchPrepWorkspace
-            key={record.id}
-            record={record}
-            onReferencesChange={onReferencesChange}
-          />
+          <ResearchErrorBoundary>
+            <ResearchPrepWorkspace
+              key={record.id}
+              record={record}
+              onReferencesChange={onReferencesChange}
+            />
+          </ResearchErrorBoundary>
 
           <details className="group">
             <summary className="cursor-pointer list-none rounded-2xl border border-mist-200 bg-white px-4 py-3 text-sm font-medium text-navy-800 hover:bg-mist-50 [&::-webkit-details-marker]:hidden">
