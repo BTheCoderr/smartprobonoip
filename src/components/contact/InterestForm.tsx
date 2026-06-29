@@ -95,7 +95,6 @@ export function InterestForm({ id }: { id?: string }) {
 
   return (
     <Card id={id} variant="soft">
-      <HiddenNetlifyInterestForm />
       <CardHeader
         title="Interested in partnering, piloting, or supporting SmartProBonoIP?"
         subtitle="Tell us how you want to connect. Please do not submit confidential invention details through this form."
@@ -218,34 +217,6 @@ export function InterestForm({ id }: { id?: string }) {
   );
 }
 
-function HiddenNetlifyInterestForm() {
-  return (
-    <form
-      name={NETLIFY_FORM_NAME}
-      method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="company_website"
-      hidden
-      aria-hidden="true"
-    >
-      <input type="hidden" name="form-name" value={NETLIFY_FORM_NAME} />
-      <input name="name" />
-      <input name="email" />
-      <input name="organization" />
-      <input name="role" />
-      <input name="interest_type" />
-      <textarea name="message" />
-      <input name="consent" />
-      <input name="source" />
-      <input name="medium" />
-      <input name="campaign" />
-      <input name="referrer" />
-      <input name="landing_page" />
-      <input name="company_website" />
-    </form>
-  );
-}
-
 async function submitNetlifyForm(
   form: typeof EMPTY,
   attr: ReturnType<typeof getCampaignAttribution>,
@@ -267,7 +238,7 @@ async function submitNetlifyForm(
     company_website: form.companyWebsite,
   });
 
-  const res = await fetch("/", {
+  const res = await fetch("/__forms.html", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: params.toString(),
