@@ -16,47 +16,69 @@ export interface QueryGroup {
 }
 
 const GROUP_TITLES: Record<QueryCategory, string> = {
-  patent: "Patent searches",
-  product: "Product searches",
-  trademark: "Trademark / brand searches",
-  design: "Design / appearance searches",
-  general: "General web searches",
+  patent: "Patent search starters",
+  product: "Product & market search starters",
+  trademark: "Trademark / brand search starters",
+  design: "Design / appearance search starters",
+  general: "Web search starters",
 };
 
 function hasSignal(record: ProjectRecord, signal: string): boolean {
   return record.profile.signals.includes(signal as never);
 }
 
+function uniqueQueries(cards: SuggestedQueryCard[]): SuggestedQueryCard[] {
+  const seen = new Set<string>();
+  return cards.filter((card) => {
+    const key = card.query.trim().toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function buildQueryGroups(record: ProjectRecord): QueryGroup[] {
   const cards = buildSuggestedQueryCards(record);
-  const groups: Record<QueryCategory, SuggestedQueryCard[]> = {
-    patent: [],
-    product: [],
-    trademark: [],
-    design: [],
-    general: [],
-  };
+  if (cards.length === 0) return [];
 
-  cards.forEach((card, index) => {
-    groups.patent.push(card);
-    if (index % 2 === 0) groups.product.push(card);
-    if (index % 3 === 0) groups.general.push(card);
-    if (hasSignal(record, "trademark_brand")) groups.trademark.push(card);
-    if (hasSignal(record, "design_appearance")) groups.design.push(card);
-  });
+  const patent = uniqueQueries([cards[0], cards[2], cards[4]].filter(Boolean));
+  const product = uniqueQueries([cards[1], cards[3]].filter(Boolean));
+  const general = uniqueQueries(cards.slice(0, 3));
+  const trademark = hasSignal(record, "trademark_brand")
+    ? uniqueQueries([cards[0], cards[1]].filter(Boolean))
+    : [];
+  const design = hasSignal(record, "design_appearance")
+    ? uniqueQueries([cards[1], cards[2]].filter(Boolean))
+    : [];
 
-  if (groups.product.length === 0 && cards[0]) groups.product.push(cards[0]);
-  if (groups.general.length === 0) groups.general.push(...cards.slice(0, 2));
+  const groups: QueryGroup[] = [];
+  if (patent.length > 0) {
+    groups.push({ category: "patent", title: GROUP_TITLES.patent, queries: patent });
+  }
+  if (product.length > 0) {
+    groups.push({ category: "product", title: GROUP_TITLES.product, queries: product });
+  }
+  if (trademark.length > 0) {
+    groups.push({
+      category: "trademark",
+      title: GROUP_TITLES.trademark,
+      queries: trademark,
+    });
+  }
+  if (design.length > 0) {
+    groups.push({ category: "design", title: GROUP_TITLES.design, queries: design });
+  }
+  if (general.length > 0) {
+    groups.push({ category: "general", title: GROUP_TITLES.general, queries: general });
+  }
 
-  return (Object.keys(groups) as QueryCategory[])
-    .filter((category) => groups[category].length > 0)
-    .map((category) => ({
-      category,
-      title: GROUP_TITLES[category],
-      queries: groups[category],
-    }));
+  return groups;
 }
 
 export function recordShowsTrademarkSearch(record: ProjectRecord): boolean {
   return hasSignal(record, "trademark_brand");
+}
+
+export function primaryStarterQuery(record: ProjectRecord): string | undefined {
+  return buildSuggestedQueryCards(record)[0]?.query;
 }

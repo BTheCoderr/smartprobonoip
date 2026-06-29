@@ -2,9 +2,10 @@ export const BRAND = {
   umbrella: "SmartProBono",
   product: "SmartProBonoIP",
   feature: "IP Readiness Checker",
-  tagline: "Your idea matters. Let's get it ready for the next conversation.",
+  tagline:
+    "Turn a messy invention idea into an organized IP Readiness Packet",
   positioning:
-    "SmartProBonoIP turns scattered notes into an IP Readiness Packet you can bring to a patent professional, clinic, mentor, or innovation partner.",
+    "SmartProBonoIP helps inventors, founders, clinics, and innovation programs prepare clearer invention summaries, development timelines, similar-reference notes, and questions before expert review.",
   coreMessage:
     "A good idea should not die just because the first step is confusing.",
   mission:

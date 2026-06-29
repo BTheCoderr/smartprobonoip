@@ -1,15 +1,47 @@
 import { REFERENCE_REVIEW_DISCLAIMER, containsForbiddenLanguage } from "@/lib/safety";
 import type { GapMapFields, GapMapOutput } from "./types";
 
-export const GAP_MAP_FIELD_LABELS: { key: keyof GapMapFields; label: string }[] = [
-  { key: "sameProblem", label: "Same problem or user need?" },
-  { key: "sameTargetUser", label: "Same target user/customer?" },
-  { key: "sameMainParts", label: "Same main parts/components?" },
-  { key: "sameTriggerMechanism", label: "Same trigger/sensor/mechanism?" },
-  { key: "sameUsage", label: "Same way it is used?" },
-  { key: "sameVisualDesign", label: "Same visual design/product appearance?" },
-  { key: "appearsDifferent", label: "What appears different?" },
-  { key: "expertReviewDifference", label: "What difference should an expert review?" },
+export const GAP_MAP_FIELD_LABELS: { key: keyof GapMapFields; label: string; hint: string }[] = [
+  {
+    key: "sameProblem",
+    label: "Same problem or user need?",
+    hint: "Note if this reference appears to solve a similar problem — user observation only.",
+  },
+  {
+    key: "sameTargetUser",
+    label: "Same target user/customer?",
+    hint: "Who seems to use this reference vs. your idea?",
+  },
+  {
+    key: "sameMainParts",
+    label: "Same main parts/components?",
+    hint: "List parts or features that may look similar in plain language.",
+  },
+  {
+    key: "sameTriggerMechanism",
+    label: "Same trigger/sensor/mechanism?",
+    hint: "Describe any mechanism, sensor, or trigger that may overlap.",
+  },
+  {
+    key: "sameUsage",
+    label: "Same way it is used?",
+    hint: "How is the reference used compared to your idea?",
+  },
+  {
+    key: "sameVisualDesign",
+    label: "Same visual design/product appearance?",
+    hint: "Note look-and-feel similarities — not a design-rights conclusion.",
+  },
+  {
+    key: "appearsDifferent",
+    label: "What appears different?",
+    hint: "Your description of differences you want an expert to review.",
+  },
+  {
+    key: "expertReviewDifference",
+    label: "What difference should an expert review?",
+    hint: "Turn your notes into a question for professional review.",
+  },
 ];
 
 export function buildGapMapOutput(fields: GapMapFields): GapMapOutput {

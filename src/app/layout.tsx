@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SmartProBonoIP — IP Readiness Checker",
   description:
-    "The digital front door for overlooked inventors. Organize your idea before reaching an expert.",
+    "Turn a messy invention idea into an organized IP Readiness Packet before expert review. Preparation only — not legal advice.",
 };
 
 export default function RootLayout({

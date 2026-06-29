@@ -19,6 +19,15 @@ export function SiteFooter() {
             <Link href="/smartprobonoip/sample" className="hover:text-teal-600">
               Sample
             </Link>
+            <Link href="/about" className="hover:text-teal-600">
+              About
+            </Link>
+            <Link href="/for-professionals" className="hover:text-teal-600">
+              Professionals
+            </Link>
+            <Link href="/contact" className="hover:text-teal-600">
+              Contact
+            </Link>
             <Link href="/smartprobonoip/pilot" className="hover:text-teal-600">
               Pilot kit
             </Link>
@@ -27,9 +36,6 @@ export function SiteFooter() {
             </Link>
             <Link href="/smartprobonoip/privacy" className="hover:text-teal-600">
               Privacy
-            </Link>
-            <Link href="/smartprobonoip/dashboard" className="hover:text-teal-600">
-              Dashboard
             </Link>
           </div>
         </div>

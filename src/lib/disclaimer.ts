@@ -22,3 +22,14 @@ export const CONSENT_CONFIDENTIAL =
 
 export const DISCLAIMER_SHORT =
   "Educational readiness tool only. Not legal advice and not a substitute for a qualified professional.";
+
+export const ATTORNEY_EXPORT_NOTICE =
+  "This structured export is for preparation and organization only. It does not provide legal advice, patentability opinions, clearance opinions, or filing recommendations. CPC suggestions and readiness scores are starting points for expert conversation only.";
+
+export function buildAttorneyExportDisclaimer() {
+  return {
+    paragraphs: DISCLAIMER.split("\n\n"),
+    short: DISCLAIMER_SHORT,
+    attorney_export_notice: ATTORNEY_EXPORT_NOTICE,
+  };
+}

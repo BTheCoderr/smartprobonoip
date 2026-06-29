@@ -1,7 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/smartprobonoip",
+        permanent: true,
+      },
+      {
+        source: "/integrations",
+        destination: "/for-professionals",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

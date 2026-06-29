@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { PageEvent } from "@/components/analytics/PageEvent";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { CoachPreview } from "@/components/pilot/CoachPreview";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
+import { AttorneyExportModal } from "@/components/profile/AttorneyExportModal";
 import { DossierPageHeader, PaperCard, StampLabel } from "@/components/ui/design";
 import { downloadPacketPdf } from "@/lib/pdf";
 import { getIdeaLabel } from "@/lib/packet";
@@ -14,6 +16,7 @@ import { SAMPLE_RECORD } from "@/lib/samplePacket";
 
 export default function SamplePacketPage() {
   const ideaLabel = getIdeaLabel(SAMPLE_RECORD.answers);
+  const [attorneyExportOpen, setAttorneyExportOpen] = useState(false);
 
   return (
     <div className="pb-16">
@@ -51,6 +54,13 @@ export default function SamplePacketPage() {
             <div className="mt-4 flex flex-wrap gap-3">
               <button
                 type="button"
+                onClick={() => setAttorneyExportOpen(true)}
+                className="btn-secondary w-full sm:w-auto"
+              >
+                Export for Attorney
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   downloadPacketPdf(SAMPLE_RECORD);
                   trackEvent("sample_pdf_downloaded", {
@@ -77,6 +87,14 @@ export default function SamplePacketPage() {
         <CoachPreview />
         <DisclaimerNotice />
       </div>
+
+      {attorneyExportOpen ? (
+        <AttorneyExportModal
+          record={SAMPLE_RECORD}
+          savedReferences={[]}
+          onClose={() => setAttorneyExportOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

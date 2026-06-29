@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { trackEvent } from "@/lib/analytics/client";
-import { PACKET_COPY } from "@/lib/copy";
+import { RESEARCH_PREP_COPY } from "@/lib/copy";
 import { QuerySearchLauncher } from "@/components/research/QuerySearchLauncher";
 import { ReferenceGapMapForm } from "@/components/research/ReferenceGapMapForm";
 import {
@@ -260,8 +260,19 @@ export function ResearchPrepWorkspace({
 
   return (
     <div className="space-y-6">
+      <div className="rounded-xl border border-teal-200/80 bg-teal-50/30 px-4 py-4 sm:px-5">
+        <p className="text-sm font-semibold text-navy-900">
+          {RESEARCH_PREP_COPY.helperTitle}
+        </p>
+        <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-navy-700">
+          {RESEARCH_PREP_COPY.helperSteps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      </div>
+
       <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
-        {PACKET_COPY.researchPrepDisclaimer}
+        {RESEARCH_PREP_COPY.helperNote}
       </p>
 
       {loadError ? (
@@ -293,7 +304,7 @@ export function ResearchPrepWorkspace({
       <Card>
         <CardHeader
           title={editingId ? "Edit saved reference" : "Save a possible similar reference"}
-          subtitle="Optional fields — add what you know."
+          subtitle={RESEARCH_PREP_COPY.saveReferenceHelper}
         />
         <form onSubmit={onSaveReference} className="grid gap-3 sm:grid-cols-2">
           <label className="text-sm sm:col-span-2">

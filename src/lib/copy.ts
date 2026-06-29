@@ -73,10 +73,51 @@ export const DASHBOARD_COPY = {
   lead: "See what inventors are preparing, where support is needed, and which signals appear most often.",
 } as const;
 
+export const RESEARCH_PREP_COPY = {
+  workspaceTitle: "Similar Reference Search Prep",
+  helperTitle: "How to use this workspace",
+  helperSteps: [
+    "Start with grouped search queries below — copy a query or open an outbound search tool.",
+    "Save possible similar references you find (title, link, and what looks similar or different).",
+    "Use the gap map on each saved reference to note overlaps and questions for expert review.",
+    "Bring your saved references and packet PDF to your next conversation — preparation only.",
+  ],
+  helperNote:
+    "This workspace helps you prepare for similar-reference research before meeting a patent professional, clinic, mentor, or PTRC resource. It does not determine patentability, novelty, clearance, infringement, or legal rights.",
+  outboundToolsTitle: "Outbound search tools",
+  outboundToolsLead:
+    "Open these resources in a new tab and paste a starter query. Results are for preparation only — not legal conclusions or patentability opinions.",
+  outboundToolsRecommended:
+    "Start with Google Patents, USPTO Patent Public Search, or The Lens — then save what you find as possible similar references.",
+  outboundToolsSecondary:
+    "Additional patent, product, and web resources if you want broader coverage.",
+  outboundToolsOptional:
+    "PQAI is an optional free AI tool with a limited free tier. Use it to explore starter search angles only — verify anything important with an expert.",
+  groupedQueriesTitle: "Grouped starter queries",
+  groupedQueriesLead:
+    "Based on your packet answers. Try several angles — broad and specific — when exploring possible similar references.",
+  gapMapHelperTitle: "Gap map tips",
+  gapMapHelperBody:
+    "For each saved reference, note what may overlap and what may differ in plain language. Use this to prepare expert questions — not to decide legal outcomes.",
+  cpcTitle: "Suggested classification areas to discuss",
+  cpcDisclaimer:
+    "CPC examples (e.g. B01D for filters, A45F for outdoor gear) are keyword-derived conversation starters only. They are not classification opinions, patentability assessments, or filing recommendations.",
+  cpcEmpty:
+    "Add more detail about your invention to see suggested classification areas for expert conversation.",
+  saveReferenceHelper:
+    "When you find a possible similar reference, save the title, link, search query used, and your notes on what looks similar or different.",
+  similarReferenceSection: {
+    title: "Similar Reference Search Prep",
+    lead: "Grouped starter queries, recommended outbound tools (Google Patents, USPTO, The Lens), gap maps, and CPC conversation starters (e.g. B01D / A45F for HydroSeal) — preparation only, not a patentability opinion.",
+  },
+} as const;
+
 export const LANDING_COPY = {
-  heroStamp: "ACCESS TO IP",
-  heroSafety:
-    "Preparation only. Not legal advice. No attorney-client relationship is created.",
+  heroStamp: "IP READINESS",
+  heroSafety: "Preparation only — not legal advice.",
+  ctaPrimary: "Start your free readiness packet",
+  ctaSample: "View sample packet",
+  ctaHowItWorks: "See how it works",
   whyExists:
     "People do not always lose ideas because the ideas are weak. Sometimes they lose momentum because the first step is confusing, expensive, or hard to explain.",
   whyExistsLead:
@@ -121,10 +162,78 @@ export const LANDING_COPY = {
   partnerCallout:
     "For clinics, libraries, innovation hubs, and community partners, SmartProBonoIP creates cleaner intake, stronger referrals, and better pilot data.",
   howItWorks: [
-    "Answer plain-language questions",
-    "Review and strengthen your idea",
-    "Download an IP Readiness Packet",
-    "Bring it to a professional, clinic, mentor, or partner",
+    {
+      title: "Describe your idea in plain language",
+      body: "Answer guided questions about what you built, who it is for, and how it works — no perfect answers required.",
+    },
+    {
+      title: "Organize timeline, materials, and key details",
+      body: "Build a development timeline, materials checklist, and readiness snapshot as you go.",
+    },
+    {
+      title: "Review suggested similar-reference prompts + CPC areas",
+      body: "Use grouped starter queries, outbound search tools, and suggested classification areas (e.g. B01D, A45F) to discuss with an expert — not legal conclusions.",
+    },
+    {
+      title: "Download a packet for expert conversation",
+      body: "Export a structured PDF handoff for a patent professional, clinic, mentor, or innovation partner.",
+    },
+  ],
+  productProof: [
+    {
+      title: "Packet Builder",
+      body: "Guided intake turns scattered notes into structured packet sections.",
+      previewLines: [
+        "Step 3 · How it works",
+        "Describe the main parts in plain language…",
+        "✓ Idea basics complete",
+      ],
+    },
+    {
+      title: "Readiness snapshot",
+      body: "See what is organized and what may still need attention before expert review.",
+      previewLines: [
+        "Readiness snapshot",
+        "Core intake · 6 of 7 complete",
+        "Materials · 2 optional gaps",
+      ],
+    },
+    {
+      title: "Development timeline",
+      body: "Capture when you conceived, built, and tested — preparation only.",
+      previewLines: [
+        "Mar 2024 · First sketch",
+        "Jun 2024 · Working prototype",
+        "Jan 2025 · Field testing",
+      ],
+    },
+    {
+      title: "Similar Reference Search + Gap Map",
+      body: "Grouped queries, outbound tools (Google Patents, USPTO, WIPO, and more), and gap maps for expert conversation — not patentability opinions.",
+      previewLines: [
+        "Starter query · portable water filter bottle",
+        "CPC areas to discuss · B01D · A45F",
+        "Gap note · What looks different?",
+      ],
+    },
+    {
+      title: "PDF export",
+      body: "Download a handoff packet to share with a clinic, mentor, or IP professional.",
+      previewLines: [
+        "IP Readiness Packet · PDF",
+        "Idea summary · Timeline · Questions",
+        "Preparation only — not legal advice",
+      ],
+    },
+    {
+      title: "Expert handoff summary",
+      body: "Plain-language overview and questions organized for the next conversation.",
+      previewLines: [
+        "Idea at a glance",
+        "Questions to bring with you",
+        "Suggested resource categories",
+      ],
+    },
   ],
   valueCards: [
     {
@@ -146,26 +255,76 @@ export const LANDING_COPY = {
       body: "A readable overview of what you created, who it is for, and how it works.",
     },
     {
-      title: "IP & business protection signals",
-      body: "Starting points for what your idea may touch — not legal conclusions.",
+      title: "Readiness snapshot",
+      body: "A quick view of what is organized and what may still need attention.",
     },
     {
-      title: "Missing-info checklist",
-      body: "What to strengthen before your next conversation.",
+      title: "Development timeline",
+      body: "Dates and milestones you can review with an expert — preparation only.",
     },
     {
-      title: "Expert questions",
-      body: "Questions to bring with you to a clinic, mentor, or professional.",
+      title: "Materials checklist",
+      body: "Sketches, code, photos, and other materials to gather before your next conversation.",
     },
     {
       title: "Similar reference prep",
       body: "Search terms and worksheets for possible similar references only.",
     },
     {
-      title: "PDF handoff packet",
+      title: "Gap map",
+      body: "Notes on what may look similar and what you think is different — not legal conclusions.",
+    },
+    {
+      title: "Questions for expert review",
+      body: "Questions to bring with you to a clinic, mentor, or professional.",
+    },
+    {
+      title: "Suggested resource categories",
+      body: "Starting points for programs or professionals that may fit your goals.",
+    },
+    {
+      title: "PDF handoff",
       body: "Download a structured packet to share with a professional or partner.",
     },
   ],
+  audienceCards: [
+    {
+      title: "Inventors & founders",
+      body: "Organize a messy idea into a readiness packet before your first conversation with a patent professional, clinic, or mentor.",
+    },
+    {
+      title: "Clinics & pro bono programs",
+      body: "Receive cleaner intake with timelines, materials lists, similar-reference notes, and inventor-prepared questions.",
+    },
+    {
+      title: "Innovation hubs & universities",
+      body: "Help founders and student inventors show up prepared before PTRC, clinic, or mentor referrals.",
+    },
+    {
+      title: "IP professionals",
+      body: "Review structured exports and PDF handoffs that may reduce repetitive back-and-forth on basic organization.",
+    },
+  ],
+  trustPoints: [
+    "SmartProBonoIP is not a law firm and does not provide legal advice",
+    "Preparation tool only — not patentability, clearance, or filing opinions",
+    "Packet data stays in your session; exports happen only when you choose",
+    "Public analytics exclude invention descriptions, emails, and recovery tokens",
+    "Suggested CPC areas and search tools are conversation starters for expert review",
+  ],
+  founder: {
+    name: "Baheem Ferrell",
+    bio: "Built by Baheem Ferrell, a software builder focused on access to legal and IP preparation tools for overlooked innovators.",
+    extended:
+      "SmartProBonoIP started from a simple observation: good ideas stall when the first IP conversation feels confusing or out of reach. This tool organizes information before expert review — it does not replace patent agents, attorneys, clinics, or mentors.",
+  },
+  riPilotTeaser: {
+    title: "Now seeking Rhode Island pilot partners",
+    body: "Innovation hubs, universities, clinics, IP professionals, and entrepreneur support organizations can pilot SmartProBonoIP as an IP readiness pre-intake layer.",
+    cta: "Explore a pilot",
+  },
+  footerDisclaimer:
+    "Educational preparation only. Not legal advice. Not a substitute for a qualified patent agent, attorney, or other professional.",
 } as const;
 
 export const PILOT_KIT_COPY = {
@@ -202,6 +361,8 @@ export const PILOT_KIT_COPY = {
   ],
   sampleBanner:
     "Sample packet — fictional HydroSeal invention for demos only. Preparation help, not legal advice.",
+  similarReferencePrepBlurb:
+    "Inventors can use grouped starter queries, outbound search tools (Google Patents, USPTO, WIPO, Espacenet, The Lens, PQAI), gap maps, and suggested CPC areas (e.g. B01D, A45F) as preparation only — not legal conclusions.",
   pilotPitch:
     "We are looking for 10–25 pilot users through a Rhode Island partner to test whether IP Readiness Packets help people show up more prepared.",
   partnerValue: [
@@ -465,4 +626,138 @@ export const ROUTING_COPY = {
     "Based on your packet, goals, and support needs — starting points only.",
   safety:
     "These suggestions do not mean you qualify for any program. Consider asking a partner or professional about options that may fit your situation.",
+} as const;
+
+export const PROFESSIONALS_COPY = {
+  title: "For IP Professionals & Partner Organizations",
+  subtitle: "Integrations & exports",
+  lead: "Pilot SmartProBonoIP as an IP readiness pre-intake layer. Inventors arrive with organized summaries, timelines, materials lists, similar-reference notes, and expert questions — preparation only, not legal advice.",
+  positioning:
+    "SmartProBonoIP helps inventors, founders, clinics, innovation hubs, and IP professionals organize invention summaries, timelines, materials, similar-reference notes, and expert questions before a patent professional or IP resource reviews the matter.",
+  corePromise:
+    "Preparation only. Not legal advice. Not patentability, clearance, or filing opinions. Does not create an attorney-client relationship.",
+  audiences: [
+    {
+      title: "Patent agents & IP attorneys",
+      body: "Review cleaner intake before the first conversation. Structured exports may reduce repetitive back-and-forth on basic organization.",
+    },
+    {
+      title: "Law clinics & pro bono programs",
+      body: "Receive clearer referral materials, readiness snapshots, and inventor-prepared questions before clinic review.",
+    },
+    {
+      title: "Innovation hubs & universities",
+      body: "Help founders and student inventors show up prepared before PTRC, clinic, or mentor referrals.",
+    },
+    {
+      title: "Economic development & mentor networks",
+      body: "Use tracked pilot links and readiness metrics to measure whether preparation support is working.",
+    },
+  ],
+  valuePoints: [
+    "Plain-language idea summaries organized before your review",
+    "Development timelines and public-disclosure notes (user-reported)",
+    "Materials checklists and prototype status flags",
+    "Similar-reference prep with suggested search terms",
+    "Suggested classification areas (e.g. B01D, A45F) as conversation starters only",
+    "Gap maps and inventor-prepared expert questions",
+    "Readiness score (0–100) based on packet completeness — not legal merit",
+    "PDF, JSON, and optional CSV export from completed packets",
+  ],
+  exportIntro:
+    "On any completed IP Readiness Packet, inventors can use Export for Attorney to download handoff files. The recipient email or firm name is recorded in export_metadata only — no automated delivery to third parties.",
+  exportFormats: [
+    {
+      title: "PDF packet",
+      mime: "application/pdf",
+      filename: "smartprobonoip-ip-readiness-packet-{packet_id}.pdf",
+      body: "The existing high-quality handoff PDF — unchanged. Includes idea summary, readiness snapshot, timeline, materials, similar-reference prep, expert questions, and disclaimers.",
+    },
+    {
+      title: "Structured JSON",
+      mime: "application/json",
+      filename: "smartprobonoip-attorney-export-{packet_id}.json",
+      body: "Machine-readable attorney export matching the schema below. UTF-8, pretty-printed. All fields derive from inventor intake and saved workspace data.",
+    },
+    {
+      title: "CSV summary",
+      mime: "text/csv",
+      filename: "smartprobonoip-attorney-export-{packet_id}.csv",
+      body: "Two-column field/value export for quick spreadsheet review. Includes flattened timeline, prior art, gaps, and JSON-encoded inventorship_split.",
+    },
+  ],
+  cpcNote:
+    "cpc_suggestions are keyword-derived starting points for expert conversation (e.g. HydroSeal portable filter → B01D filters, A45F outdoor gear). They are not classification opinions, patentability assessments, or filing recommendations.",
+  schemaFields: [
+    { field: "disclaimer", type: "object", description: "Full disclaimer at top: paragraphs (DISCLAIMER text), short, and attorney_export_notice." },
+    { field: "packet_id", type: "string", description: "Unique project identifier." },
+    { field: "created_at", type: "ISO 8601 date", description: "When the packet was first created." },
+    { field: "readiness_score", type: "number (0–100)", description: "Completeness score from intake, materials, timeline, and reference prep — not legal merit." },
+    { field: "inventor.name", type: "string", description: "Inventor name if provided (often empty until collected)." },
+    { field: "inventor.email", type: "string", description: "Inventor email if provided (often empty)." },
+    { field: "inventor.entity", type: "string", description: "Location or entity context from intake." },
+    { field: "inventor.inventorship_split", type: "array", description: "Ownership prep: role, involvement type, help types, notes." },
+    { field: "invention.title", type: "string", description: "Short idea label from intake." },
+    { field: "invention.summary", type: "string", description: "Plain-language idea summary from the readiness profile." },
+    { field: "invention.problem_solved", type: "string", description: "User-described problem statement." },
+    { field: "invention.how_it_works", type: "string", description: "User-described workflow or mechanism." },
+    { field: "invention.key_components", type: "string[]", description: "Parsed main parts / components." },
+    { field: "invention.differences", type: "string[]", description: "User-described differences and gap-map notes." },
+    { field: "timeline.conception_date", type: "date | null", description: "From development timeline (idea started or first written/sketched)." },
+    { field: "timeline.reduction_to_practice", type: "date | null", description: "From development timeline (first prototype built)." },
+    { field: "timeline.public_disclosures", type: "array", description: "User-reported dates and sharing-channel events." },
+    { field: "prior_art.user_notes", type: "string", description: "Concatenated notes from saved similar references." },
+    { field: "prior_art.suggested_search_terms", type: "string[]", description: "Keywords and suggested queries from search prep." },
+    { field: "prior_art.cpc_suggestions", type: "string[]", description: "Keyword-derived CPC areas for discussion — not legal conclusions." },
+    { field: "materials.attachments", type: "array", description: "{ name, url, type } — asset types plus saved reference URLs." },
+    { field: "materials.prototype_status", type: "string", description: "Whether a prototype was reported." },
+    { field: "gaps_and_questions", type: "string[]", description: "Missing info, optional gaps, and expert questions." },
+    { field: "recommended_resources", type: "string[]", description: "Suggested resource category labels." },
+    { field: "export_metadata.exported_for", type: "string", description: "Attorney email or firm entered at export time." },
+    { field: "export_metadata.exported_at", type: "ISO 8601 date", description: "When the export was generated." },
+  ],
+  csvFields: [
+    "packet_id",
+    "created_at",
+    "readiness_score",
+    "inventor_name",
+    "inventor_email",
+    "inventor_entity",
+    "invention_title",
+    "invention_summary",
+    "problem_solved",
+    "how_it_works",
+    "key_components",
+    "differences",
+    "conception_date",
+    "reduction_to_practice",
+    "public_disclosures",
+    "prior_art_notes",
+    "suggested_search_terms",
+    "cpc_suggestions",
+    "prototype_status",
+    "attachments",
+    "gaps_and_questions",
+    "recommended_resources",
+    "exported_for",
+    "exported_at",
+    "inventorship_split",
+  ],
+  doesNotDo: [
+    "Provide legal advice or create an attorney-client relationship",
+    "Determine patentability, novelty, clearance, or infringement",
+    "Recommend whether to file or how to claim an invention",
+    "Replace patent agents, attorneys, clinics, or mentors",
+    "Automatically send exports to law firms without inventor action",
+    "Store or transmit highly confidential trade secrets securely",
+  ],
+  trustPoints: [
+    "SmartProBonoIP is not a law firm",
+    "Exports are generated client-side at the inventor's request",
+    "Partner dashboard CSV excludes raw invention descriptions",
+    "Public marketing analytics do not receive invention text, emails, or recovery tokens",
+    "CPC suggestions and readiness scores are preparation aids only",
+  ],
+  pilotTeaser:
+    "Now seeking Rhode Island pilot partners — innovation hubs, universities, clinics, IP professionals, and entrepreneur support organizations.",
 } as const;

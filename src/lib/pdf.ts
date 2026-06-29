@@ -34,6 +34,14 @@ import { GAP_MAP_FIELD_LABELS } from "./research/gapMap";
 import type { SavedReference } from "./research/types";
 import type { ProjectRecord } from "./types";
 
+export interface PdfExportOptions {
+  attorneyExport?: {
+    exportedFor: string;
+    inventorName?: string;
+    inventorEmail?: string;
+  };
+}
+
 const MARGIN = 48;
 const LINE = 15;
 
@@ -108,6 +116,7 @@ function drawBrandMarkPdf(doc: jsPDF, cx: number, cy: number, scale = 1) {
 export function buildPacketPdf(
   record: ProjectRecord,
   savedReferences: SavedReference[] = [],
+  options?: PdfExportOptions,
 ): jsPDF {
   const savedReferenceCount = savedReferences.length;
   const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -268,6 +277,37 @@ export function buildPacketPdf(
     } draft`,
     { size: 9, color: GRAY, gap: 8 },
   );
+
+  if (options?.attorneyExport) {
+    const bannerLines = [
+      "ATTORNEY EXPORT — PREPARATION ONLY. NOT LEGAL ADVICE.",
+      `Prepared for: ${options.attorneyExport.exportedFor}`,
+      options.attorneyExport.inventorName
+        ? `Inventor name (user-provided): ${options.attorneyExport.inventorName}`
+        : null,
+      options.attorneyExport.inventorEmail
+        ? `Inventor email (user-provided): ${options.attorneyExport.inventorEmail}`
+        : null,
+      "CPC suggestions and readiness scores are conversation starters only — not legal conclusions.",
+    ].filter(Boolean) as string[];
+
+    ensureSpace(bannerLines.length * 14 + 24);
+    doc.setFillColor(255, 251, 235);
+    doc.setDrawColor(AMBER[0], AMBER[1], AMBER[2]);
+    const bannerHeight = bannerLines.length * 13 + 16;
+    doc.roundedRect(MARGIN - 4, y - 6, maxWidth + 8, bannerHeight, 4, 4, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]);
+    let bannerY = y + 6;
+    for (const line of bannerLines) {
+      doc.text(line, MARGIN + 4, bannerY);
+      bannerY += 13;
+    }
+    y = bannerY + 10;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+  }
 
   // 2. Plain-language idea summary
   heading("Plain-language idea summary");
@@ -561,7 +601,8 @@ export function buildPacketPdf(
 export function downloadPacketPdf(
   record: ProjectRecord,
   savedReferences: SavedReference[] = [],
+  options?: PdfExportOptions,
 ): void {
-  const doc = buildPacketPdf(record, savedReferences);
+  const doc = buildPacketPdf(record, savedReferences, options);
   doc.save(`smartprobonoip-ip-readiness-packet-${record.id.slice(0, 8)}.pdf`);
 }

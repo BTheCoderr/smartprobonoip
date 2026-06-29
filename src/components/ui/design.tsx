@@ -164,6 +164,92 @@ export function PaperCard({
   );
 }
 
+export function ProductFeatureMock({
+  title,
+  body,
+  previewLines,
+  index,
+}: {
+  title: string;
+  body: string;
+  previewLines: readonly string[];
+  index?: number;
+}) {
+  return (
+    <article className="dossier-card flex h-full flex-col overflow-hidden">
+      <div className="border-b border-dashed border-mist-200 bg-cream/60 px-5 py-4">
+        <div className="flex items-center justify-between gap-2">
+          <StampLabel tone="teal">PRODUCT</StampLabel>
+          {index != null ? (
+            <span className="text-[10px] font-mono uppercase tracking-wider text-navy-400">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+          ) : null}
+        </div>
+        <h3 className="headline-editorial mt-3 text-lg leading-snug text-navy-900">
+          {title}
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted-blue">{body}</p>
+      </div>
+      <div
+        className="relative flex-1 space-y-2 bg-white/90 px-5 py-4"
+        aria-hidden
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-30"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgb(11 31 58 / 0.04) 1px, transparent 1px), linear-gradient(90deg, rgb(11 31 58 / 0.04) 1px, transparent 1px)",
+            backgroundSize: "12px 12px",
+          }}
+        />
+        {previewLines.map((line) => (
+          <div
+            key={line}
+            className="relative border border-mist-200/90 bg-cream/50 px-3 py-2 text-xs leading-relaxed text-navy-600"
+          >
+            {line}
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+export function HowItWorksStep({
+  step,
+  title,
+  body,
+  showArrow,
+}: {
+  step: number;
+  title: string;
+  body: string;
+  showArrow?: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-stretch">
+      <div className="dossier-card h-full px-5 py-5 sm:px-6 sm:py-6">
+        <span className="flex h-8 w-8 items-center justify-center border border-dashed border-teal-400 bg-teal-50 text-sm font-bold text-teal-700">
+          {step}
+        </span>
+        <h3 className="headline-editorial mt-4 text-lg leading-snug text-navy-900">
+          {title}
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted-blue">{body}</p>
+      </div>
+      {showArrow ? (
+        <p
+          className="my-2 text-center text-xl text-teal-500 lg:hidden"
+          aria-hidden
+        >
+          ↓
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export function PacketMockup() {
   const sections = [
     "Idea Summary",
@@ -343,11 +429,13 @@ export function Section({
   className = "",
   soft,
   navy,
+  id,
 }: {
   children: ReactNode;
   className?: string;
   soft?: boolean;
   navy?: boolean;
+  id?: string;
 }) {
   const bg = navy
     ? "bg-navy-900 text-white"
@@ -355,7 +443,9 @@ export function Section({
       ? "bg-cream"
       : "";
   return (
-    <section className={`py-14 sm:py-20 ${bg} ${className}`}>{children}</section>
+    <section id={id} className={`py-14 sm:py-20 ${bg} ${className}`}>
+      {children}
+    </section>
   );
 }
 

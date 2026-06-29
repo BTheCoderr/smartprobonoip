@@ -14,6 +14,7 @@ const PUBLIC_MARKETING_PATHS = new Set([
   "/smartprobonoip/sample",
   "/smartprobonoip/start",
   "/contact",
+  "/for-professionals",
 ]);
 
 /** Public funnel routes where intake/disclaimer events may fire. */

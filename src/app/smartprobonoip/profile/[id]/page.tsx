@@ -12,6 +12,7 @@ import { DossierPageHeader, PaperCard, StampLabel } from "@/components/ui/design
 import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
+import { AttorneyExportModal } from "@/components/profile/AttorneyExportModal";
 import { downloadPacketPdf } from "@/lib/pdf";
 import { loadWorkspace } from "@/lib/research/client";
 import type { SavedReference } from "@/lib/research/types";
@@ -37,6 +38,7 @@ export default function ProfilePage({
   const [savingProfile, setSavingProfile] = useState(false);
   const [feedbackInput, setFeedbackInput] = useState<PilotFeedbackInput | null>(null);
   const [savedReferences, setSavedReferences] = useState<SavedReference[]>([]);
+  const [attorneyExportOpen, setAttorneyExportOpen] = useState(false);
   const packetViewTracked = useRef(false);
 
   const handleReferencesChange = useCallback((refs: SavedReference[]) => {
@@ -165,6 +167,13 @@ export default function ProfilePage({
               ) : null}
               <button
                 type="button"
+                onClick={() => setAttorneyExportOpen(true)}
+                className="btn-secondary w-full sm:w-auto"
+              >
+                Export for Attorney
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   void (async () => {
                     let refs = savedReferences;
@@ -252,6 +261,14 @@ export default function ProfilePage({
           <ResourceRoutingCards record={record} feedback={feedbackInput} />
         ) : null}
       </div>
+
+      {attorneyExportOpen ? (
+        <AttorneyExportModal
+          record={record}
+          savedReferences={savedReferences}
+          onClose={() => setAttorneyExportOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

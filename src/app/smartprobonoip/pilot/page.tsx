@@ -67,6 +67,24 @@ export default function PilotKitPage() {
         }
       />
 
+      <Section soft>
+        <PaperShell>
+          <SectionHeader
+            kicker="Similar reference prep"
+            title="Patent & similar-reference search prep"
+            lead={PILOT_KIT_COPY.similarReferencePrepBlurb}
+          />
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/smartprobonoip/sample#similar-reference-search-prep" className="btn-primary">
+              View sample workspace
+            </Link>
+            <Link href="/for-professionals" className="btn-secondary">
+              Export schema for professionals
+            </Link>
+          </div>
+        </PaperShell>
+      </Section>
+
       <Section>
         <PaperShell>
           <SectionHeader

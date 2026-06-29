@@ -33,8 +33,8 @@ export default function PrivacyPage() {
       <Card className="mt-6">
         <h2 className="text-lg font-semibold text-navy-900">Your data rights</h2>
         <p className="mt-2 text-sm text-navy-600">
-          Automated export and deletion are coming soon. For the pilot, email us
-          and we will respond within a reasonable timeframe.
+          Email us to request export or deletion during the pilot and we will
+          respond within a reasonable timeframe.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <a

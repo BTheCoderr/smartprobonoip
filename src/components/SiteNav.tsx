@@ -14,19 +14,31 @@ export function SiteNav() {
             Sample
           </Link>
           <Link
+            href="/about"
+            className="hidden rounded-md px-2.5 py-2 font-medium text-navy-600 transition hover:bg-mist-100 md:inline-block"
+          >
+            About
+          </Link>
+          <Link
             href="/smartprobonoip/pilot"
             className="hidden rounded-md px-2.5 py-2 font-medium text-navy-600 transition hover:bg-mist-100 md:inline-block"
           >
             Pilot
           </Link>
           <Link
-            href="/smartprobonoip/dashboard"
+            href="/for-professionals"
             className="hidden rounded-md px-2.5 py-2 font-medium text-navy-600 transition hover:bg-mist-100 lg:inline-block"
           >
-            Dashboard
+            Professionals
+          </Link>
+          <Link
+            href="/contact"
+            className="hidden rounded-md px-2.5 py-2 font-medium text-navy-600 transition hover:bg-mist-100 md:inline-block"
+          >
+            Contact
           </Link>
           <Link href="/smartprobonoip/start" className="btn-primary px-4 py-2 text-xs sm:text-sm">
-            Start your packet
+            Start free packet
           </Link>
         </div>
       </nav>

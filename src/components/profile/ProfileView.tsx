@@ -32,6 +32,7 @@ import {
   WORKSHEET_HEADERS,
 } from "@/lib/patentSearchPrep";
 import { ResearchPrepWorkspace } from "@/components/research/ResearchPrepWorkspace";
+import { CpcSuggestionPanel } from "@/components/research/ExternalSearchTools";
 import { ResearchErrorBoundary } from "@/components/research/ResearchErrorBoundary";
 import type { ProjectRecord } from "@/lib/types";
 import type { SavedReference } from "@/lib/research/types";
@@ -533,6 +534,8 @@ export function ProfileView({
               )}
             </div>
           </Card>
+
+          <CpcSuggestionPanel record={record} />
 
           <ResearchErrorBoundary>
             <ResearchPrepWorkspace
