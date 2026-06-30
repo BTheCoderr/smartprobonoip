@@ -17,6 +17,9 @@ export const LEGAL = {
     "Confidential — Prepared with SmartProBonoIP — For discussion only",
 } as const;
 
+/** Increment when packet PDF structure or sections change materially. */
+export const PACKET_PDF_VERSION = "1.2";
+
 export function formatCopyrightNotice() {
   return `© ${LEGAL.copyrightYear} ${LEGAL.copyrightHolder}. All rights reserved.`;
 }

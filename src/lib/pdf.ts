@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { BRAND, formatCopyrightNotice, LEGAL } from "./brand";
+import { BRAND, formatCopyrightNotice, LEGAL, PACKET_PDF_VERSION } from "./brand";
 import { DISCLAIMER, DISCLAIMER_SHORT } from "./disclaimer";
 import { PACKET_COPY } from "./copy";
 import {
@@ -10,15 +10,15 @@ import { SIGNAL_CATALOG } from "./signals";
 import {
   buildDifferenceMap,
   buildExpertHandoff,
-  buildFollowUpPlan,
   buildIdeaSummaryFields,
   buildMaterialsChecklist,
   buildMissingInfoStatus,
   buildNextBestAction,
+  buildNextMeetingChecklist,
   buildPatentPrepChecklist,
-  buildReadinessMetrics,
   buildReadinessSnapshot,
   DEVELOPMENT_TIMELINE_FIELDS,
+  DEVELOPMENT_TIMELINE_HINTS,
   DIFFERENCE_MAP_NOTE,
   getIdeaLabel,
   getTimelineFieldValue,
@@ -99,7 +99,11 @@ function drawRepeatedWatermarkLayer(doc: jsPDF, variant: "light" | "dark") {
   }
 }
 
-function applyPdfFooterStamps(doc: jsPDF) {
+function applyPdfFooterStamps(
+  doc: jsPDF,
+  packetId: string,
+  legalNoticesPage: number,
+) {
   const pageCount = doc.getNumberOfPages();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -107,54 +111,57 @@ function applyPdfFooterStamps(doc: jsPDF) {
 
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-    doc.text(LEGAL.pdfWatermark, pageWidth / 2, pageHeight - 36, {
-      align: "center",
-    });
-    doc.text(copyrightLine, pageWidth / 2, pageHeight - 24, { align: "center" });
+
+    if (i === 1) {
+      doc.text(
+        `${packetId} · v${PACKET_PDF_VERSION}`,
+        pageWidth / 2,
+        pageHeight - 24,
+        { align: "center" },
+      );
+      continue;
+    }
+
+    if (i === legalNoticesPage) {
+      doc.setFontSize(8);
+      doc.text(LEGAL.pdfWatermark, pageWidth / 2, pageHeight - 36, {
+        align: "center",
+      });
+      doc.text(copyrightLine, pageWidth / 2, pageHeight - 24, {
+        align: "center",
+      });
+    }
+
+    doc.text(
+      `${packetId} · p.${i}/${pageCount}`,
+      pageWidth - MARGIN,
+      pageHeight - 16,
+      { align: "right" },
+    );
   }
 }
 
 interface TocEntry {
   title: string;
   page: number;
+  level?: "part" | "section";
 }
 
-function drawSlimRunningHeader(
-  doc: jsPDF,
-  packetId: string,
-  generatedLabel: string,
-  ideaLabel: string,
-) {
+function drawSlimRunningHeader(doc: jsPDF, packetId: string) {
   const pageWidth = doc.internal.pageSize.getWidth();
-  const headerY = MARGIN - 6;
 
   doc.setDrawColor(MIST[0], MIST[1], MIST[2]);
-  doc.setFillColor(MIST[0], MIST[1], MIST[2]);
-  doc.rect(0, 0, pageWidth, SLIM_HEADER_H + 4, "F");
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-  doc.text(BRAND.product, MARGIN, headerY + 10);
+  doc.setLineWidth(0.5);
+  doc.line(MARGIN, SLIM_HEADER_H, pageWidth - MARGIN, SLIM_HEADER_H);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-  const truncatedIdea =
-    ideaLabel.length > 52 ? `${ideaLabel.slice(0, 49)}…` : ideaLabel;
-  doc.text(truncatedIdea, pageWidth / 2, headerY + 10, { align: "center" });
-
-  doc.text(`${packetId} · ${generatedLabel}`, pageWidth - MARGIN, headerY + 10, {
-    align: "right",
-  });
-
-  doc.setDrawColor(TEAL[0], TEAL[1], TEAL[2]);
-  doc.setLineWidth(0.75);
-  doc.line(MARGIN, SLIM_HEADER_H + 2, pageWidth - MARGIN, SLIM_HEADER_H + 2);
+  doc.text(`${BRAND.product} · v${PACKET_PDF_VERSION}`, MARGIN, SLIM_HEADER_H - 4);
+  doc.text(packetId, pageWidth - MARGIN, SLIM_HEADER_H - 4, { align: "right" });
 }
 
 function drawReadinessGauge(
@@ -211,10 +218,50 @@ function drawCalloutBanner(
   return height;
 }
 
+function truncateForSummary(text: string, maxSentences = 2): string {
+  const parts = text.split(/(?<=[.!?])\s+/).filter(Boolean);
+  if (parts.length <= maxSentences) return text;
+  return parts.slice(0, maxSentences).join(" ");
+}
+
+function drawSketchPlaceholder(
+  doc: jsPDF,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): number {
+  doc.setDrawColor(AQUA[0], AQUA[1], AQUA[2]);
+  doc.setLineWidth(1);
+  doc.setFillColor(248, 252, 252);
+  doc.roundedRect(x, y, width, height, 6, 6, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+  doc.text("Invention sketch / diagram", x + width / 2, y + height / 2 - 10, {
+    align: "center",
+  });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
+  doc.text(
+    "Attach a drawing, photo, wireframe, or flowchart before your meeting.",
+    x + width / 2,
+    y + height / 2 + 6,
+    { align: "center", maxWidth: width - 24 },
+  );
+  doc.text(
+    "Edit packet → Supporting materials to record what you have.",
+    x + width / 2,
+    y + height / 2 + 22,
+    { align: "center", maxWidth: width - 24 },
+  );
+  return height;
+}
+
 function renderTableOfContents(
   doc: jsPDF,
   entries: TocEntry[],
-  maxWidth: number,
 ) {
   const pageWidth = doc.internal.pageSize.getWidth();
   doc.setPage(2);
@@ -237,18 +284,26 @@ function renderTableOfContents(
     if (tocY > doc.internal.pageSize.getHeight() - MARGIN - FOOTER_RESERVE - 14) {
       break;
     }
+    const indent = entry.level === "part" ? 0 : 12;
     const pageLabel = String(entry.page);
-    const titleWidth = maxWidth - 36;
-    doc.setTextColor(TEAL[0], TEAL[1], TEAL[2]);
-    doc.text(entry.title, MARGIN, tocY);
-    doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-    doc.text(pageLabel, pageWidth - MARGIN, tocY, { align: "right" });
-    const linkW = Math.min(
-      doc.getTextWidth(entry.title),
-      pageWidth - MARGIN * 2,
+    doc.setFont("helvetica", entry.level === "part" ? "bold" : "normal");
+    doc.setFontSize(entry.level === "part" ? 10 : 9);
+    doc.setTextColor(
+      entry.level === "part" ? NAVY[0] : TEAL[0],
+      entry.level === "part" ? NAVY[1] : TEAL[1],
+      entry.level === "part" ? NAVY[2] : TEAL[2],
     );
-    doc.link(MARGIN, tocY - 10, linkW, 12, { pageNumber: entry.page });
-    tocY += 16;
+    doc.text(entry.title, MARGIN + indent, tocY);
+    if (entry.level !== "part") {
+      doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
+      doc.text(pageLabel, pageWidth - MARGIN, tocY, { align: "right" });
+      const linkW = Math.min(
+        doc.getTextWidth(entry.title),
+        pageWidth - MARGIN * 2 - indent,
+      );
+      doc.link(MARGIN + indent, tocY - 10, linkW, 12, { pageNumber: entry.page });
+    }
+    tocY += entry.level === "part" ? 18 : 14;
   }
 
   doc.setFontSize(8);
@@ -335,22 +390,19 @@ export function buildPacketPdf(
 
   const profile = record.profile;
   const missingStatus = buildMissingInfoStatus(record, savedReferenceCount);
-  const readinessMetrics = buildReadinessMetrics(record, savedReferenceCount);
   const nextBestAction = buildNextBestAction(record, savedReferenceCount);
   const ideaLabel = getIdeaLabel(record.answers);
   const review = buildPacketReviewSummary(record, savedReferenceCount);
   const packetId = record.id.slice(0, 8).toUpperCase();
   const generatedAt = new Date(record.createdAt);
   const generatedDate = generatedAt.toLocaleDateString();
-  const generatedDateTime = generatedAt.toLocaleString();
-  const generatedLabel = generatedDate;
   const tocEntries: TocEntry[] = [];
 
   function startBodyPage(withHeader = true) {
     doc.addPage();
     drawRepeatedWatermarkLayer(doc, "light");
     if (withHeader) {
-      drawSlimRunningHeader(doc, packetId, generatedLabel, ideaLabel);
+      drawSlimRunningHeader(doc, packetId);
     }
     y = withHeader ? BODY_START_Y : MARGIN;
   }
@@ -388,8 +440,20 @@ export function buildPacketPdf(
     text(value, { size: 10, color: GRAY, gap: 6 });
   }
 
+  function partHeading(value: string) {
+    tocEntries.push({ title: value, page: doc.getNumberOfPages(), level: "part" });
+    ensureSpace(28);
+    doc.setFillColor(232, 244, 245);
+    doc.roundedRect(MARGIN - 4, y - 4, maxWidth + 8, 22, 4, 4, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.text(value, MARGIN + 4, y + 10);
+    y += 28;
+  }
+
   function sectionHeading(value: string) {
-    tocEntries.push({ title: value, page: doc.getNumberOfPages() });
+    tocEntries.push({ title: value, page: doc.getNumberOfPages(), level: "section" });
     ensureSpace(LINE + 10);
     y += 6;
     doc.setDrawColor(TEAL[0], TEAL[1], TEAL[2]);
@@ -467,6 +531,9 @@ export function buildPacketPdf(
     align: "center",
   });
   doc.text(`Packet ID: ${packetId}`, pageWidth / 2, cy + 32, { align: "center" });
+  doc.text(`Document v${PACKET_PDF_VERSION}`, pageWidth / 2, cy + 46, {
+    align: "center",
+  });
 
   doc.setDrawColor(TEAL[0], TEAL[1], TEAL[2]);
   doc.setLineWidth(1);
@@ -511,26 +578,27 @@ export function buildPacketPdf(
   drawRepeatedWatermarkLayer(doc, "light");
 
   // ---------------------------------------------------------------------------
-  // 3. Executive summary for reviewer
+  // 3. Executive summary (1 page, tight)
   // ---------------------------------------------------------------------------
   startBodyPage(true);
+  partHeading("Part I · Reviewer summary");
   sectionHeading("Summary for reviewer");
-  text(profile.ideaSummary, { gap: 8 });
+  text(truncateForSummary(profile.ideaSummary, 2), { gap: 6 });
 
   text("Readiness score (preparation only)", { size: 10, bold: true, gap: 4 });
   ensureSpace(20);
   drawReadinessGauge(doc, MARGIN, y, maxWidth - 48, review.readinessScore);
   y += 22;
-  text(review.strengthenMessage, { color: GRAY, gap: 8 });
+  text(review.strengthenMessage, { size: 9, color: GRAY, gap: 6 });
 
   if (review.topGaps.length > 0) {
-    text("Top gaps to address", { size: 10, bold: true, gap: 2 });
-    bullets(review.topGaps.slice(0, 3), "–");
+    text("Highest-priority gap", { size: 10, bold: true, gap: 2 });
+    bullets(review.topGaps.slice(0, 1), "–");
   }
 
   if (review.unansweredQuestions.length > 0) {
-    text("Questions to bring", { size: 10, bold: true, gap: 2 });
-    bullets(review.unansweredQuestions.slice(0, 5), "?");
+    text("Top questions to bring", { size: 10, bold: true, gap: 2 });
+    bullets(review.unansweredQuestions.slice(0, 2), "?");
   }
 
   if (profile.publicDisclosure) {
@@ -549,12 +617,60 @@ export function buildPacketPdf(
     y += bannerH + 10;
   }
 
-  text(
-    `Generated ${generatedDateTime} · ${
-      profile.generator === "ai" ? "AI-assisted" : "Rule-based"
-    } draft · Packet ${packetId}`,
-    { size: 9, color: GRAY, gap: 8 },
+  // Priority: supporting materials
+  partHeading("Part II · Priority preparation");
+  sectionHeading("Supporting materials");
+  const materials = buildMaterialsChecklist(record);
+  const hasMaterials = materials.some((item) => item.available);
+  if (!hasMaterials) {
+    ensureSpace(120);
+    const bannerH = drawCalloutBanner(
+      doc,
+      MARGIN,
+      y,
+      maxWidth,
+      [
+        "HIGHEST PRIORITY: ADD SUPPORTING MATERIALS",
+        "Clinics and professionals can review faster when you bring sketches, photos, diagrams, or notes.",
+      ],
+      "warning",
+    );
+    y += bannerH + 12;
+    ensureSpace(110);
+    y += drawSketchPlaceholder(doc, MARGIN, y, maxWidth, 96) + 12;
+  }
+  for (const item of materials) {
+    text(`${item.available ? "✓" : "○"} ${item.label}`, { size: 10, gap: 2 });
+  }
+
+  // Similar-reference prep (moved up, visually strong)
+  const searchPrep = buildPatentSearchPrep(record);
+  sectionHeading(PACKET_COPY.similarRefPrepTitle);
+  ensureSpace(52);
+  const refBannerH = drawCalloutBanner(
+    doc,
+    MARGIN,
+    y,
+    maxWidth,
+    [
+      "Similar-reference prep — preparation only",
+      "Use these keywords and queries to discuss possible references with an expert — not a patentability opinion.",
+    ],
+    "info",
   );
+  y += refBannerH + 8;
+  text(PATENT_SEARCH_PREP_INTRO, { size: 9, color: GRAY, gap: 4 });
+  text("Search keywords", { size: 10, bold: true, gap: 2 });
+  text(
+    searchPrep.searchKeywords.join(", ") ||
+      "Add more detail to your packet to generate keywords.",
+    { gap: 4 },
+  );
+  text("Suggested search queries", { size: 10, bold: true, gap: 2 });
+  bullets(searchPrep.suggestedQueries.slice(0, 6), "•");
+  if (savedReferences.length > 0) {
+    text(`Saved references: ${savedReferences.length}`, { bold: true, gap: 4 });
+  }
 
   if (options?.attorneyExport) {
     const bannerLines = [
@@ -587,7 +703,8 @@ export function buildPacketPdf(
     doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
   }
 
-  // 2. Plain-language idea summary
+  // Idea & readiness detail
+  partHeading("Part III · Idea & readiness");
   heading("Plain-language idea summary");
   text(profile.ideaSummary, { gap: 6 });
   for (const field of buildIdeaSummaryFields(record.answers)) {
@@ -666,17 +783,11 @@ export function buildPacketPdf(
     text(RESOURCE_DESCRIPTIONS[r], { color: GRAY });
   }
 
-  // 8. 30/60/90 day follow-up plan
-  heading("30 / 60 / 90 day follow-up plan");
-  for (const step of buildFollowUpPlan()) {
-    text(`${step.window} — ${step.title}`, { bold: true, color: TEAL, gap: 2 });
-    bullets(step.actions, "•");
-  }
-
   // ---------------------------------------------------------------------------
-  // Patent Prep Mode
+  // Patent prep & handoff
   // ---------------------------------------------------------------------------
   startBodyPage(true);
+  partHeading("Part IV · Patent prep & handoff");
   text(PACKET_COPY.patentPrepTitle, { size: 14, color: NAVY, bold: true, gap: 2 });
   text(PATENT_PREP_INTRO, { size: 9, color: GRAY, gap: 6 });
 
@@ -691,13 +802,22 @@ export function buildPacketPdf(
     if (row.value) text(row.value, { size: 10, color: GRAY, gap: 6 });
   }
 
-  // Development timeline (fillable)
+  // Development timeline (fillable blanks)
   heading("Development timeline");
   text(TIMELINE_NOTE, { size: 9, color: GRAY, gap: 6 });
   for (const field of DEVELOPMENT_TIMELINE_FIELDS) {
-    text(`${field}:`, { size: 10, bold: true, gap: 1 });
+    ensureSpace(36);
+    text(field, { size: 10, bold: true, gap: 1 });
+    text(DEVELOPMENT_TIMELINE_HINTS[field], { size: 8, color: GRAY, gap: 2 });
     const value = getTimelineFieldValue(record.developmentTimeline, field);
-    text(value || "Not recorded yet", { size: 10, color: GRAY, gap: 6 });
+    if (value) {
+      text(value, { size: 10, color: NAVY, gap: 4 });
+    } else {
+      doc.setDrawColor(MIST[0], MIST[1], MIST[2]);
+      doc.setLineWidth(0.75);
+      doc.line(MARGIN, y + 2, pageWidth - MARGIN, y + 2);
+      y += 14;
+    }
   }
 
   // Possible difference map
@@ -709,22 +829,6 @@ export function buildPacketPdf(
     labeledBlock("Why that difference matters", row.whyItMatters);
   });
   text(DIFFERENCE_MAP_NOTE, { size: 9, color: TEAL_DARK, gap: 6 });
-
-  // Drawings and materials checklist
-  heading("Drawings and materials checklist");
-  const materials = buildMaterialsChecklist(record);
-  for (const item of materials) {
-    text(`${item.available ? "✓" : "○"} ${item.label}`, {
-      size: 10,
-      gap: 2,
-    });
-  }
-  if (materials.every((item) => !item.available)) {
-    text(
-      "None recorded yet — consider adding sketches, photos, prototype notes, or screenshots before your expert meeting.",
-      { size: 9, color: GRAY, gap: 6 },
-    );
-  }
 
   // Expert handoff summary
   const handoff = buildExpertHandoff(record);
@@ -742,11 +846,11 @@ export function buildPacketPdf(
   labeledBlock("Public sharing timeline", handoff.publicSharingTimeline);
   labeledBlock("Materials available", handoff.materialsAvailable);
   text("Questions for expert review", { size: 10, bold: true, gap: 2 });
-  bullets(handoff.expertQuestions, "?");
+  bullets(handoff.expertQuestions.slice(0, 5), "?");
 
-  // Similar Patent Discovery Prep
-  const searchPrep = buildPatentSearchPrep(record);
+  // Similar reference detail (worksheet, links, saved refs)
   startBodyPage(true);
+  partHeading("Part V · Similar reference detail");
   text(PACKET_COPY.similarRefPrepTitle, { size: 14, color: NAVY, bold: true, gap: 2 });
   text(PATENT_SEARCH_PREP_INTRO, { size: 9, color: GRAY, gap: 6 });
 
@@ -861,19 +965,18 @@ export function buildPacketPdf(
     });
   }
 
-  // Readiness metrics
-  heading(PACKET_COPY.readinessSnapshotTitle);
-  text("Preparation only — not legal outcomes.", { size: 9, color: GRAY, gap: 4 });
-  for (const metric of readinessMetrics) {
-    labeledBlock(metric.label, metric.value);
-  }
+  // Next meeting checklist
+  startBodyPage(true);
+  partHeading("Part VI · Before your meeting");
+  sectionHeading("Next meeting checklist");
+  bullets(buildNextMeetingChecklist(record, savedReferenceCount), "☐");
 
-  // Next best action
   heading(PACKET_COPY.nextBestStepTitle);
   text(nextBestAction, { gap: 6 });
 
   // Legal notices (full disclaimers — kept off main body pages)
   startBodyPage(true);
+  const legalNoticesPage = doc.getNumberOfPages();
   sectionHeading("Legal notices");
   text(DISCLAIMER_SHORT, { bold: true, gap: 6 });
   for (const para of DISCLAIMER.split("\n\n")) {
@@ -882,8 +985,8 @@ export function buildPacketPdf(
   text(LEGAL.pdfWatermark, { size: 9, color: TEAL_DARK, gap: 4 });
   text(formatCopyrightNotice(), { size: 9, color: GRAY, gap: 6 });
 
-  renderTableOfContents(doc, tocEntries, maxWidth);
-  applyPdfFooterStamps(doc);
+  renderTableOfContents(doc, tocEntries);
+  applyPdfFooterStamps(doc, packetId, legalNoticesPage);
   return doc;
 }
 

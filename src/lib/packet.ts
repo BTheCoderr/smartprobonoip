@@ -84,7 +84,7 @@ export const DIFFERENCE_MAP_NOTE =
   "These are user-described differences only. A professional would need to review whether they matter legally.";
 
 export const TIMELINE_NOTE =
-  "Fill in any dates you remember. Approximate dates are fine. This helps a professional understand your development history.";
+  "Fill in any dates you remember. Approximate month/year is fine — this helps a professional understand your development history.";
 
 export const DEVELOPMENT_TIMELINE_FIELDS = [
   "Date idea started",
@@ -94,6 +94,18 @@ export const DEVELOPMENT_TIMELINE_FIELDS = [
   "Date first pitched, sold, or demoed",
   "Date of major improvements",
 ] as const satisfies readonly DevelopmentTimelineField[];
+
+export const DEVELOPMENT_TIMELINE_HINTS: Record<
+  DevelopmentTimelineField,
+  string
+> = {
+  "Date idea started": "When you first thought of the idea (month/year OK)",
+  "Date first written down or sketched": "First notes, sketch, or saved document",
+  "Date first prototype built": "First working demo, mockup, or test build",
+  "Date first shared publicly": "Website, pitch, social post, or public demo",
+  "Date first pitched, sold, or demoed": "Customer, investor, or partner meeting",
+  "Date of major improvements": "Notable redesign or feature milestone",
+};
 
 export function sanitizeTimelineValue(value: string): string {
   return value.trim().slice(0, 200);
@@ -527,6 +539,45 @@ export function buildNextBestAction(
   return cleanText(
     `Consider your next preparation step: ${steps.join(", ")}, before speaking with a patent professional or PTRC resource.`,
   );
+}
+
+export function buildNextMeetingChecklist(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): string[] {
+  const { answers, profile } = record;
+  const items = [
+    "Bring this packet (PDF or printed)",
+    "Bring your top 3 questions from the list in this packet",
+  ];
+
+  if (answers.assets.length === 0) {
+    items.push(
+      "Add at least one supporting item: sketch, photo, diagram, or notes (Edit packet → Supporting materials)",
+    );
+  } else {
+    items.push("Bring the supporting materials listed in this packet");
+  }
+
+  if (savedReferenceCount === 0) {
+    items.push(
+      "Review similar-reference search prompts and save at least one possible reference before the meeting",
+    );
+  } else {
+    items.push("Bring your saved similar-reference notes and gap maps");
+  }
+
+  if (countFilledTimelineFields(record.developmentTimeline) < 2) {
+    items.push("Fill in key development timeline dates (approximate dates are fine)");
+  }
+
+  if (profile.publicDisclosure) {
+    items.push("Be ready to discuss when and how you shared this idea publicly");
+  }
+
+  items.push("Remember: this packet is preparation only — not legal advice");
+
+  return items;
 }
 
 export function assertPacketContentSafe(): void {

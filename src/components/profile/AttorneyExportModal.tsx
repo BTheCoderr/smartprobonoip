@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { downloadPacketPdf } from "@/lib/pdf";
+import { downloadCondensedAttorneyPdf } from "@/lib/pdfCondensed";
 import {
   attorneyExportBaseName,
   buildAttorneyExportCsv,
@@ -33,6 +34,7 @@ export function AttorneyExportModal({
   const [inventorName, setInventorName] = useState(defaultInventorName);
   const [inventorEmail, setInventorEmail] = useState(defaultInventorEmail);
   const [includePdf, setIncludePdf] = useState(true);
+  const [includeCondensedPdf, setIncludeCondensedPdf] = useState(true);
   const [includeJson, setIncludeJson] = useState(true);
   const [includeCsv, setIncludeCsv] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -57,7 +59,7 @@ export function AttorneyExportModal({
       setError("Enter the attorney email or firm name for this export.");
       return;
     }
-    if (!includePdf && !includeJson && !includeCsv) {
+    if (!includePdf && !includeCondensedPdf && !includeJson && !includeCsv) {
       setError("Select at least one export format.");
       return;
     }
@@ -82,14 +84,16 @@ export function AttorneyExportModal({
       const baseName = attorneyExportBaseName(record.id);
       const exported: string[] = [];
 
+      const exportOptions = {
+        attorneyExport: {
+          exportedFor: recipient,
+          inventorName: inventor.name,
+          inventorEmail: inventor.email,
+        },
+      };
+
       if (includePdf) {
-        downloadPacketPdf(record, refs, {
-          attorneyExport: {
-            exportedFor: recipient,
-            inventorName: inventor.name,
-            inventorEmail: inventor.email,
-          },
-        });
+        downloadPacketPdf(record, refs, exportOptions);
         exported.push("PDF");
         trackEvent("pdf_downloaded", {
           projectId: record.id,
@@ -100,6 +104,11 @@ export function AttorneyExportModal({
             attorneyExport: true,
           },
         });
+      }
+
+      if (includeCondensedPdf) {
+        downloadCondensedAttorneyPdf(record, refs, exportOptions);
+        exported.push("1-page brief");
       }
 
       if (includeJson) {
@@ -125,6 +134,7 @@ export function AttorneyExportModal({
         metadata: {
           demo: record.isDemo ?? false,
           includePdf,
+          includeCondensedPdf,
           includeJson,
           includeCsv,
           exportedFor: recipient,
@@ -238,6 +248,21 @@ export function AttorneyExportModal({
                 <span className="font-medium">PDF packet</span>
                 <span className="mt-0.5 block text-navy-500">
                   Handoff PDF with attorney export banner when selected here.
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-navy-700">
+              <input
+                type="checkbox"
+                checked={includeCondensedPdf}
+                onChange={(event) => setIncludeCondensedPdf(event.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                <span className="font-medium">1-page attorney brief</span>
+                <span className="mt-0.5 block text-navy-500">
+                  Condensed summary for a quick first read — idea, readiness, gaps,
+                  and meeting checklist.
                 </span>
               </span>
             </label>
