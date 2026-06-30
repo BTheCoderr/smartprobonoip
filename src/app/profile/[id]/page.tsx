@@ -17,6 +17,8 @@ import { downloadPacketPdf } from "@/lib/pdf";
 import { loadWorkspace } from "@/lib/research/client";
 import type { SavedReference } from "@/lib/research/types";
 import { getIdeaLabel } from "@/lib/packet";
+import { EXPORT_HANDOFF_COPY } from "@/lib/copy";
+import { ROUTES } from "@/lib/routes";
 import { getPilotSourceLabel } from "@/lib/partnerTracking";
 import { trackEvent } from "@/lib/analytics/client";
 import type { PilotFeedbackInput } from "@/lib/feedback";
@@ -118,7 +120,7 @@ export default function ProfilePage({
             We couldn&rsquo;t find this packet on this device. It may have been
             created in another browser, or storage was cleared.
           </p>
-          <Link href="/smartprobonoip/start" className="btn-primary mt-6">
+          <Link href="/start" className="btn-primary mt-6">
             Start a new readiness check
           </Link>
         </Card>
@@ -170,8 +172,14 @@ export default function ProfilePage({
                 onClick={() => setAttorneyExportOpen(true)}
                 className="btn-secondary w-full sm:w-auto"
               >
-                Export for Attorney
+                {EXPORT_HANDOFF_COPY.jsonLabel}
               </button>
+              <Link
+                href={ROUTES.forProfessionals}
+                className="btn-ghost w-full px-0 sm:w-auto"
+              >
+                View export schema →
+              </Link>
               <button
                 type="button"
                 onClick={() => {
@@ -199,7 +207,7 @@ export default function ProfilePage({
                 }}
                 className="btn-primary w-full sm:w-auto"
               >
-                Download PDF
+                {EXPORT_HANDOFF_COPY.pdfLabel}
               </button>
             </div>
           </PaperCard>
@@ -222,6 +230,36 @@ export default function ProfilePage({
             onTimelineSaved={handleTimelineSaved}
           />
         )}
+
+        {!editing ? (
+          <PaperCard className="p-5 sm:p-6">
+            <p className="section-kicker">{EXPORT_HANDOFF_COPY.title}</p>
+            <p className="mt-2 text-sm leading-relaxed text-navy-600">
+              {EXPORT_HANDOFF_COPY.lead}
+            </p>
+            <h3 className="mt-5 text-sm font-semibold text-navy-900">
+              {EXPORT_HANDOFF_COPY.bringTitle}
+            </h3>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+              {EXPORT_HANDOFF_COPY.bringItems.map((item) => (
+                <li
+                  key={item}
+                  className="rounded-lg border border-mist-200 bg-cream/50 px-3 py-2 text-sm text-navy-700"
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link href={ROUTES.afterMeeting} className="btn-secondary">
+                After your meeting
+              </Link>
+              <Link href={ROUTES.trust} className="btn-ghost">
+                Trust Center
+              </Link>
+            </div>
+          </PaperCard>
+        ) : null}
 
         {!editing ? (
           <>

@@ -9,21 +9,35 @@ declare global {
 
 const PUBLIC_MARKETING_PATHS = new Set([
   "/",
+  "/pilot",
+  "/sample",
+  "/trust",
+  "/learn",
+  "/after-meeting",
+  "/for-professionals",
+  "/for/clinics",
+  "/for/universities",
+  "/about",
+  "/contact",
   "/smartprobonoip",
   "/smartprobonoip/pilot",
   "/smartprobonoip/sample",
   "/smartprobonoip/start",
-  "/contact",
-  "/for-professionals",
 ]);
 
 /** Public funnel routes where intake/disclaimer events may fire. */
 const PUBLIC_FUNNEL_PATHS = new Set([
   ...PUBLIC_MARKETING_PATHS,
+  "/disclaimer",
+  "/start",
   "/smartprobonoip/disclaimer",
 ]);
 
 const BLOCKED_PATH_PREFIXES = [
+  "/profile/",
+  "/recover",
+  "/dashboard",
+  "/leads",
   "/smartprobonoip/profile/",
   "/smartprobonoip/recover",
   "/smartprobonoip/dashboard",

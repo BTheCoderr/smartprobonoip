@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import {
   DISCLAIMER,
   PRIVACY_NOTICE,
   CONSENT_EDUCATIONAL,
   CONSENT_CONFIDENTIAL,
 } from "@/lib/disclaimer";
+import { ROUTES } from "@/lib/routes";
 import { BRAND } from "@/lib/brand";
 import { Card } from "@/components/ui/Card";
 import { acknowledgeDisclaimer } from "@/lib/ack";
@@ -33,7 +35,7 @@ export default function DisclaimerClient() {
     acknowledgeDisclaimer();
     trackEvent("disclaimer_accepted", { metadata: { demo: isDemo } });
     trackStartClicked(isDemo);
-    router.push(isDemo ? "/smartprobonoip/start?demo=1" : "/smartprobonoip/start");
+    router.push(isDemo ? "/start?demo=1" : "/start");
   }
 
   return (
@@ -74,6 +76,16 @@ export default function DisclaimerClient() {
           <li>• We never tell you that you &ldquo;need a patent&rdquo; or that your idea is protectable.</li>
           <li>• We point you toward people and resources who can actually advise you.</li>
         </ul>
+
+        <p className="mt-4 text-sm">
+          <Link href={ROUTES.trust} className="font-medium text-navy-600 hover:underline">
+            Read the Trust Center →
+          </Link>
+          {" · "}
+          <Link href={ROUTES.privacy} className="font-medium text-navy-600 hover:underline">
+            Privacy summary
+          </Link>
+        </p>
 
         <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-lg border border-mist-200 p-4 transition hover:bg-mist-50">
           <input

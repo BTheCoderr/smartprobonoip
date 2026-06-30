@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { ROUTES } from "@/lib/routes";
 import { Card } from "@/components/ui/Card";
 import { DossierPageHeader, StampLabel } from "@/components/ui/design";
 import { ResearchPrepWorkspace } from "@/components/research/ResearchPrepWorkspace";
@@ -69,7 +70,7 @@ export default function ResearchPage({
       />
       <div className="page-shell-packet mt-8 space-y-6">
         <Link
-          href={`/smartprobonoip/profile/${record.id}`}
+          href={ROUTES.profile(record.id)}
           className="text-sm font-medium text-teal-700 hover:text-teal-900"
         >
           ← Back to IP Readiness Packet

@@ -49,7 +49,7 @@ export default function StartPage() {
               {BRAND.product} is an educational readiness tool and does not
               provide legal advice.
             </p>
-            <Link href="/smartprobonoip/disclaimer" className="btn-primary mt-6">
+            <Link href="/disclaimer" className="btn-primary mt-6">
               Read & acknowledge the disclaimer
             </Link>
           </Card>

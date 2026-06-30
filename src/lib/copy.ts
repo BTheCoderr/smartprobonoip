@@ -234,6 +234,24 @@ export const LANDING_COPY = {
         "Suggested resource categories",
       ],
     },
+    {
+      title: "Attorney / professional export",
+      body: "Structured JSON, CSV, and PDF handoff for clinics, firms, and partner programs.",
+      previewLines: [
+        "Export for Attorney · JSON + CSV",
+        "Timeline · Materials · Gap map",
+        "Preparation only — not legal advice",
+      ],
+    },
+    {
+      title: "Pilot dashboard & metrics",
+      body: "Partners track packet completions, clarity lift, PDF downloads, and feedback.",
+      previewLines: [
+        "Completions · 12 this month",
+        "Avg clarity lift · +1.4",
+        "Demo mode · labeled sample data",
+      ],
+    },
   ],
   valueCards: [
     {
@@ -407,27 +425,27 @@ export const PILOT_KIT_COPY = {
     {
       title: "Start with a messy idea",
       body: "Open the sample packet or start demo intake — show that perfect answers are not required.",
-      href: "/smartprobonoip/sample",
+      href: "/sample",
     },
     {
       title: "Answer plain-language questions",
       body: "Walk through the Packet Builder: idea basics, how it works, materials, goals, and review.",
-      href: "/smartprobonoip/disclaimer?demo=1",
+      href: "/disclaimer?demo=1",
     },
     {
       title: "Review the packet",
       body: "Show the IP Readiness Packet: summary, signals, questions, similar-reference prep, and next step.",
-      href: "/smartprobonoip/sample",
+      href: "/sample",
     },
     {
       title: "Download PDF / save recovery link",
       body: "Download the handoff PDF. On a live packet, show optional private recovery for return visits.",
-      href: "/smartprobonoip/sample",
+      href: "/sample",
     },
     {
       title: "Show dashboard impact data",
       body: "Open the Partner Impact Desk: funnel, clarity trends, feedback metrics, partner filters, and CSV export.",
-      href: "/smartprobonoip/dashboard?demo=1",
+      href: "/dashboard?demo=1",
     },
   ],
   outreach: [
@@ -469,12 +487,12 @@ export const PILOT_KIT_COPY = {
   launchQrLinks: [
     {
       label: "General pilot intake",
-      path: "/smartprobonoip/disclaimer",
+      path: "/disclaimer",
       query: { source: "qr", campaign: "pilot-2026" },
     },
     {
       label: "SmartProBonoIP RI Pilot intake",
-      path: "/smartprobonoip/disclaimer",
+      path: "/disclaimer",
       query: {
         partner: "smartprobonoip-ri-pilot",
         source: "qr",
@@ -483,12 +501,12 @@ export const PILOT_KIT_COPY = {
     },
     {
       label: "RIHub pilot intake",
-      path: "/smartprobonoip/disclaimer",
+      path: "/disclaimer",
       query: { partner: "rihub", source: "qr", campaign: "pilot-2026" },
     },
     {
       label: "Community IP partner intake",
-      path: "/smartprobonoip/disclaimer",
+      path: "/disclaimer",
       query: {
         partner: "communityip",
         source: "qr",
@@ -497,36 +515,36 @@ export const PILOT_KIT_COPY = {
     },
     {
       label: "Sample packet",
-      path: "/smartprobonoip/sample",
+      path: "/sample",
       query: { source: "qr", campaign: "pilot-2026" },
     },
     {
       label: "Pilot launch kit (this page)",
-      path: "/smartprobonoip/pilot",
+      path: "/pilot",
       query: { source: "qr", campaign: "pilot-2026" },
     },
     {
       label: "Partner dashboard",
-      path: "/smartprobonoip/dashboard",
+      path: "/dashboard",
       query: {},
     },
   ],
   qrLinks: [
-    { label: "Homepage", path: "/smartprobonoip" },
-    { label: "Start a packet", path: "/smartprobonoip/disclaimer" },
-    { label: "Demo mode", path: "/smartprobonoip/disclaimer?demo=1" },
-    { label: "Sample packet", path: "/smartprobonoip/sample" },
-    { label: "Partner dashboard", path: "/smartprobonoip/dashboard" },
+    { label: "Homepage", path: "/" },
+    { label: "Start a packet", path: "/disclaimer" },
+    { label: "Demo mode", path: "/disclaimer?demo=1" },
+    { label: "Sample packet", path: "/sample" },
+    { label: "Partner dashboard", path: "/dashboard" },
   ],
   partnerQrLinks: [
     {
       label: "General start",
-      path: "/smartprobonoip/disclaimer",
+      path: "/disclaimer",
       query: { source: "qr", campaign: "pilot-2026" },
     },
     {
       label: "SmartProBonoIP RI Pilot",
-      path: "/smartprobonoip/disclaimer",
+      path: "/disclaimer",
       query: {
         partner: "smartprobonoip-ri-pilot",
         source: "qr",
@@ -535,7 +553,7 @@ export const PILOT_KIT_COPY = {
     },
     {
       label: "RIHub",
-      path: "/smartprobonoip/disclaimer",
+      path: "/disclaimer",
       query: {
         partner: "rihub",
         source: "qr",
@@ -544,7 +562,7 @@ export const PILOT_KIT_COPY = {
     },
     {
       label: "Community IP",
-      path: "/smartprobonoip/disclaimer",
+      path: "/disclaimer",
       query: {
         partner: "communityip",
         source: "qr",
@@ -553,12 +571,12 @@ export const PILOT_KIT_COPY = {
     },
     {
       label: "Sample packet",
-      path: "/smartprobonoip/sample",
+      path: "/sample",
       query: { source: "qr", campaign: "pilot-2026" },
     },
     {
       label: "Partner dashboard",
-      path: "/smartprobonoip/dashboard",
+      path: "/dashboard",
       query: {},
     },
   ],
@@ -566,22 +584,22 @@ export const PILOT_KIT_COPY = {
     {
       title: "Open the sample packet",
       body: "Show a finished IP Readiness Packet — idea summary, signals, questions, and next step — without completing intake.",
-      href: "/smartprobonoip/sample",
+      href: "/sample",
     },
     {
       title: "Run demo intake",
       body: "Walk through the Packet Builder with the pre-loaded HydroSeal example, then generate a demo packet.",
-      href: "/smartprobonoip/disclaimer?demo=1",
+      href: "/disclaimer?demo=1",
     },
     {
       title: "Download the PDF",
       body: "From the sample or demo packet page, download the handoff PDF a clinic or mentor could review.",
-      href: "/smartprobonoip/sample",
+      href: "/sample",
     },
     {
       title: "Show the Partner Impact Desk",
       body: "Open the dashboard with demo data to show readiness signals, clarity trends, and CSV export.",
-      href: "/smartprobonoip/dashboard?demo=1",
+      href: "/dashboard?demo=1",
     },
   ],
 } as const;
@@ -761,3 +779,558 @@ export const PROFESSIONALS_COPY = {
   pilotTeaser:
     "Now seeking Rhode Island pilot partners — innovation hubs, universities, clinics, IP professionals, and entrepreneur support organizations.",
 } as const;
+
+export const LEARN_COPY = {
+  title: "Learn IP basics",
+  subtitle: "Phase 1 — educational prep for inventors",
+  lead: "Interactive preparation before you build your readiness packet or talk to an expert. Preparation only — not legal advice.",
+  journeyTitle: "Start here before you build your packet",
+  journeyLead:
+    "SmartProBonoIP is designed as a journey: Learn → Prepare → Organize → Research → Review → Export → Connect. This module is Phase 1.",
+  journeySteps: [
+    {
+      phase: "Phase 1",
+      label: "Learn",
+      hint: "Understand IP basics and common prep topics.",
+    },
+    {
+      phase: "Phase 2",
+      label: "Prepare",
+      hint: "Answer guided intake questions with context.",
+    },
+    {
+      phase: "Phase 3",
+      label: "Organize",
+      hint: "Generate your IP Readiness Packet.",
+    },
+    {
+      phase: "Phase 4+",
+      label: "Research & handoff",
+      hint: "Similar-reference prep, review, and export.",
+    },
+  ],
+  modules: [
+    {
+      id: "ip-types",
+      title: "Patents, trademarks, copyrights, and trade secrets",
+      body: "These are different topics people may discuss with an expert. A patent often relates to how something works. A trademark may relate to names or brands. Copyright may relate to creative expression. Trade secrets may relate to information kept confidential. SmartProBonoIP does not tell you which applies to your idea.",
+      example:
+        "Example: a reusable filter bottle might involve how it works (patent conversation), a product name (trademark conversation), and marketing photos (copyright conversation).",
+      keyPoints: [
+        "Different IP topics may apply to different parts of one idea.",
+        "You do not need to decide which applies before talking to an expert.",
+      ],
+      ctaLabel: "Start packet with idea basics →",
+      ctaHref: "/disclaimer",
+    },
+    {
+      id: "public-disclosure",
+      title: "Public disclosure and sharing history",
+      body: "If you shared your idea publicly — online, at a pitch, in a video, or at an event — an expert may want to know when and where. SmartProBonoIP helps you note what you shared; it does not decide legal consequences.",
+      example:
+        "Example: posting a demo video six months ago is worth writing down so you can discuss timing with a professional.",
+      ctaLabel: "Continue to sharing questions in intake →",
+      ctaHref: "/disclaimer",
+    },
+    {
+      id: "inventorship-ownership",
+      title: "Inventorship vs ownership",
+      body: "Inventorship often refers to who contributed to the idea. Ownership often refers to who has rights to use or commercialize it — which may involve employers, schools, contracts, or collaborators. These are separate topics an expert may review with you.",
+      example:
+        "Example: you invented the concept, but a university lab tested it under a grant — both inventorship and ownership may need discussion.",
+      keyPoints: [
+        "Note who helped create, code, test, fund, or document the idea.",
+        "Note whether written agreements exist — even if you are not sure.",
+      ],
+      ctaLabel: "Open ownership section in intake →",
+      ctaHref: "/disclaimer",
+    },
+    {
+      id: "similar-reference",
+      title: "Similar-reference research (preparation only)",
+      body: "Experts often explore what already exists in the field. You do not need to prove anything yourself. Saving search notes and gap observations helps you show up prepared — not to reach legal conclusions.",
+      example:
+        "Example: you find a similar portable filter and write what looks different — that becomes a conversation starter.",
+      ctaLabel: "See sample research workspace →",
+      ctaHref: "/sample#similar-reference-search-prep",
+    },
+    {
+      id: "costs-timelines",
+      title: "Costs, timelines, and what to expect",
+      body: "Expert conversations, searches, and filings can take time and may involve fees. SmartProBonoIP does not quote costs or predict outcomes. Use your packet to organize questions about timeline, budget, and next steps.",
+      example:
+        "Example: ask a professional what documents they need first, what a search might involve, and what pro bono options may exist in your area.",
+      keyPoints: [
+        "Pro bono and clinic options may exist — availability varies.",
+        "Maintenance fees and international filing are future topics.",
+      ],
+    },
+    {
+      id: "prototype",
+      title: "Prototype and materials guidance",
+      body: "Sketches, photos, prototypes, and test notes help experts understand your idea. You do not need a perfect prototype to start preparing. Note what you have and what you are still building.",
+      example:
+        "Example: a 3D-printed prototype photo plus a one-page test log is useful preparation even if the product is not finished.",
+      ctaLabel: "Start packet — materials step →",
+      ctaHref: "/disclaimer",
+    },
+    {
+      id: "mistakes",
+      title: "Common mistakes before expert review",
+      body: "Waiting until everything is perfect, skipping ownership questions, or sharing publicly without notes are common. Preparation helps you avoid starting from scratch at your first conversation.",
+      example:
+        "Example: spending weeks on a pitch deck but not writing down when you first built a prototype.",
+    },
+    {
+      id: "when-professional",
+      title: "When to talk to a professional",
+      body: "You may want to talk to a patent agent, attorney, clinic, PTRC librarian, or mentor when you need expert review — not because this tool says you must. SmartProBonoIP organizes your story; humans provide legal judgment.",
+      example:
+        "Example: after organizing your packet, schedule a review to discuss similar references, ownership, and next steps.",
+      ctaLabel: "Build your packet first →",
+      ctaHref: "/disclaimer",
+    },
+    {
+      id: "tool-limits",
+      title: "What SmartProBonoIP can and cannot do",
+      body: "SmartProBonoIP organizes your idea into a readiness packet, suggests prep topics, and helps with similar-reference worksheets. It does not provide legal advice, determine protectability, or replace experts.",
+      example:
+        "Example: the tool flags that public sharing may be worth discussing — it does not tell you what to file.",
+      ctaLabel: "Visit Trust Center →",
+      ctaHref: "/trust",
+    },
+  ],
+  futureNote:
+    "Commercialization topics (licensing, manufacturing, investors, maintenance fees, international filing, technology transfer) are documented as future education modules — not part of the current readiness workflow.",
+} as const;
+
+export const TRUST_COPY = {
+  title: "Trust Center",
+  subtitle: "How SmartProBonoIP works — and what it does not do",
+  lead: "SmartProBonoIP helps inventors organize ideas before expert review. This page explains boundaries, data handling, and pilot practices.",
+  doesDo: [
+    "Organize invention details into a structured IP Readiness Packet",
+    "Suggest preparation topics and expert questions — not legal answers",
+    "Provide similar-reference search prep and gap-map worksheets",
+    "Let you download PDF and structured exports when you choose",
+    "Support pilot partners with aggregated, privacy-conscious metrics",
+  ],
+  doesNotDo: [
+    "Provide legal advice or create an attorney-client relationship",
+    "Determine patentability, novelty, clearance, infringement, or filing strategy",
+    "Replace patent agents, attorneys, clinics, mentors, or PTRC librarians",
+    "Automatically send your packet to third parties without your action",
+    "Guarantee access to any specific program, attorney, or outcome",
+  ],
+  aiScope: {
+    title: "AI scope and limitations",
+    points: [
+      "Some packets use AI-assisted drafting; all outputs are editable drafts",
+      "AI does not review your legal rights or make protectability conclusions",
+      "Suggested CPC areas and search terms are conversation starters only",
+      "Human expert review is still expected before any filing or legal decision",
+    ],
+  },
+  privacy: {
+    title: "Privacy and data handling",
+    points: [
+      "Invention descriptions stay in your project until you export or share them",
+      "Recovery links use private tokens — treat them like passwords",
+      "Partner dashboards and CSV exports exclude raw invention text where configured",
+      "Public marketing analytics do not receive emails, recovery tokens, or packet content",
+      "Demo records are labeled and excluded from live pilot reporting",
+    ],
+  },
+  exportPrivacy: {
+    title: "PDF and export privacy",
+    points: [
+      "PDF and attorney exports download to your device — no automatic delivery to firms",
+      "Export metadata records who you said the export was for (your entry only)",
+      "You choose when to email or share files with a professional",
+    ],
+  },
+  pilotAnalytics: {
+    title: "Pilot analytics and partner tracking",
+    points: [
+      "Tracked pilot links help partners measure completions and clarity lift",
+      "Partner filters use source/campaign tags — not invention content",
+      "Feedback forms collect support needs without replacing professional review",
+    ],
+  },
+  contact: {
+    title: "Contact and support",
+    points: [
+      "Questions about the tool: use the Contact page or pilot interest form",
+      "Privacy requests: see Privacy summary and email privacy@smartprobonoip.org",
+      "Partnership pilots: request a conversation from the Pilot kit page",
+    ],
+  },
+} as const;
+
+export const AFTER_MEETING_COPY = {
+  title: "After your expert meeting",
+  subtitle: "Capture what you learned and update your packet",
+  lead: "Use this page after a conversation with a patent professional, clinic, mentor, or partner. Preparation only — not legal advice.",
+  meetingNotesTemplate: {
+    title: "Meeting notes template",
+    fields: [
+      "Who did you meet with and on what date?",
+      "What did they say they needed to review next?",
+      "What documents did they ask you to gather?",
+      "What questions came up that you could not answer yet?",
+      "What follow-up timeline did they suggest, if any?",
+      "What did you decide to do next (update packet, gather materials, schedule follow-up)?",
+    ],
+  },
+  gatherNext: [
+    "Updated sketches, photos, or prototype notes",
+    "Signed or draft agreements with contributors",
+    "Similar references they asked you to compare",
+    "Timeline corrections or new milestone dates",
+    "Written answers to questions raised in the meeting",
+  ],
+  followUpQuestions: [
+    "What information do you still need from me?",
+    "Should I gather additional similar references before our next conversation?",
+    "Are there materials missing from my timeline or ownership notes?",
+    "What would make the next review more useful for both of us?",
+  ],
+  updatePacket: [
+    "Edit your IP Readiness Packet with new timeline dates",
+    "Add saved references and gap-map notes from your research",
+    "Refresh expert questions based on what you learned",
+    "Re-download PDF or attorney export after updates",
+  ],
+  avoidWithoutAdvice: [
+    "Publicly disclosing new technical details before discussing timing with your expert",
+    "Assuming a casual conversation created legal representation",
+    "Sharing recovery links or private packet tokens in public channels",
+    "Treating readiness scores or CPC suggestions as filing instructions",
+  ],
+  bringToExpert: {
+    title: "What to bring to your expert conversation",
+    items: [
+      "IP Readiness Packet PDF",
+      "Sketches, photos, or prototype notes",
+      "Development timeline",
+      "Contributor and ownership notes",
+      "Similar reference notes and gap map",
+      "Questions you prepared in advance",
+    ],
+  },
+  expertNextSteps: [
+    {
+      title: "Expert requested more documentation",
+      body: "Update your packet timeline, materials checklist, and ownership notes. Re-export PDF when ready.",
+    },
+    {
+      title: "Need prototype or drawings",
+      body: "Gather photos, sketches, or test notes and add them to your materials section before follow-up.",
+    },
+    {
+      title: "Need professional patentability search",
+      body: "Save similar-reference notes from your workspace to discuss with an expert — not a DIY legal conclusion.",
+    },
+    {
+      title: "Need trademark discussion",
+      body: "Note brand names, logos, and public use history in your packet before the next conversation.",
+    },
+    {
+      title: "Need provisional or filing discussion",
+      body: "Write down what the expert said they need to review first. SmartProBonoIP does not recommend filing strategies.",
+    },
+    {
+      title: "Need ownership or inventorship clarification",
+      body: "Update contributor and agreement notes in your packet. Consider professional review of contracts.",
+    },
+    {
+      title: "Need funding or commercialization support",
+      body: "See future commercialization modules in Learn. Focus on organized packet handoff first.",
+    },
+  ],
+} as const;
+
+export const INTAKE_WHY_COPY: Record<
+  number,
+  { why: string; example: string; reminder?: string }
+> = {
+  0: {
+    why: "Experts start with a plain-language summary. Writing this now saves you from reconstructing the story later.",
+    example:
+      "Example: “A bottle that filters water as you drink, for hikers who want lighter gear.”",
+    reminder: "Preparation only — you do not need perfect legal wording.",
+  },
+  1: {
+    why: "How it works and what makes it different are common first questions in expert review.",
+    example:
+      "Example: “A replaceable filter cartridge in the straw; lighter than carrying separate filters.”",
+  },
+  2: {
+    why: "The shape of your idea (product, software, brand, etc.) helps suggest what topics your packet may touch.",
+    example:
+      "Example: checking “physical product” and “brand name” flags topics for discussion — not legal conclusions.",
+  },
+  3: {
+    why: "Materials, sharing history, and contributors affect what an expert may ask about next.",
+    example:
+      "Example: noting a demo video on social media and a co-founder who helped code the app.",
+    reminder: "Public sharing notes are for your records — not legal determinations.",
+  },
+  4: {
+    why: "Your goals and location help suggest resource categories you may want to explore.",
+    example:
+      "Example: “Pro bono clinic near Providence” and “understand patent basics before hiring counsel.”",
+  },
+  5: {
+    why: "Review catches gaps before your packet is generated — easier to fix now than after export.",
+    example:
+      "Example: noticing an empty “how it works” field and filling it in before generating.",
+    reminder: "Preparation only — not legal advice.",
+  },
+  6: {
+    why: "Your clarity rating helps measure whether the packet helped organize your thinking — not legal merit.",
+    example:
+      "Example: rating yourself 2 before and expecting to rate higher after reading the packet.",
+  },
+};
+
+export const INTAKE_FIELD_WHY = {
+  whatCreated: {
+    why: "Experts need a plain-language description before discussing details.",
+    example: "Example: “A portable water filter built into a reusable bottle.”",
+  },
+  problemSolved: {
+    why: "The problem context helps experts understand why your approach may matter.",
+    example: "Example: “Hikers want clean water without carrying separate filters.”",
+  },
+  whoFor: {
+    why: "Audience and use case shape which topics an expert may discuss with you.",
+    example: "Example: “Outdoor enthusiasts and emergency-preparedness customers.”",
+  },
+  howItWorks: {
+    why: "Mechanism and workflow are core topics in many expert conversations.",
+    example: "Example: “Water passes through a replaceable filter as you sip.”",
+  },
+  mainParts: {
+    why: "Components help experts map your description to possible similar references.",
+    example: "Example: “Filter cartridge, bottle body, cap with intake valve.”",
+  },
+  whatDifferent: {
+    why: "Differences you observe are conversation starters — not legal conclusions.",
+    example: "Example: “Combines bottle and filter in one unit for lighter carry weight.”",
+  },
+  itemType: {
+    why: "Product type helps suggest which IP topics may be worth discussing.",
+    example: "Example: physical product vs software vs brand-heavy idea.",
+  },
+  hasPrototype: {
+    why: "Prototype status affects what materials an expert may ask you to bring.",
+    example: "Example: photos of a working prototype vs concept sketches only.",
+  },
+  hasBrandIdentity: {
+    why: "Names and brands may involve separate topics from how something works.",
+    example: "Example: product name, logo, or slogan used in marketing.",
+  },
+  assets: {
+    why: "Materials on hand speed up expert review and reduce back-and-forth.",
+    example: "Example: sketches, photos, code repo, or test data.",
+  },
+  sharedChannels: {
+    why: "Public sharing history may be relevant to timing — note what you shared, not legal outcomes.",
+    example: "Example: demo video posted online or pitch at a public event.",
+  },
+  goals: {
+    why: "Your goals help suggest resource categories — not specific legal actions.",
+    example: "Example: pro bono clinic, patent agent consultation, or mentor review.",
+  },
+  location: {
+    why: "Location may help partners suggest regional programs you can ask about.",
+    example: "Example: city/state for clinic or pro bono program conversations.",
+  },
+} as const;
+
+export const EXPORT_HANDOFF_COPY = {
+  title: "Export and handoff",
+  lead: "Download or share your packet when you are ready. Nothing is sent automatically. Preparation only — not legal advice.",
+  bringTitle: "What to bring to your expert conversation",
+  bringItems: [
+    "IP Readiness Packet PDF",
+    "Prototype, drawings, or photos",
+    "Development timeline",
+    "Contributor and ownership notes",
+    "Similar references and gap-map notes",
+    "Questions prepared in your packet",
+    "Meeting notes from prior conversations",
+  ],
+  pdfLabel: "Download IP Readiness Packet",
+  jsonLabel: "Export professional JSON",
+  actions: [
+    { label: "Download IP Readiness Packet", description: "Printable PDF handoff for your meeting" },
+    { label: "Export professional JSON", description: "Structured JSON, CSV, and PDF for professionals" },
+    { label: "View export schema", description: "Field reference for professionals", href: "/for-professionals" },
+  ],
+} as const;
+
+export const CONNECT_V1_COPY = {
+  title: "Connect — possible next resources",
+  subtitle: "Starting points based on common inventor goals — not referrals or guarantees.",
+  safety:
+    "You may want to explore these resource categories with a partner or professional. SmartProBonoIP does not recommend a specific legal action or guarantee availability.",
+  locationNote:
+    "Location-aware routing is a future enhancement. v1.0 provides category guidance only.",
+  categories: [
+    {
+      title: "Patent attorney",
+      whenUseful: "When you may need formal legal review of patent-related questions.",
+      note: "Preparation only — this is not a referral.",
+    },
+    {
+      title: "Patent agent",
+      whenUseful: "When you may need patent drafting or prosecution support from a registered agent.",
+      note: "Consider asking about scope and fees in your first conversation.",
+    },
+    {
+      title: "USPTO Patent Pro Bono",
+      whenUseful: "When income eligibility may fit and you need pro bono patent assistance.",
+      note: "Availability and eligibility vary by region.",
+    },
+    {
+      title: "PTRC (Patent and Trademark Resource Center)",
+      whenUseful: "When you want search help and general IP education at a library resource center.",
+      note: "PTRCs provide education — not legal advice.",
+    },
+    {
+      title: "University IP clinic",
+      whenUseful: "When you are connected to a law school or university clinic program.",
+      note: "Clinic capacity and scope vary.",
+    },
+    {
+      title: "Innovation hub or accelerator",
+      whenUseful: "When you need mentor routing, community programs, or founder support.",
+      note: "May help with preparation before expert review.",
+    },
+    {
+      title: "SCORE mentor",
+      whenUseful: "When you need business mentoring alongside IP preparation.",
+      note: "Business guidance — not legal advice.",
+    },
+    {
+      title: "SBDC",
+      whenUseful: "When you need local small-business planning and economic support resources.",
+      note: "May complement IP preparation.",
+    },
+    {
+      title: "Economic development organization",
+      whenUseful: "When you need regional innovation or workforce development connections.",
+      note: "Programs vary by location.",
+    },
+  ],
+} as const;
+
+export const COMMERCIALIZATION_COPY = {
+  title: "Commercialization topics (future modules)",
+  lead: "These topics are intentionally deferred from the v1.0 readiness workflow. They may become future Learn modules after expert handoff.",
+  topics: [
+    { title: "Licensing", body: "Exploring how rights might be shared with partners — requires professional review." },
+    { title: "Manufacturing", body: "Scaling production and supply chain — business planning, not legal advice here." },
+    { title: "Investors", body: "Fundraising conversations often follow IP and ownership clarity." },
+    { title: "Maintenance fees", body: "Ongoing costs after filing — discuss with a professional." },
+    { title: "International filing", body: "Country-by-country strategy — expert review required." },
+    { title: "Technology transfer", body: "University or lab commercialization paths — institution-specific." },
+  ],
+  statusNote:
+    "Complete for v1.0: future expansion documented. Not part of current packet builder workflow.",
+} as const;
+
+export const INSTITUTIONAL_WORKFLOW_COPY = {
+  title: "Institutional pilot workflow",
+  lead: "How clinics, universities, innovation hubs, and professionals use SmartProBonoIP in v1.0 pilots.",
+  steps: [
+    {
+      title: "Share tracked pilot link",
+      body: "Partners distribute QR or URL links so completions can be measured without exposing invention text in analytics.",
+    },
+    {
+      title: "Inventor builds readiness packet",
+      body: "Guided intake, timeline, materials, similar-reference prep, and expert questions — preparation only.",
+    },
+    {
+      title: "Receive PDF or JSON handoff",
+      body: "Review organized summaries before the first live conversation. Request missing info using packet gaps.",
+    },
+    {
+      title: "Track pilot outcomes",
+      body: "Dashboard shows completions, clarity lift, PDF downloads, recovery usage, feedback, and partner filters (demo mode labeled).",
+    },
+  ],
+  audiences: [
+    "Patent agents and IP attorneys",
+    "Law clinics and pro bono programs",
+    "Universities and innovation hubs",
+    "Economic development partners",
+  ],
+} as const;
+
+export const FOR_CLINICS_COPY = {
+  title: "For IP Clinics & Pro Bono Programs",
+  subtitle: "Cleaner referrals before clinic review",
+  lead: "SmartProBonoIP helps inventors arrive with organized summaries, timelines, ownership notes, similar-reference prep, and questions — reducing repetitive intake work for clinic staff.",
+  problems: [
+    "Incomplete intake stories that require multiple back-and-forth emails",
+    "Missing timeline, sharing, or ownership context",
+    "Unstructured similar-reference notes",
+  ],
+  receives: [
+    "Plain-language idea summary and readiness snapshot",
+    "Development timeline and materials checklist",
+    "Ownership/contributor prep notes",
+    "Similar-reference worksheets and expert questions",
+    "PDF or JSON export for clinic review",
+  ],
+  pilotSteps: [
+    "Distribute tracked clinic link",
+    "Review completed packets in dashboard or via export",
+    "Request missing info using packet gap sections",
+    "Measure clarity lift and completion metrics",
+  ],
+  doesNotDo:
+    "Not legal advice. Not eligibility determinations. Does not replace clinic judgment or create attorney-client relationships.",
+} as const;
+
+export const FOR_UNIVERSITIES_COPY = {
+  title: "For Universities & Innovation Hubs",
+  subtitle: "Prepare founders before PTRC, clinic, or mentor referrals",
+  lead: "Help student inventors and founders organize ideas before they meet PTRC librarians, clinics, mentors, or external IP professionals.",
+  problems: [
+    "Founders arrive with unstructured pitch decks but no timeline or materials list",
+    "Ownership questions involving labs, grants, or co-founders are unclear",
+    "Similar-reference prep is skipped before first expert conversation",
+  ],
+  receives: [
+    "Structured IP Readiness Packet with readiness score",
+    "Research workspace with outbound search tools (preparation only)",
+    "Resource routing categories for next steps",
+    "Pilot metrics for partner reporting",
+  ],
+  pilotSteps: [
+    "Embed pilot link in incubator or course materials",
+    "Use sample packet for workshops",
+    "Review dashboard metrics for program impact",
+    "Hand off PDF/JSON to mentors or external counsel when ready",
+  ],
+  doesNotDo:
+    "Not a replacement for technology transfer office review, legal counsel, or formal filing decisions.",
+} as const;
+
+export const INTAKE_STEP_LEARN_LINKS: Record<
+  number,
+  { label: string; href: string }
+> = {
+  0: { label: "Learn: IP basics before you start", href: "/learn" },
+  1: { label: "Learn: how similar-reference prep helps", href: "/learn" },
+  2: { label: "Learn: patents vs trademarks vs copyright", href: "/learn" },
+  3: { label: "Learn: public sharing & ownership", href: "/learn" },
+  4: { label: "Learn: when to talk to a professional", href: "/learn" },
+  5: { label: "Review your answers before generating", href: "/learn" },
+  6: { label: "Trust Center: what this tool does not do", href: "/trust" },
+};

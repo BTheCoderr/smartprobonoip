@@ -150,7 +150,7 @@ export default function LeadsClient() {
             </p>
           </div>
           <Link
-            href="/smartprobonoip/dashboard"
+            href="/dashboard"
             className="rounded-lg border border-mist-200 px-4 py-2 text-sm font-medium text-navy-700 hover:bg-mist-50"
           >
             Partner dashboard →

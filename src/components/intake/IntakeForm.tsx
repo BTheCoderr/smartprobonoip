@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PaperCard, StampLabel } from "@/components/ui/design";
 import { ProgressIndicator } from "@/components/ui/ProgressIndicator";
@@ -23,7 +24,7 @@ import { getStoredTracking } from "@/lib/partnerTracking";
 import { pilotSessionHeaders } from "@/lib/pilotSession";
 import { trackEvent } from "@/lib/analytics/client";
 import { activateDemoFromQuery, DEMO_INVENTION, isDemoMode } from "@/lib/demo";
-import { INTAKE_COPY } from "@/lib/copy";
+import { INTAKE_COPY, INTAKE_STEP_LEARN_LINKS, INTAKE_WHY_COPY } from "@/lib/copy";
 import {
   REVIEW_FIELDS,
   validateForGeneration,
@@ -51,6 +52,7 @@ import {
   TextField,
   YesNoField,
 } from "./fields";
+import { FieldWhyHelper } from "./FieldWhyHelper";
 
 const STEP_LABELS = [
   "Idea basics",
@@ -68,6 +70,7 @@ const STEP_HINTS: Record<number, string | undefined> = {
   2: "Help us understand the shape of your idea and what it includes.",
   3: "Materials, sharing history, and people who helped prepare your packet.",
   4: "Tell us what kind of support you are looking for.",
+  5: "Review your answers before we build your packet.",
   6: "One last check before we build your packet.",
 };
 
@@ -183,6 +186,8 @@ export function IntakeForm() {
 
   const last = STEP_LABELS.length - 1;
   const stepHint = STEP_HINTS[step];
+  const whyCopy = INTAKE_WHY_COPY[step];
+  const learnLink = INTAKE_STEP_LEARN_LINKS[step];
   const intakeStarted = useRef(false);
   const ownershipStepTracked = useRef(false);
 
@@ -326,7 +331,7 @@ export function IntakeForm() {
         tracking: demoActive ? null : getStoredTracking(),
       });
       trackEvent("intake_completed", {
-        route: "/smartprobonoip/start",
+        route: "/start",
         projectId: record.id,
         metadata: {
           totalSteps: STEP_LABELS.length,
@@ -339,7 +344,7 @@ export function IntakeForm() {
           metadata: { demo: demoActive },
         });
       }
-      router.push(`/smartprobonoip/profile/${record.id}`);
+      router.push(`/profile/${record.id}`);
     } catch (err) {
       setError(
         err instanceof Error
@@ -375,11 +380,33 @@ export function IntakeForm() {
           <span className="document-tab">{INTAKE_COPY.builderTitle}</span>
         </div>
         {step !== 5 ? (
-          stepHint ? (
-            <p className="mb-6 rounded-xl bg-mist-50 px-4 py-3 text-sm leading-relaxed text-navy-600">
-              {stepHint}
-            </p>
-          ) : null
+          <>
+            {stepHint ? (
+              <p className="mb-4 rounded-xl bg-mist-50 px-4 py-3 text-sm leading-relaxed text-navy-600">
+                {stepHint}
+              </p>
+            ) : null}
+            {whyCopy ? (
+              <div className="mb-6 rounded-xl border border-navy-100 bg-sky-50/60 px-4 py-4 text-sm leading-relaxed text-navy-700">
+                <p className="font-semibold text-navy-900">Why this matters</p>
+                <p className="mt-2">{whyCopy.why}</p>
+                <p className="mt-3 text-xs text-navy-600">{whyCopy.example}</p>
+                {whyCopy.reminder ? (
+                  <p className="mt-3 text-xs font-medium text-navy-500">
+                    {whyCopy.reminder}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            {learnLink ? (
+              <Link
+                href={learnLink.href}
+                className="mb-4 inline-flex text-sm font-medium text-navy-600 hover:text-navy-800 hover:underline"
+              >
+                {learnLink.label} →
+              </Link>
+            ) : null}
+          </>
         ) : (
           <div className="mb-8 rounded-2xl border border-dashed border-teal-200 bg-gradient-to-br from-teal-50/60 to-white px-5 py-5 shadow-[var(--shadow-paper)]">
             <StampLabel tone="teal">PACKET PREVIEW</StampLabel>
@@ -394,6 +421,7 @@ export function IntakeForm() {
 
         {step === 0 && (
           <div className="space-y-8">
+            <FieldWhyHelper fieldKey="whatCreated" />
             <TextField
               label="What did you create?"
               hint="Describe it in plain language — no jargon needed."
@@ -401,11 +429,13 @@ export function IntakeForm() {
               onChange={(v) => update("whatCreated", v)}
               placeholder="e.g. A reusable water bottle that filters as you drink."
             />
+            <FieldWhyHelper fieldKey="problemSolved" />
             <TextField
               label="What problem does it solve?"
               value={answers.problemSolved}
               onChange={(v) => update("problemSolved", v)}
             />
+            <FieldWhyHelper fieldKey="whoFor" />
             <TextField
               label="Who is it for?"
               value={answers.whoFor}
@@ -416,16 +446,19 @@ export function IntakeForm() {
 
         {step === 1 && (
           <div className="space-y-8">
+            <FieldWhyHelper fieldKey="howItWorks" />
             <TextField
               label="How does it work?"
               value={answers.howItWorks}
               onChange={(v) => update("howItWorks", v)}
             />
+            <FieldWhyHelper fieldKey="mainParts" />
             <TextField
               label="What are the main parts or components?"
               value={answers.mainParts}
               onChange={(v) => update("mainParts", v)}
             />
+            <FieldWhyHelper fieldKey="whatDifferent" />
             <TextField
               label="What makes it different from what already exists?"
               value={answers.whatDifferent}
@@ -436,17 +469,20 @@ export function IntakeForm() {
 
         {step === 2 && (
           <div className="space-y-8">
+            <FieldWhyHelper fieldKey="itemType" />
             <SelectField
               label="What kind of thing is it?"
               value={answers.itemType}
               options={ITEM_TYPE_OPTIONS}
               onChange={(v) => update("itemType", v)}
             />
+            <FieldWhyHelper fieldKey="hasPrototype" />
             <YesNoField
               label="Do you have a prototype?"
               value={answers.hasPrototype}
               onChange={(v) => update("hasPrototype", v)}
             />
+            <FieldWhyHelper fieldKey="hasBrandIdentity" />
             <YesNoField
               label="Do you have a name, logo, slogan, or brand identity?"
               value={answers.hasBrandIdentity}
@@ -466,6 +502,7 @@ export function IntakeForm() {
 
         {step === 3 && (
           <div className="space-y-8">
+            <FieldWhyHelper fieldKey="assets" />
             <CheckboxGroup<AssetType>
               label="Which materials do you already have?"
               hint="Select all that apply."
@@ -473,6 +510,7 @@ export function IntakeForm() {
               selected={answers.assets}
               onToggle={(v) => update("assets", toggle(answers.assets, v))}
             />
+            <FieldWhyHelper fieldKey="sharedChannels" />
             <CheckboxGroup<SharingChannel>
               label="Have you shared it anywhere?"
               hint="This helps us flag possible public disclosure."
@@ -549,6 +587,7 @@ export function IntakeForm() {
 
         {step === 4 && (
           <div className="space-y-8">
+            <FieldWhyHelper fieldKey="goals" />
             <CheckboxGroup<Goal>
               label="What are you looking for?"
               hint="Select all that apply."
@@ -556,6 +595,7 @@ export function IntakeForm() {
               selected={answers.goals}
               onToggle={(v) => update("goals", toggle(answers.goals, v))}
             />
+            <FieldWhyHelper fieldKey="location" />
             <TextField
               label="What is your location?"
               hint="City / state / country — used to suggest local resources."

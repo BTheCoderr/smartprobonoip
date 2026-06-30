@@ -1,5 +1,6 @@
 import { Card, CardHeader } from "@/components/ui/Card";
 import Link from "next/link";
+import { ROUTES } from "@/lib/routes";
 import { Badge } from "@/components/ui/Badge";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import {
@@ -34,6 +35,9 @@ import {
 import { ResearchPrepWorkspace } from "@/components/research/ResearchPrepWorkspace";
 import { CpcSuggestionPanel } from "@/components/research/ExternalSearchTools";
 import { ResearchErrorBoundary } from "@/components/research/ResearchErrorBoundary";
+import { PacketReviewPanel } from "@/components/profile/PacketReviewPanel";
+import { ConnectResourcesSection } from "@/components/connect/ConnectResourcesSection";
+import { AFTER_MEETING_COPY } from "@/lib/copy";
 import type { ProjectRecord } from "@/lib/types";
 import type { SavedReference } from "@/lib/research/types";
 
@@ -140,6 +144,8 @@ export function ProfileView({
         </dl>
         </div>
       </div>
+
+      <PacketReviewPanel record={record} savedReferenceCount={savedReferenceCount} />
 
       <div className="paper-card overflow-hidden p-0">
         <div className="border-b border-dashed border-mist-200 px-6 py-4 sm:px-8">
@@ -507,7 +513,7 @@ export function ProfileView({
             {PACKET_COPY.similarReferenceSearchPrepIntro}
           </p>
           <Link
-            href={`/smartprobonoip/profile/${record.id}/research`}
+            href={ROUTES.profileResearch(record.id)}
             className="mt-3 inline-block text-sm font-medium text-teal-700 hover:text-teal-900"
           >
             Open full-screen workspace →
@@ -630,6 +636,29 @@ export function ProfileView({
           {nextBestAction}
         </p>
       </Card>
+
+      <Card variant="soft">
+        <CardHeader
+          title={AFTER_MEETING_COPY.title}
+          subtitle="Educational follow-up after expert review — not legal advice."
+        />
+        <ul className="mt-4 space-y-3">
+          {AFTER_MEETING_COPY.expertNextSteps.map((step) => (
+            <li
+              key={step.title}
+              className="rounded-xl border border-mist-200 bg-white px-4 py-3 text-sm"
+            >
+              <p className="font-semibold text-navy-900">{step.title}</p>
+              <p className="mt-1 leading-relaxed text-navy-600">{step.body}</p>
+            </li>
+          ))}
+        </ul>
+        <Link href={ROUTES.afterMeeting} className="btn-ghost mt-4 px-0 text-sm">
+          Full after-meeting guide →
+        </Link>
+      </Card>
+
+      <ConnectResourcesSection compact />
 
       <DisclaimerNotice />
     </div>

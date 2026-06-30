@@ -355,7 +355,7 @@ export default function DashboardClient() {
           Show demo data (for partner presentations)
         </label>
         <Link
-          href="/smartprobonoip/disclaimer?demo=1"
+          href="/disclaimer?demo=1"
           className="inline-flex items-center justify-center rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-medium text-teal-800 transition hover:bg-teal-100"
         >
           Try demo intake →
@@ -594,7 +594,7 @@ export default function DashboardClient() {
             title="No pilot packets yet"
             body="When inventors complete intake, you will see readiness signals, clarity trends, and referral patterns here."
             action={{
-              href: "/smartprobonoip/disclaimer?demo=1",
+              href: "/disclaimer?demo=1",
               label: "Try demo intake",
             }}
           />

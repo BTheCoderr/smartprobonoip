@@ -10,7 +10,8 @@ import { AttorneyExportModal } from "@/components/profile/AttorneyExportModal";
 import { DossierPageHeader, PaperCard, StampLabel } from "@/components/ui/design";
 import { downloadPacketPdf } from "@/lib/pdf";
 import { getIdeaLabel } from "@/lib/packet";
-import { PILOT_KIT_COPY } from "@/lib/copy";
+import { EXPORT_HANDOFF_COPY, PILOT_KIT_COPY } from "@/lib/copy";
+import { ROUTES } from "@/lib/routes";
 import { trackEvent } from "@/lib/analytics/client";
 import { SAMPLE_RECORD } from "@/lib/samplePacket";
 
@@ -26,7 +27,7 @@ export default function SamplePacketPage() {
           <p className="text-sm leading-relaxed text-navy-700">
             {PILOT_KIT_COPY.sampleBanner}
           </p>
-          <Link href="/smartprobonoip/pilot" className="btn-ghost mt-2 px-0">
+          <Link href={ROUTES.pilot} className="btn-ghost mt-2 px-0">
             View pilot demo kit →
           </Link>
         </div>
@@ -57,7 +58,7 @@ export default function SamplePacketPage() {
                 onClick={() => setAttorneyExportOpen(true)}
                 className="btn-secondary w-full sm:w-auto"
               >
-                Export for Attorney
+                {EXPORT_HANDOFF_COPY.jsonLabel}
               </button>
               <button
                 type="button"
@@ -69,10 +70,10 @@ export default function SamplePacketPage() {
                 }}
                 className="btn-primary w-full sm:w-auto"
               >
-                Download sample PDF
+                {EXPORT_HANDOFF_COPY.pdfLabel}
               </button>
               <Link
-                href="/smartprobonoip/disclaimer?demo=1"
+                href={ROUTES.disclaimerDemo}
                 className="btn-secondary w-full sm:w-auto"
               >
                 Try demo intake

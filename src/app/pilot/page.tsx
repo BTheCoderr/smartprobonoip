@@ -2,7 +2,8 @@ import Link from "next/link";
 import { PageEvent } from "@/components/analytics/PageEvent";
 import { CopyTextButton } from "@/components/pilot/CopyTextButton";
 import { BRAND } from "@/lib/brand";
-import { formatPilotHandoutText, PILOT_KIT_COPY } from "@/lib/copy";
+import { formatPilotHandoutText, PILOT_KIT_COPY, INSTITUTIONAL_WORKFLOW_COPY } from "@/lib/copy";
+import { ROUTES } from "@/lib/routes";
 import { appPath } from "@/lib/appUrl";
 import { appendTrackingQuery } from "@/lib/partnerTracking";
 import {
@@ -49,19 +50,28 @@ export default function PilotKitPage() {
         lead={PILOT_KIT_COPY.lead}
         aside={
           <div className="flex flex-wrap gap-3 lg:flex-col">
-            <Link href="/smartprobonoip/sample" className="btn-primary">
+            <Link href={ROUTES.sample} className="btn-primary">
               View sample packet
             </Link>
             <PartnerInterestLink
-              href="/smartprobonoip/disclaimer?partner=smartprobonoip-ri-pilot&source=qr&campaign=pilot-2026"
+              href={`${ROUTES.disclaimer}?partner=smartprobonoip-ri-pilot&source=qr&campaign=pilot-2026`}
               ctaName="Start RI pilot intake"
               pageSection="pilot_hero"
               className="btn-secondary"
             >
               Start RI pilot intake
             </PartnerInterestLink>
-            <Link href="/smartprobonoip/dashboard?demo=1" className="btn-ghost px-0">
+            <Link href={ROUTES.dashboardDemo} className="btn-ghost px-0">
               Partner Impact Desk →
+            </Link>
+            <Link href={ROUTES.trust} className="btn-ghost px-0">
+              Trust Center →
+            </Link>
+            <Link href={ROUTES.learn} className="btn-ghost px-0">
+              Learn IP basics →
+            </Link>
+            <Link href={ROUTES.forProfessionals} className="btn-ghost px-0">
+              For professionals →
             </Link>
           </div>
         }
@@ -79,6 +89,42 @@ export default function PilotKitPage() {
               View sample workspace
             </Link>
             <Link href="/for-professionals" className="btn-secondary">
+              Export schema for professionals
+            </Link>
+          </div>
+        </PaperShell>
+      </Section>
+
+      <Section>
+        <PaperShell>
+          <SectionHeader
+            kicker={INSTITUTIONAL_WORKFLOW_COPY.title}
+            title="Partner workflow in v1.0 pilots"
+            lead={INSTITUTIONAL_WORKFLOW_COPY.lead}
+          />
+          <ol className="mt-8 list-decimal space-y-3 pl-5 text-sm text-navy-700">
+            {INSTITUTIONAL_WORKFLOW_COPY.steps.map((step) => (
+              <li key={step.title}>
+                <span className="font-semibold text-navy-900">{step.title}.</span>{" "}
+                {step.body}
+              </li>
+            ))}
+          </ol>
+        </PaperShell>
+      </Section>
+
+      <Section soft>
+        <PaperShell>
+          <SectionHeader
+            kicker="Similar reference prep"
+            title="Patent & similar-reference search prep"
+            lead={PILOT_KIT_COPY.similarReferencePrepBlurb}
+          />
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href={ROUTES.sampleSimilarRef} className="btn-primary">
+              View sample workspace
+            </Link>
+            <Link href={ROUTES.forProfessionals} className="btn-secondary">
               Export schema for professionals
             </Link>
           </div>
@@ -294,7 +340,7 @@ export default function PilotKitPage() {
             title="Private packet access"
             lead={PILOT_KIT_COPY.recoveryNote}
           />
-          <Link href="/smartprobonoip/recover" className="btn-secondary mt-6">
+          <Link href={ROUTES.recover} className="btn-secondary mt-6">
             Recover a packet
           </Link>
         </PaperShell>

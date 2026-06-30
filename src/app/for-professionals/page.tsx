@@ -3,7 +3,8 @@ import { PageEvent } from "@/components/analytics/PageEvent";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
 import { buildAttorneyExportPacket } from "@/lib/attorneyExport";
-import { PROFESSIONALS_COPY } from "@/lib/copy";
+import { PROFESSIONALS_COPY, INSTITUTIONAL_WORKFLOW_COPY } from "@/lib/copy";
+import { ROUTES } from "@/lib/routes";
 import { SAMPLE_RECORD } from "@/lib/samplePacket";
 import {
   CalloutCard,
@@ -40,14 +41,23 @@ export default function ForProfessionalsPage() {
         lead={PROFESSIONALS_COPY.lead}
         aside={
           <div className="flex flex-wrap gap-3 lg:flex-col">
-            <Link href="/smartprobonoip/sample" className="btn-primary">
+            <Link href={ROUTES.sample} className="btn-primary">
               View sample packet
             </Link>
-            <Link href="/smartprobonoip/pilot" className="btn-secondary">
+            <Link href={ROUTES.pilot} className="btn-secondary">
               Explore pilot
             </Link>
+            <Link href={ROUTES.trust} className="btn-ghost px-0">
+              Trust Center →
+            </Link>
+            <Link href={ROUTES.forClinics} className="btn-ghost px-0">
+              For clinics →
+            </Link>
+            <Link href={ROUTES.forUniversities} className="btn-ghost px-0">
+              For universities →
+            </Link>
             <PartnerInterestLink
-              href="/contact"
+              href={ROUTES.contact}
               ctaName="Request conversation"
               pageSection="professionals_hero"
               className="btn-ghost px-0"
@@ -265,14 +275,20 @@ export default function ForProfessionalsPage() {
             lead={PROFESSIONALS_COPY.pilotTeaser}
           />
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/smartprobonoip/pilot" className="btn-primary">
+            <Link href={ROUTES.pilot} className="btn-primary">
               Explore pilot kit
             </Link>
-            <Link href="/smartprobonoip/sample" className="btn-secondary">
+            <Link href={ROUTES.sample} className="btn-secondary">
               View sample packet
             </Link>
+            <Link href={ROUTES.learn} className="btn-ghost">
+              Learn (for inventors)
+            </Link>
+            <Link href={ROUTES.trust} className="btn-ghost">
+              Trust Center
+            </Link>
             <PartnerInterestLink
-              href="/contact"
+              href={ROUTES.contact}
               ctaName="Request pilot conversation"
               pageSection="professionals_pilot"
               className="btn-ghost"
@@ -280,6 +296,24 @@ export default function ForProfessionalsPage() {
               Request pilot conversation
             </PartnerInterestLink>
           </div>
+        </PaperShell>
+      </Section>
+
+      <Section soft>
+        <PaperShell>
+          <SectionHeader
+            kicker={INSTITUTIONAL_WORKFLOW_COPY.title}
+            title="How institutional pilots work in v1.0"
+            lead={INSTITUTIONAL_WORKFLOW_COPY.lead}
+          />
+          <ol className="mt-8 list-decimal space-y-3 pl-5 text-sm text-navy-700">
+            {INSTITUTIONAL_WORKFLOW_COPY.steps.map((step) => (
+              <li key={step.title}>
+                <span className="font-semibold text-navy-900">{step.title}.</span>{" "}
+                {step.body}
+              </li>
+            ))}
+          </ol>
         </PaperShell>
       </Section>
 

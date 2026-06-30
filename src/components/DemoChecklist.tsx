@@ -8,27 +8,27 @@ const ITEMS = [
   {
     step: 1,
     label: "View sample packet (no intake)",
-    href: "/smartprobonoip/sample",
+    href: "/sample",
   },
   {
     step: 2,
     label: "Pilot demo kit & QR links",
-    href: "/smartprobonoip/pilot",
+    href: "/pilot",
   },
   {
     step: 3,
     label: "Demo intake (sample invention)",
-    href: "/smartprobonoip/disclaimer?demo=1",
+    href: "/disclaimer?demo=1",
   },
   {
     step: 4,
     label: "Download PDF from sample or demo packet",
-    href: "/smartprobonoip/sample",
+    href: "/sample",
   },
   {
     step: 5,
     label: "Partner Impact Desk",
-    href: "/smartprobonoip/dashboard?demo=1",
+    href: "/dashboard?demo=1",
   },
 ];
 

@@ -42,7 +42,7 @@ function RecoverForm() {
         throw new Error(data.error ?? "Recovery failed");
       }
       if (!data.record?.id) throw new Error("Recovery failed");
-      router.push(`/smartprobonoip/profile/${data.record.id}`);
+      router.push(`/profile/${data.record.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Recovery failed");
       setLoading(false);
@@ -109,7 +109,7 @@ export default function RecoverPage() {
           <RecoverForm />
         </Suspense>
       </div>
-      <Link href="/smartprobonoip/start" className="btn-ghost mt-6 inline-flex">
+      <Link href="/start" className="btn-ghost mt-6 inline-flex">
         Start a new packet instead
       </Link>
     </div>

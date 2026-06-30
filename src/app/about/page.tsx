@@ -59,7 +59,7 @@ export default function AboutPage() {
             ))}
           </ul>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/smartprobonoip" className="btn-primary">
+            <Link href="/" className="btn-primary">
               View product
             </Link>
             <Link href="/contact" className="btn-secondary">

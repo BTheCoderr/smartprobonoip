@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PRIVACY_NOTICE } from "@/lib/disclaimer";
 import { BRAND } from "@/lib/brand";
+import { ROUTES } from "@/lib/routes";
 import { Card } from "@/components/ui/Card";
 
 const SUPPORT_EMAIL = "privacy@smartprobonoip.org";
@@ -10,7 +11,7 @@ export default function PrivacyPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <p className="mb-2 text-sm font-medium uppercase tracking-wide text-teal-600">
+      <p className="mb-2 text-sm font-medium uppercase tracking-wide text-navy-600">
         {BRAND.product}
       </p>
       <h1 className="text-3xl font-bold text-navy-900">Privacy & your data</h1>
@@ -39,13 +40,13 @@ export default function PrivacyPage() {
         <div className="mt-4 flex flex-wrap gap-3">
           <a
             href={`mailto:${SUPPORT_EMAIL}?subject=SmartProBonoIP%20data%20export%20request`}
-            className="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
+            className="btn-primary px-5 py-2.5 text-sm"
           >
             Request data export
           </a>
           <a
             href={`mailto:${SUPPORT_EMAIL}?subject=SmartProBonoIP%20data%20deletion%20request`}
-            className="rounded-lg border border-mist-300 px-5 py-2.5 text-sm font-semibold text-navy-700 hover:bg-mist-100"
+            className="btn-secondary px-5 py-2.5 text-sm"
           >
             Request data deletion
           </a>
@@ -55,12 +56,14 @@ export default function PrivacyPage() {
         </p>
       </Card>
 
-      <Link
-        href="/smartprobonoip/disclaimer"
-        className="mt-6 inline-block text-sm font-medium text-teal-600 hover:text-teal-700"
-      >
-        ← Back to disclaimer
-      </Link>
+      <div className="mt-6 flex flex-wrap gap-4 text-sm font-medium">
+        <Link href={ROUTES.trust} className="text-navy-600 hover:text-navy-800">
+          Trust Center →
+        </Link>
+        <Link href={ROUTES.disclaimer} className="text-navy-600 hover:text-navy-800">
+          ← Back to disclaimer
+        </Link>
+      </div>
     </div>
   );
 }
