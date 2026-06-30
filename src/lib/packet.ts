@@ -158,6 +158,46 @@ export function buildIdeaSummaryFields(answers: IntakeAnswers): SummaryField[] {
     .filter((f) => f.value.length > 0);
 }
 
+export function resolveBrandIdentityStatus(record: ProjectRecord): string {
+  const { answers, profile } = record;
+  const brand =
+    extractBrandName(answers.whatCreated) ??
+    extractBrandName(answers.problemSolved) ??
+    extractProductNameFromAnswers(answers);
+  const hasTrademarkSignal = profile.signals.includes("trademark_brand");
+  const explicitBrand =
+    answers.hasBrandIdentity ||
+    answers.itemType === "brand" ||
+    (answers.ideaIncludes?.includes("brand_name") ?? false) ||
+    (answers.ideaIncludes?.includes("online_identity") ?? false) ||
+    (answers.contributorHelpTypes?.includes("name_branding") ?? false);
+
+  if (explicitBrand) {
+    return brand
+      ? `Brand identity indicated: ${brand}`
+      : "Brand identity indicated";
+  }
+
+  if (brand) {
+    return `Possible brand identity detected: ${brand}`;
+  }
+
+  if (hasTrademarkSignal) {
+    return "Brand identity may be relevant";
+  }
+
+  return "No brand identity recorded yet";
+}
+
+export const PUBLIC_DISCLOSURE_PREP_ITEMS = [
+  "When the idea was first shared",
+  "Where it was shared",
+  "Who saw it",
+  "What exactly was shown",
+  "Whether any confidentiality agreement existed",
+  "Whether the shared version included the key features",
+] as const;
+
 export function buildReadinessSnapshot(record: ProjectRecord): SnapshotItem[] {
   const { answers, profile } = record;
 
@@ -182,9 +222,7 @@ export function buildReadinessSnapshot(record: ProjectRecord): SnapshotItem[] {
     },
     {
       label: "Brand / name / logo",
-      value: answers.hasBrandIdentity
-        ? "Has a name, logo, slogan, or brand identity"
-        : "No brand identity recorded yet",
+      value: resolveBrandIdentityStatus(record),
     },
     {
       label: "Supporting materials available",
@@ -488,57 +526,65 @@ export function buildReadinessMetrics(
   ];
 }
 
+export function buildNextBestSteps(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): string[] {
+  const { profile } = record;
+  const optionalGaps = deriveOptionalGaps(record, savedReferenceCount);
+  const coreMissing = profile.missingInfo;
+  const steps: string[] = [];
+
+  if (coreMissing.length >= 2) {
+    steps.push(
+      "Fill in core gaps — especially how your idea works and what makes it different.",
+    );
+  } else if (coreMissing.length === 1) {
+    steps.push(`Complete the remaining core item: ${coreMissing[0]}.`);
+  }
+
+  if (
+    optionalGaps.includes("Development timeline") ||
+    countFilledTimelineFields(record.developmentTimeline) < 3
+  ) {
+    steps.push("Fill in the development timeline.");
+  }
+
+  if (optionalGaps.includes("Public sharing details") || profile.publicDisclosure) {
+    steps.push("Clarify public sharing history.");
+  }
+
+  if (record.answers.assets.length === 0) {
+    steps.push(
+      "Attach or organize screenshots, wireframes, prototype notes, and customer feedback.",
+    );
+  } else if (
+    optionalGaps.includes("Testing notes") ||
+    optionalGaps.includes("Customer feedback / pitch notes")
+  ) {
+    steps.push(
+      "Attach or organize screenshots, wireframes, prototype notes, and customer feedback.",
+    );
+  }
+
+  if (savedReferenceCount === 0) {
+    steps.push(
+      "Save 1 to 3 similar references from Google Patents or USPTO search.",
+    );
+  }
+
+  steps.push(
+    "Bring this packet to an IP professional, clinic, PTRC, or mentor.",
+  );
+
+  return steps.map(cleanText);
+}
+
 export function buildNextBestAction(
   record: ProjectRecord,
   savedReferenceCount = 0,
 ): string {
-  const { profile } = record;
-  const optionalGaps = deriveOptionalGaps(record, savedReferenceCount);
-  const coreMissing = profile.missingInfo;
-
-  if (coreMissing.length >= 2) {
-    return cleanText(
-      "Consider filling in the core gaps listed above — especially how your idea works and what makes it different — so a professional may want to review a clearer description.",
-    );
-  }
-
-  if (coreMissing.length === 1) {
-    return cleanText(
-      `Consider completing the remaining core item (${coreMissing[0].toLowerCase()}) before speaking with a patent professional or PTRC resource.`,
-    );
-  }
-
-  const steps: string[] = [];
-  if (optionalGaps.includes("Development timeline")) {
-    steps.push("organize your development timeline");
-  }
-  if (
-    optionalGaps.includes("Testing notes") ||
-    optionalGaps.includes("Customer feedback / pitch notes")
-  ) {
-    steps.push("gather prototype and testing notes");
-  }
-  if (optionalGaps.includes("Similar references saved")) {
-    steps.push(
-      "review possible similar references using the suggested search queries",
-    );
-  }
-  if (optionalGaps.includes("Flowcharts")) {
-    steps.push("add flowcharts or diagrams if you have them");
-  }
-  if (optionalGaps.includes("Public sharing details")) {
-    steps.push("note when and how you shared this publicly");
-  }
-
-  if (steps.length === 0) {
-    return cleanText(
-      "Consider bringing this packet and your materials to a patent resource, clinic, mentor, or innovation partner for review.",
-    );
-  }
-
-  return cleanText(
-    `Consider your next preparation step: ${steps.join(", ")}, before speaking with a patent professional or PTRC resource.`,
-  );
+  return buildNextBestSteps(record, savedReferenceCount).join(" ");
 }
 
 export function buildNextMeetingChecklist(

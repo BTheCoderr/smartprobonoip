@@ -83,7 +83,7 @@ export function buildCondensedAttorneyPdf(
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-        doc.text(idx === 0 ? "☐" : "", MARGIN, y);
+        doc.text(idx === 0 ? "[ ]" : "", MARGIN, y);
         doc.text(line, MARGIN + 12, y);
         y += LINE;
       });

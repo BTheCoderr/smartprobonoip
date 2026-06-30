@@ -13,10 +13,11 @@ import {
   buildIdeaSummaryFields,
   buildMaterialsChecklist,
   buildMissingInfoStatus,
-  buildNextBestAction,
-  buildNextMeetingChecklist,
-  buildPatentPrepChecklist,
+  buildNextBestSteps,
   buildReadinessSnapshot,
+  buildPatentPrepChecklist,
+  buildNextMeetingChecklist,
+  PUBLIC_DISCLOSURE_PREP_ITEMS,
   DEVELOPMENT_TIMELINE_FIELDS,
   DEVELOPMENT_TIMELINE_HINTS,
   DIFFERENCE_MAP_NOTE,
@@ -61,6 +62,74 @@ const GRAY: [number, number, number] = [90, 105, 120];
 /** ~5% apparent opacity — subtle repeat tile behind content. */
 const WATERMARK_OPACITY = 0.05;
 const WATERMARK_TILE = "Confidential · For discussion only";
+const watermarkImageCache = new Map<string, string>();
+
+function getWatermarkImageDataUrl(
+  pageWidth: number,
+  pageHeight: number,
+  variant: "light" | "dark",
+): string | null {
+  if (typeof document === "undefined") return null;
+
+  const key = `${Math.round(pageWidth)}x${Math.round(pageHeight)}:${variant}`;
+  const cached = watermarkImageCache.get(key);
+  if (cached) return cached;
+
+  const scale = 2;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(pageWidth * scale);
+  canvas.height = Math.round(pageHeight * scale);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const bg = variant === "dark" ? "rgb(2, 46, 85)" : "rgb(255, 255, 255)";
+  const fg = variant === "dark" ? "rgb(255, 255, 255)" : "rgb(2, 46, 85)";
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate((32 * Math.PI) / 180);
+  ctx.font = `${7 * scale}px Helvetica, Arial, sans-serif`;
+  ctx.fillStyle = fg;
+  ctx.globalAlpha = WATERMARK_OPACITY;
+  const xStep = 220 * scale;
+  const yStep = 96 * scale;
+  for (let row = -2; row * yStep < canvas.height + 120; row++) {
+    const rowOffset = row % 2 === 0 ? 0 : xStep * 0.48;
+    for (let col = -3; col * xStep < canvas.width + 220; col++) {
+      ctx.fillText(
+        WATERMARK_TILE,
+        col * xStep + rowOffset - canvas.width / 2,
+        row * yStep + 52 - canvas.height / 2,
+      );
+    }
+  }
+  ctx.restore();
+
+  const dataUrl = canvas.toDataURL("image/png");
+  watermarkImageCache.set(key, dataUrl);
+  return dataUrl;
+}
+
+/** Cruise-style repeating diagonal tiles — drawn before page content so it sits behind text. */
+function drawRepeatedWatermarkLayer(doc: jsPDF, variant: "light" | "dark") {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const dataUrl = getWatermarkImageDataUrl(pageWidth, pageHeight, variant);
+  if (dataUrl) {
+    doc.addImage(dataUrl, "PNG", 0, 0, pageWidth, pageHeight, undefined, "FAST");
+    return;
+  }
+
+  const bg = variant === "dark" ? NAVY : [255, 255, 255] as [number, number, number];
+  const fg = variant === "dark" ? [255, 255, 255] as [number, number, number] : NAVY;
+  const color = blendColor(fg, bg, WATERMARK_OPACITY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(color[0], color[1], color[2]);
+  doc.text(WATERMARK_TILE, pageWidth * 0.2, pageHeight * 0.35, { angle: 32 });
+  doc.text(WATERMARK_TILE, pageWidth * 0.65, pageHeight * 0.65, { angle: 32 });
+}
 
 function blendColor(
   fg: [number, number, number],
@@ -72,31 +141,6 @@ function blendColor(
     Math.round(bg[1] * (1 - opacity) + fg[1] * opacity),
     Math.round(bg[2] * (1 - opacity) + fg[2] * opacity),
   ];
-}
-
-/** Cruise-style repeating diagonal tiles — drawn before page content so it sits behind text. */
-function drawRepeatedWatermarkLayer(doc: jsPDF, variant: "light" | "dark") {
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const bg = variant === "dark" ? NAVY : [255, 255, 255] as [number, number, number];
-  const fg = variant === "dark" ? [255, 255, 255] as [number, number, number] : NAVY;
-  const color = blendColor(fg, bg, WATERMARK_OPACITY);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(color[0], color[1], color[2]);
-
-  const xStep = 220;
-  const yStep = 96;
-  const angle = 32;
-  for (let row = -2; row * yStep < pageHeight + 120; row++) {
-    const rowOffset = row % 2 === 0 ? 0 : xStep * 0.48;
-    for (let col = -1; col * xStep < pageWidth + 220; col++) {
-      doc.text(WATERMARK_TILE, col * xStep + rowOffset, row * yStep + 52, {
-        angle,
-      });
-    }
-  }
 }
 
 function applyPdfFooterStamps(
@@ -218,7 +262,7 @@ function drawCalloutBanner(
   return height;
 }
 
-function truncateForSummary(text: string, maxSentences = 2): string {
+function truncateForSummary(text: string, maxSentences = 4): string {
   const parts = text.split(/(?<=[.!?])\s+/).filter(Boolean);
   if (parts.length <= maxSentences) return text;
   return parts.slice(0, maxSentences).join(" ");
@@ -390,7 +434,7 @@ export function buildPacketPdf(
 
   const profile = record.profile;
   const missingStatus = buildMissingInfoStatus(record, savedReferenceCount);
-  const nextBestAction = buildNextBestAction(record, savedReferenceCount);
+  const nextBestSteps = buildNextBestSteps(record, savedReferenceCount);
   const ideaLabel = getIdeaLabel(record.answers);
   const review = buildPacketReviewSummary(record, savedReferenceCount);
   const packetId = record.id.slice(0, 8).toUpperCase();
@@ -466,7 +510,17 @@ export function buildPacketPdf(
     sectionHeading(value);
   }
 
-  function bullets(items: string[], marker = "•") {
+  function checklistItem(checked: boolean, label: string) {
+    text(`${checked ? "[x]" : "[ ]"} ${label}`, { size: 10, gap: 2 });
+  }
+
+  function numberedSteps(items: string[]) {
+    items.forEach((item, idx) => {
+      text(`${idx + 1}. ${item}`, { size: 10, gap: 4 });
+    });
+  }
+
+  function bullets(items: string[], marker = "-") {
     if (items.length === 0) {
       text("None recorded.", { color: GRAY });
       return;
@@ -591,6 +645,16 @@ export function buildPacketPdf(
   y += 22;
   text(review.strengthenMessage, { size: 9, color: GRAY, gap: 6 });
 
+  text("Readiness score breakdown:", { size: 10, bold: true, gap: 2 });
+  for (const item of review.scoreBreakdown) {
+    text(`${item.label}: ${item.score}/${item.max}`, { size: 9, gap: 1 });
+  }
+  text(`How to improve this score: ${review.improveScoreNote}`, {
+    size: 9,
+    color: GRAY,
+    gap: 6,
+  });
+
   if (review.topGaps.length > 0) {
     text("Highest-priority gap", { size: 10, bold: true, gap: 2 });
     bullets(review.topGaps.slice(0, 1), "–");
@@ -602,7 +666,7 @@ export function buildPacketPdf(
   }
 
   if (profile.publicDisclosure) {
-    ensureSpace(56);
+    ensureSpace(120);
     const bannerH = drawCalloutBanner(
       doc,
       MARGIN,
@@ -610,11 +674,14 @@ export function buildPacketPdf(
       maxWidth,
       [
         "DO NOT SHARE PUBLICLY",
-        "Public disclosure was indicated. Review timing with an expert before broad sharing.",
+        "Public sharing can affect timing questions. A professional may want to review the details before any filing or broader disclosure decision.",
       ],
       "warning",
     );
-    y += bannerH + 10;
+    y += bannerH + 8;
+    text("Before sharing more publicly, write down:", { size: 10, bold: true, gap: 2 });
+    bullets([...PUBLIC_DISCLOSURE_PREP_ITEMS], "-");
+    y += 4;
   }
 
   // Priority: supporting materials
@@ -640,7 +707,7 @@ export function buildPacketPdf(
     y += drawSketchPlaceholder(doc, MARGIN, y, maxWidth, 96) + 12;
   }
   for (const item of materials) {
-    text(`${item.available ? "✓" : "○"} ${item.label}`, { size: 10, gap: 2 });
+    checklistItem(item.available, item.label);
   }
 
   // Similar-reference prep (moved up, visually strong)
@@ -794,11 +861,7 @@ export function buildPacketPdf(
   // Patent prep checklist
   heading("Patent prep checklist");
   for (const row of buildPatentPrepChecklist(record)) {
-    text(`${row.complete ? "✓" : "○"} ${row.label}`, {
-      size: 10,
-      bold: true,
-      gap: 1,
-    });
+    checklistItem(row.complete, row.label);
     if (row.value) text(row.value, { size: 10, color: GRAY, gap: 6 });
   }
 
@@ -969,10 +1032,12 @@ export function buildPacketPdf(
   startBodyPage(true);
   partHeading("Part VI · Before your meeting");
   sectionHeading("Next meeting checklist");
-  bullets(buildNextMeetingChecklist(record, savedReferenceCount), "☐");
+  for (const item of buildNextMeetingChecklist(record, savedReferenceCount)) {
+    checklistItem(false, item);
+  }
 
   heading(PACKET_COPY.nextBestStepTitle);
-  text(nextBestAction, { gap: 6 });
+  numberedSteps(nextBestSteps);
 
   // Legal notices (full disclaimers — kept off main body pages)
   startBodyPage(true);

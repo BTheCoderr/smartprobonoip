@@ -7,15 +7,16 @@ import { buildAttorneyExportDisclaimer } from "./disclaimer";
 import { suggestCpcCodes } from "./cpcSuggestions";
 import {
   buildDifferenceMap,
-  buildMaterialsChecklist,
   buildMissingInfoStatus,
-  buildPatentPrepChecklist,
   getIdeaLabel,
   getTimelineFieldValue,
 } from "./packet";
 import { buildPatentSearchPrep } from "./patentSearchPrep";
+import { computeReadinessScore } from "./packetReview";
 import type { SavedReference } from "./research/types";
-import type { DevelopmentTimelineField, ProjectRecord } from "./types";
+import type { ProjectRecord } from "./types";
+
+export { computeReadinessScore };
 
 export interface InventorshipEntry {
   role: string;
@@ -85,35 +86,6 @@ function splitList(text: string): string[] {
     .filter(Boolean);
 }
 
-export function computeReadinessScore(
-  record: ProjectRecord,
-  savedReferenceCount = 0,
-): number {
-  const prep = buildPatentPrepChecklist(record);
-  const materials = buildMaterialsChecklist(record);
-  const prepComplete = prep.filter((row) => row.complete).length;
-  const materialsAvailable = materials.filter((item) => item.available).length;
-  const base = Math.round(
-    ((prepComplete / prep.length) * 0.65 +
-      (materialsAvailable / materials.length) * 0.35) *
-      100,
-  );
-  const timelineBonus = Math.min(
-    10,
-    [
-      "Date idea started",
-      "Date first prototype built",
-      "Date first shared publicly",
-    ].filter((field) =>
-      getTimelineFieldValue(
-        record.developmentTimeline,
-        field as DevelopmentTimelineField,
-      ),
-    ).length * 3,
-  );
-  const referenceBonus = savedReferenceCount > 0 ? 5 : 0;
-  return Math.min(100, Math.max(0, base + timelineBonus + referenceBonus));
-}
 
 function buildInventorshipSplit(record: ProjectRecord): InventorshipEntry[] {
   const { answers } = record;

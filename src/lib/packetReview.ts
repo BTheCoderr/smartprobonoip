@@ -2,12 +2,21 @@ import { PACKET_COPY } from "@/lib/copy";
 import {
   buildMaterialsChecklist,
   buildMissingInfoStatus,
-  buildPatentPrepChecklist,
+  countFilledTimelineFields,
+  getTimelineFieldValue,
 } from "@/lib/packet";
 import type { ProjectRecord } from "@/lib/types";
 
+export interface ReadinessBreakdownItem {
+  label: string;
+  score: number;
+  max: number;
+}
+
 export interface PacketReviewSummary {
   readinessScore: number;
+  scoreBreakdown: ReadinessBreakdownItem[];
+  improveScoreNote: string;
   completeSections: string[];
   weakSections: string[];
   topGaps: string[];
@@ -16,21 +25,117 @@ export interface PacketReviewSummary {
   strengthenMessage: string;
 }
 
+function hasText(value: string | undefined): boolean {
+  return Boolean(value?.trim());
+}
+
+export function computeReadinessBreakdown(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): ReadinessBreakdownItem[] {
+  const { answers, profile } = record;
+
+  const coreScore = [
+    answers.whatCreated,
+    answers.mainParts,
+    answers.howItWorks,
+    answers.whatDifferent,
+  ].reduce((sum, field) => sum + (hasText(field) ? 5 : 0), 0);
+
+  const problemScore =
+    (hasText(answers.problemSolved) ? 8 : 0) + (hasText(answers.whoFor) ? 7 : 0);
+
+  let prototypeMaterialsScore = answers.hasPrototype ? 8 : 0;
+  prototypeMaterialsScore += Math.min(12, answers.assets.length * 4);
+
+  const timelineFilled = countFilledTimelineFields(record.developmentTimeline);
+  const timelineScore = Math.round((timelineFilled / 6) * 15);
+
+  let disclosureScore = 15;
+  if (profile.publicDisclosure) {
+    disclosureScore = 5;
+    if (
+      hasText(
+        getTimelineFieldValue(
+          record.developmentTimeline,
+          "Date first shared publicly",
+        ),
+      )
+    ) {
+      disclosureScore += 5;
+    }
+    if (answers.sharedChannels.some((channel) => channel !== "none")) {
+      disclosureScore += 5;
+    }
+  }
+
+  const handoffFields = [
+    answers.whatCreated,
+    answers.problemSolved,
+    answers.howItWorks,
+    answers.mainParts,
+    answers.whatDifferent,
+  ].filter(hasText).length;
+  let expertScore = Math.round((handoffFields / 5) * 10);
+  if (savedReferenceCount > 0) expertScore += 5;
+  expertScore = Math.min(15, expertScore);
+
+  return [
+    { label: "Core idea clarity", score: coreScore, max: 20 },
+    { label: "Problem and audience clarity", score: problemScore, max: 15 },
+    {
+      label: "Prototype/materials readiness",
+      score: prototypeMaterialsScore,
+      max: 20,
+    },
+    { label: "Timeline readiness", score: timelineScore, max: 15 },
+    {
+      label: "Public disclosure clarity",
+      score: disclosureScore,
+      max: 15,
+    },
+    { label: "Expert handoff readiness", score: expertScore, max: 15 },
+  ];
+}
+
+export function buildImproveScoreNote(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): string {
+  const { answers, profile } = record;
+  const hints: string[] = [];
+
+  if (countFilledTimelineFields(record.developmentTimeline) < 3) {
+    hints.push("development dates");
+  }
+  if (profile.publicDisclosure) {
+    hints.push("clarify public sharing history");
+  }
+  if (answers.assets.length === 0) {
+    hints.push("attach supporting materials");
+  }
+  if (savedReferenceCount === 0) {
+    hints.push("save at least one similar reference");
+  }
+
+  if (hints.length === 0) {
+    return "Review expert questions and similar-reference notes before your meeting.";
+  }
+
+  const joined =
+    hints.length === 1
+      ? hints[0]
+      : `${hints.slice(0, -1).join(", ")}, and ${hints[hints.length - 1]}`;
+
+  return `Add ${joined}.`;
+}
+
 export function computeReadinessScore(
   record: ProjectRecord,
   savedReferenceCount = 0,
 ): number {
-  const prep = buildPatentPrepChecklist(record);
-  const materials = buildMaterialsChecklist(record);
-  const prepComplete = prep.filter((row) => row.complete).length;
-  const materialsAvailable = materials.filter((item) => item.available).length;
-  const base = Math.round(
-    ((prepComplete / Math.max(prep.length, 1)) * 0.65 +
-      (materialsAvailable / Math.max(materials.length, 1)) * 0.35) *
-      100,
-  );
-  const researchBonus = savedReferenceCount > 0 ? 5 : 0;
-  return Math.min(100, base + researchBonus);
+  const breakdown = computeReadinessBreakdown(record, savedReferenceCount);
+  return breakdown.reduce((sum, item) => sum + item.score, 0);
 }
 
 export function buildPacketReviewSummary(
@@ -39,7 +144,9 @@ export function buildPacketReviewSummary(
 ): PacketReviewSummary {
   const { profile } = record;
   const missing = buildMissingInfoStatus(record, savedReferenceCount);
-  const readinessScore = computeReadinessScore(record, savedReferenceCount);
+  const scoreBreakdown = computeReadinessBreakdown(record, savedReferenceCount);
+  const readinessScore = scoreBreakdown.reduce((sum, item) => sum + item.score, 0);
+  const improveScoreNote = buildImproveScoreNote(record, savedReferenceCount);
 
   const completeSections = profile.completeInfo.slice(0, 8);
   const weakSections: string[] = [];
@@ -106,6 +213,8 @@ export function buildPacketReviewSummary(
 
   return {
     readinessScore,
+    scoreBreakdown,
+    improveScoreNote,
     completeSections,
     weakSections,
     topGaps,

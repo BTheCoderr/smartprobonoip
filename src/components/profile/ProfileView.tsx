@@ -18,7 +18,7 @@ import {
   buildIdeaSummaryFields,
   buildMaterialsChecklist,
   buildMissingInfoStatus,
-  buildNextBestAction,
+  buildNextBestSteps,
   buildPatentPrepChecklist,
   buildReadinessMetrics,
   buildReadinessSnapshot,
@@ -59,7 +59,7 @@ export function ProfileView({
   const patentPrep = buildPatentPrepChecklist(record);
   const missingStatus = buildMissingInfoStatus(record, savedReferenceCount);
   const readinessMetrics = buildReadinessMetrics(record, savedReferenceCount);
-  const nextBestAction = buildNextBestAction(record, savedReferenceCount);
+  const nextBestSteps = buildNextBestSteps(record, savedReferenceCount);
   const differenceMap = buildDifferenceMap(record);
   const materials = buildMaterialsChecklist(record);
   const handoff = buildExpertHandoff(record);
@@ -632,9 +632,11 @@ export function ProfileView({
 
       <Card variant="elevated" className="border-navy-200 bg-gradient-to-br from-navy-50/60 to-white">
         <CardHeader title={PACKET_COPY.nextBestStepTitle} />
-        <p className="text-base leading-relaxed text-navy-800">
-          {nextBestAction}
-        </p>
+        <ol className="list-decimal space-y-2 pl-5 text-base leading-relaxed text-navy-800">
+          {nextBestSteps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
       </Card>
 
       <Card variant="soft">

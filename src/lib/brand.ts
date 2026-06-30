@@ -18,7 +18,7 @@ export const LEGAL = {
 } as const;
 
 /** Increment when packet PDF structure or sections change materially. */
-export const PACKET_PDF_VERSION = "1.2";
+export const PACKET_PDF_VERSION = "1.3";
 
 export function formatCopyrightNotice() {
   return `© ${LEGAL.copyrightYear} ${LEGAL.copyrightHolder}. All rights reserved.`;
