@@ -4,8 +4,13 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: "/",
-        destination: "/smartprobonoip",
+        source: "/smartprobonoip",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/smartprobonoip/:path*",
+        destination: "/:path*",
         permanent: true,
       },
       {
