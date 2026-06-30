@@ -83,8 +83,8 @@ export function BrandMarkIcon({
         width="17"
         height="11"
         rx="1"
-        fill="#e6f6f6"
-        stroke="#0f8585"
+        fill="#eef4fb"
+        stroke="#1d4e89"
         strokeWidth="1.25"
         strokeDasharray="3 2"
       />
@@ -92,7 +92,7 @@ export function BrandMarkIcon({
       <text
         x="15.5"
         y="25.5"
-        fill="#0b6767"
+        fill="#143a6b"
         fontSize="7.5"
         fontWeight="700"
         fontFamily="ui-monospace, monospace"
@@ -102,7 +102,7 @@ export function BrandMarkIcon({
       </text>
       <path
         d="M2 34h30"
-        stroke="#14a3a3"
+        stroke="#d97706"
         strokeWidth="2"
         strokeLinecap="round"
       />
