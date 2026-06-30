@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { BRAND } from "./brand";
+import { BRAND, formatCopyrightNotice, LEGAL } from "./brand";
 import { PACKET_COPY } from "./copy";
 import {
   RESOURCE_DESCRIPTIONS,
@@ -43,14 +43,43 @@ export interface PdfExportOptions {
 }
 
 const MARGIN = 48;
+const FOOTER_RESERVE = 36;
 const LINE = 15;
 
-const NAVY: [number, number, number] = [11, 31, 58];
-const TEAL: [number, number, number] = [15, 133, 133];
-const CREAM: [number, number, number] = [250, 248, 244];
-const MIST: [number, number, number] = [238, 242, 246];
-const AMBER: [number, number, number] = [146, 64, 14];
+const NAVY: [number, number, number] = [2, 46, 85];
+const TEAL: [number, number, number] = [4, 147, 151];
+const TEAL_DARK: [number, number, number] = [3, 118, 129];
+const AQUA: [number, number, number] = [93, 170, 176];
+const CREAM: [number, number, number] = [253, 253, 253];
+const MIST: [number, number, number] = [245, 248, 250];
 const GRAY: [number, number, number] = [90, 105, 120];
+const WATERMARK: [number, number, number] = [200, 220, 223];
+
+function applyPdfProtectionStamps(doc: jsPDF) {
+  const pageCount = doc.getNumberOfPages();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const copyrightLine = formatCopyrightNotice();
+
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(28);
+    doc.setTextColor(WATERMARK[0], WATERMARK[1], WATERMARK[2]);
+    doc.text(LEGAL.pdfWatermark, pageWidth / 2, pageHeight / 2, {
+      align: "center",
+      angle: 45,
+    });
+
+    doc.setFontSize(8);
+    doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
+    doc.text(LEGAL.pdfWatermark, pageWidth / 2, pageHeight - 36, {
+      align: "center",
+    });
+    doc.text(copyrightLine, pageWidth / 2, pageHeight - 24, { align: "center" });
+  }
+}
 
 function collectExpertReviewQuestions(savedReferences: SavedReference[]): string[] {
   const seen = new Set<string>();
@@ -97,18 +126,18 @@ function drawBrandMarkPdf(doc: jsPDF, cx: number, cy: number, scale = 1) {
 
   doc.setDrawColor(TEAL[0], TEAL[1], TEAL[2]);
   doc.setLineWidth(1.25 * s);
-  doc.setFillColor(230, 246, 246);
+  doc.setFillColor(232, 244, 245);
   doc.roundedRect(cx + 7 * s, cy + 17 * s, 17 * s, 11 * s, 1 * s, 1 * s, "FD");
 
-  doc.setFillColor(217, 119, 6);
+  doc.setFillColor(AQUA[0], AQUA[1], AQUA[2]);
   doc.circle(cx + 21.5 * s, cy + 19.5 * s, 1.25 * s, "F");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5 * s);
-  doc.setTextColor(TEAL[0], TEAL[1], TEAL[2]);
+  doc.setTextColor(TEAL_DARK[0], TEAL_DARK[1], TEAL_DARK[2]);
   doc.text("IP", cx + 15.5 * s, cy + 25.5 * s, { align: "center" });
 
-  doc.setDrawColor(20, 163, 163);
+  doc.setDrawColor(TEAL[0], TEAL[1], TEAL[2]);
   doc.setLineWidth(2 * s);
   doc.line(cx + 2 * s, cy + 34 * s, cx + 32 * s, cy + 34 * s);
 }
@@ -126,7 +155,7 @@ export function buildPacketPdf(
   let y = MARGIN;
 
   function ensureSpace(needed: number) {
-    if (y + needed > pageHeight - MARGIN) {
+    if (y + needed > pageHeight - MARGIN - FOOTER_RESERVE) {
       doc.addPage();
       y = MARGIN;
     }
@@ -293,12 +322,12 @@ export function buildPacketPdf(
 
     ensureSpace(bannerLines.length * 14 + 24);
     doc.setFillColor(255, 251, 235);
-    doc.setDrawColor(AMBER[0], AMBER[1], AMBER[2]);
+    doc.setDrawColor(TEAL_DARK[0], TEAL_DARK[1], TEAL_DARK[2]);
     const bannerHeight = bannerLines.length * 13 + 16;
     doc.roundedRect(MARGIN - 4, y - 6, maxWidth + 8, bannerHeight, 4, 4, "FD");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
-    doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]);
+    doc.setTextColor(TEAL_DARK[0], TEAL_DARK[1], TEAL_DARK[2]);
     let bannerY = y + 6;
     for (const line of bannerLines) {
       doc.text(line, MARGIN + 4, bannerY);
@@ -356,7 +385,7 @@ export function buildPacketPdf(
     profile.publicDisclosure
       ? "Possible public disclosure detected."
       : "No public disclosure indicated.",
-    { bold: true, color: profile.publicDisclosure ? AMBER : NAVY },
+    { bold: true, color: profile.publicDisclosure ? TEAL_DARK : NAVY },
   );
   text(profile.publicDisclosureNote, { color: GRAY });
 
@@ -431,7 +460,7 @@ export function buildPacketPdf(
     labeledBlock("What my idea does differently", row.difference);
     labeledBlock("Why that difference matters", row.whyItMatters);
   });
-  text(DIFFERENCE_MAP_NOTE, { size: 9, color: AMBER, gap: 6 });
+  text(DIFFERENCE_MAP_NOTE, { size: 9, color: TEAL_DARK, gap: 6 });
 
   // Drawings and materials checklist
   heading("Drawings and materials checklist");
@@ -495,7 +524,7 @@ export function buildPacketPdf(
   heading("Expert prep questions");
   bullets(searchPrep.expertPrepQuestions, "?");
 
-  text(searchPrep.safeDisclaimer, { size: 9, color: AMBER, gap: 6 });
+  text(searchPrep.safeDisclaimer, { size: 9, color: TEAL_DARK, gap: 6 });
 
   if (savedReferences.length > 0) {
     heading(PACKET_COPY.savedSimilarReferencesTitle);
@@ -592,9 +621,10 @@ export function buildPacketPdf(
   // Full legal disclaimer
   heading("Important — please read");
   for (const para of profile.disclaimer.split("\n\n")) {
-    text(para, { size: 9, color: AMBER });
+    text(para, { size: 9, color: TEAL_DARK });
   }
 
+  applyPdfProtectionStamps(doc);
   return doc;
 }
 

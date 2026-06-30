@@ -8,6 +8,19 @@ export const BRAND_COLORS = {
   offWhite: "#FDFDFD",
 } as const;
 
+export const LEGAL = {
+  copyrightHolder: "SmartProBono",
+  copyrightYear: 2026,
+  productName: "SmartProBonoIP",
+  privacyEmail: "privacy@smartprobonoip.org",
+  pdfWatermark:
+    "Confidential — Prepared with SmartProBonoIP — For discussion only",
+} as const;
+
+export function formatCopyrightNotice() {
+  return `© ${LEGAL.copyrightYear} ${LEGAL.copyrightHolder}. All rights reserved.`;
+}
+
 export const BRAND = {
   umbrella: "SmartProBono",
   product: "SmartProBonoIP",

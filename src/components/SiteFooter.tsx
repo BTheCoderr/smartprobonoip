@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/brand/BrandMark";
-import { BRAND } from "@/lib/brand";
+import { BRAND, formatCopyrightNotice } from "@/lib/brand";
 import { DISCLAIMER_SHORT } from "@/lib/disclaimer";
 import { ROUTES } from "@/lib/routes";
 
@@ -38,6 +38,9 @@ export function SiteFooter() {
             <Link href={ROUTES.privacy} className="transition hover:text-white">
               Privacy
             </Link>
+            <Link href={ROUTES.terms} className="transition hover:text-white">
+              Terms
+            </Link>
             <Link href={ROUTES.disclaimer} className="transition hover:text-white">
               Disclaimer
             </Link>
@@ -52,6 +55,7 @@ export function SiteFooter() {
             Trust Center
           </Link>
         </p>
+        <p className="mt-2 text-[11px] text-navy-300">{formatCopyrightNotice()}</p>
       </div>
     </footer>
   );
