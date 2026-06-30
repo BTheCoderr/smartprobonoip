@@ -13,10 +13,10 @@ export function SiteFooter() {
             <p className="mt-2 text-xs text-navy-500">{BRAND.tagline}</p>
           </div>
           <div className="flex gap-4 text-xs text-navy-500">
-            <Link href="/smartprobonoip" className="hover:text-teal-600">
+            <Link href="/" className="hover:text-teal-600">
               Product
             </Link>
-            <Link href="/smartprobonoip/sample" className="hover:text-teal-600">
+            <Link href="/sample" className="hover:text-teal-600">
               Sample
             </Link>
             <Link href="/about" className="hover:text-teal-600">
@@ -28,13 +28,13 @@ export function SiteFooter() {
             <Link href="/contact" className="hover:text-teal-600">
               Contact
             </Link>
-            <Link href="/smartprobonoip/pilot" className="hover:text-teal-600">
+            <Link href="/pilot" className="hover:text-teal-600">
               Pilot kit
             </Link>
-            <Link href="/smartprobonoip/disclaimer" className="hover:text-teal-600">
+            <Link href="/disclaimer" className="hover:text-teal-600">
               Disclaimer
             </Link>
-            <Link href="/smartprobonoip/privacy" className="hover:text-teal-600">
+            <Link href="/privacy" className="hover:text-teal-600">
               Privacy
             </Link>
           </div>
