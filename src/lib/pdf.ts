@@ -53,9 +53,49 @@ const AQUA: [number, number, number] = [93, 170, 176];
 const CREAM: [number, number, number] = [253, 253, 253];
 const MIST: [number, number, number] = [245, 248, 250];
 const GRAY: [number, number, number] = [90, 105, 120];
-const WATERMARK: [number, number, number] = [200, 220, 223];
 
-function applyPdfProtectionStamps(doc: jsPDF) {
+/** ~6% apparent opacity — simulated by blending with page background (jsPDF has no GState here). */
+const WATERMARK_OPACITY = 0.06;
+const WATERMARK_TILE = "SmartProBonoIP · Confidential · For discussion only";
+
+function blendColor(
+  fg: [number, number, number],
+  bg: [number, number, number],
+  opacity: number,
+): [number, number, number] {
+  return [
+    Math.round(bg[0] * (1 - opacity) + fg[0] * opacity),
+    Math.round(bg[1] * (1 - opacity) + fg[1] * opacity),
+    Math.round(bg[2] * (1 - opacity) + fg[2] * opacity),
+  ];
+}
+
+/** Cruise-style repeating diagonal tiles — drawn before page content so it sits behind text. */
+function drawRepeatedWatermarkLayer(doc: jsPDF, variant: "light" | "dark") {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const bg = variant === "dark" ? NAVY : [255, 255, 255] as [number, number, number];
+  const fg = variant === "dark" ? [255, 255, 255] as [number, number, number] : NAVY;
+  const color = blendColor(fg, bg, WATERMARK_OPACITY);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(color[0], color[1], color[2]);
+
+  const xStep = 210;
+  const yStep = 88;
+  const angle = 32;
+  for (let row = -2; row * yStep < pageHeight + 120; row++) {
+    const rowOffset = row % 2 === 0 ? 0 : xStep * 0.48;
+    for (let col = -1; col * xStep < pageWidth + 220; col++) {
+      doc.text(WATERMARK_TILE, col * xStep + rowOffset, row * yStep + 52, {
+        angle,
+      });
+    }
+  }
+}
+
+function applyPdfFooterStamps(doc: jsPDF) {
   const pageCount = doc.getNumberOfPages();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -65,13 +105,6 @@ function applyPdfProtectionStamps(doc: jsPDF) {
     doc.setPage(i);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(28);
-    doc.setTextColor(WATERMARK[0], WATERMARK[1], WATERMARK[2]);
-    doc.text(LEGAL.pdfWatermark, pageWidth / 2, pageHeight / 2, {
-      align: "center",
-      angle: 45,
-    });
-
     doc.setFontSize(8);
     doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
     doc.text(LEGAL.pdfWatermark, pageWidth / 2, pageHeight - 36, {
@@ -157,6 +190,7 @@ export function buildPacketPdf(
   function ensureSpace(needed: number) {
     if (y + needed > pageHeight - MARGIN - FOOTER_RESERVE) {
       doc.addPage();
+      drawRepeatedWatermarkLayer(doc, "light");
       y = MARGIN;
     }
   }
@@ -228,8 +262,9 @@ export function buildPacketPdf(
   // ---------------------------------------------------------------------------
   doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
   doc.rect(0, 0, pageWidth, pageHeight, "F");
+  drawRepeatedWatermarkLayer(doc, "dark");
 
-  drawBrandMarkPdf(doc, pageWidth / 2 - 37, 130, 2.2);
+  drawBrandMarkPdf(doc, pageWidth / 2 - 37, 118, 2.2);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
@@ -238,24 +273,24 @@ export function buildPacketPdf(
   const leftWidth = doc.getTextWidth(wordmarkLeft);
   const wordmarkX = pageWidth / 2 - (leftWidth + doc.getTextWidth(wordmarkRight)) / 2;
   doc.setTextColor(255, 255, 255);
-  doc.text(wordmarkLeft, wordmarkX, 228);
+  doc.text(wordmarkLeft, wordmarkX, 244);
   doc.setTextColor(120, 220, 220);
-  doc.text(wordmarkRight, wordmarkX + leftWidth, 228);
+  doc.text(wordmarkRight, wordmarkX + leftWidth, 244);
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(180, 200, 215);
-  doc.text(BRAND.feature.toUpperCase(), pageWidth / 2, 246, { align: "center" });
+  doc.text(BRAND.feature.toUpperCase(), pageWidth / 2, 264, { align: "center" });
 
   doc.setFontSize(30);
   doc.setTextColor(255, 255, 255);
-  doc.text("IP Readiness Packet", pageWidth / 2, 286, { align: "center" });
+  doc.text("IP Readiness Packet", pageWidth / 2, 304, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(13);
   doc.setTextColor(200, 215, 230);
   const labelLines = doc.splitTextToSize(ideaLabel, maxWidth - 40) as string[];
-  let cy = 336;
+  let cy = 354;
   for (const line of labelLines) {
     doc.text(line, pageWidth / 2, cy, { align: "center" });
     cy += 20;
@@ -288,6 +323,7 @@ export function buildPacketPdf(
   // Body
   // ---------------------------------------------------------------------------
   doc.addPage();
+  drawRepeatedWatermarkLayer(doc, "light");
   doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
   doc.rect(0, 0, pageWidth, 70, "F");
   doc.setFont("helvetica", "bold");
@@ -624,7 +660,7 @@ export function buildPacketPdf(
     text(para, { size: 9, color: TEAL_DARK });
   }
 
-  applyPdfProtectionStamps(doc);
+  applyPdfFooterStamps(doc);
   return doc;
 }
 
