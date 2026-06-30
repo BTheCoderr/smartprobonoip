@@ -20,7 +20,7 @@ export function LearnJourney() {
               key={step.label}
               className={`rounded-lg border px-3 py-3 text-sm ${
                 i === 0
-                  ? "border-navy-200 bg-sky-50/60"
+                  ? "border-navy-200 bg-teal-50/60"
                   : "border-mist-200 bg-white"
               }`}
             >
@@ -65,7 +65,7 @@ export function LearnJourney() {
               {open ? (
                 <div className="border-t border-dashed border-mist-200 px-5 pb-5 sm:px-6">
                   <p className="pt-4 text-sm leading-relaxed text-navy-700">{module.body}</p>
-                  <p className="mt-3 rounded-lg bg-sky-50/70 px-3 py-2 text-xs leading-relaxed text-navy-600">
+                  <p className="mt-3 rounded-lg bg-teal-50/70 px-3 py-2 text-xs leading-relaxed text-navy-600">
                     {module.example}
                   </p>
                   {'keyPoints' in module && module.keyPoints.length > 0 ? (

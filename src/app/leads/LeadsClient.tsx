@@ -136,7 +136,7 @@ export default function LeadsClient() {
   return (
     <PaperShell className="py-12 sm:py-16">
       <div className="dossier-card relative overflow-hidden px-6 py-6 shadow-[var(--shadow-paper-offset)] sm:px-8">
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-teal-600 to-warm-500" />
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-teal-600 to-aqua-400" />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <BrandMark variant="compact" className="mb-4" />

@@ -122,7 +122,7 @@ export function CpcSuggestionPanel({ record }: { record: ProjectRecord }) {
   const suggestions = suggestCpcCodes(record);
 
   return (
-    <div className="rounded-xl border border-warm-200 bg-warm-50/50 px-4 py-4">
+    <div className="rounded-xl border border-aqua-200 bg-aqua-50/50 px-4 py-4">
       <p className="text-sm font-semibold text-navy-900">
         {RESEARCH_PREP_COPY.cpcTitle}
       </p>

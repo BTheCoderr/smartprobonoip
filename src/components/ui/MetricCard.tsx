@@ -9,12 +9,12 @@ export function MetricCard({
   label: string;
   value: string | number;
   hint?: string;
-  accent?: "teal" | "navy" | "warm";
+  accent?: "teal" | "navy" | "aqua";
 }) {
   const accentClass = {
-    teal: "from-teal-500 to-teal-600",
-    navy: "from-navy-700 to-navy-900",
-    warm: "from-warm-500 to-warm-700",
+    teal: "from-teal-500 to-teal-700",
+    navy: "from-navy-700 to-navy-950",
+    aqua: "from-aqua-400 to-teal-600",
   }[accent];
 
   return (

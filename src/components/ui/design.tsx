@@ -7,11 +7,11 @@ export function StampLabel({
   tone = "teal",
 }: {
   children: ReactNode;
-  tone?: "teal" | "warm" | "navy";
+  tone?: "teal" | "aqua" | "navy";
 }) {
   const toneClass = {
     teal: "stamp-label-teal",
-    warm: "stamp-label-warm",
+    aqua: "stamp-label-aqua",
     navy: "stamp-label-navy",
   }[tone];
   return <span className={`stamp-label ${toneClass}`}>{children}</span>;
@@ -132,7 +132,7 @@ export function AccessBand({
     <section className="access-band">
       <PaperShell className="relative py-14 sm:py-16">
         {kicker ? (
-          <StampLabel tone="warm">{kicker}</StampLabel>
+          <StampLabel tone="aqua">{kicker}</StampLabel>
         ) : null}
         <h2 className="headline-editorial mt-5 max-w-3xl text-2xl sm:text-3xl lg:text-4xl">
           {title}
@@ -199,7 +199,7 @@ export function ProductFeatureMock({
           className="pointer-events-none absolute inset-0 opacity-30"
           style={{
             backgroundImage:
-              "linear-gradient(rgb(11 31 58 / 0.04) 1px, transparent 1px), linear-gradient(90deg, rgb(11 31 58 / 0.04) 1px, transparent 1px)",
+              "linear-gradient(rgb(2 46 85 / 0.04) 1px, transparent 1px), linear-gradient(90deg, rgb(2 46 85 / 0.04) 1px, transparent 1px)",
             backgroundSize: "12px 12px",
           }}
         />
@@ -268,7 +268,7 @@ export function PacketMockup() {
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{
             backgroundImage:
-              "linear-gradient(rgb(11 31 58 / 0.04) 1px, transparent 1px), linear-gradient(90deg, rgb(11 31 58 / 0.04) 1px, transparent 1px)",
+              "linear-gradient(rgb(2 46 85 / 0.04) 1px, transparent 1px), linear-gradient(90deg, rgb(2 46 85 / 0.04) 1px, transparent 1px)",
             backgroundSize: "16px 16px",
           }}
         />
@@ -284,7 +284,7 @@ export function PacketMockup() {
         </div>
         <div className="relative border-b border-dashed border-mist-200 bg-cream/70 px-5 py-4 sm:px-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <StampLabel tone="warm">PREP PACKET</StampLabel>
+            <StampLabel tone="aqua">PREP PACKET</StampLabel>
             <StampLabel tone="teal">IP READINESS</StampLabel>
           </div>
           <p className="headline-editorial mt-4 text-xl leading-snug sm:text-2xl">
@@ -353,7 +353,7 @@ export function CreativeHeroSection({
               {lead}
             </p>
             {mission ? (
-              <blockquote className="mt-6 max-w-lg border-l-2 border-warm-400/80 pl-4">
+              <blockquote className="mt-6 max-w-lg border-l-2 border-teal-400/80 pl-4">
                 <p className="text-base italic leading-relaxed text-navy-700">
                   {mission}
                 </p>
@@ -438,7 +438,7 @@ export function Section({
   id?: string;
 }) {
   const bg = navy
-    ? "bg-navy-900 text-white"
+    ? "bg-navy-950 text-white"
     : soft
       ? "bg-cream"
       : "";
@@ -506,7 +506,7 @@ export function HeroSection({
           {lead}
         </p>
         {mission ? (
-          <p className="mt-4 max-w-2xl border-l-2 border-warm-400 pl-4 text-base italic leading-relaxed text-navy-700">
+          <p className="mt-4 max-w-2xl border-l-2 border-teal-400 pl-4 text-base italic leading-relaxed text-navy-700">
             {mission}
           </p>
         ) : null}
@@ -610,16 +610,16 @@ export function CalloutCard({
 }: {
   title: string;
   body: string;
-  tone?: "teal" | "warm" | "navy";
+  tone?: "teal" | "aqua" | "navy";
 }) {
   const styles = {
     teal: "border-teal-200 bg-teal-50/40",
-    warm: "border-warm-200 bg-warm-50/60",
+    aqua: "border-aqua-200 bg-aqua-50/60",
     navy: "border-navy-200 bg-navy-50/40",
   }[tone];
   return (
     <div className={`dossier-card border px-5 py-5 sm:px-6 ${styles}`}>
-      <StampLabel tone={tone === "navy" ? "navy" : tone === "warm" ? "warm" : "teal"}>
+      <StampLabel tone={tone === "navy" ? "navy" : tone === "aqua" ? "aqua" : "teal"}>
         Important
       </StampLabel>
       <h3 className="headline-editorial mt-4 text-lg sm:text-xl">{title}</h3>
@@ -660,7 +660,7 @@ export function RecoveryCard({
   children: ReactNode;
 }) {
   return (
-    <div className="dossier-card border border-teal-200/80 bg-gradient-to-br from-teal-50/40 via-white to-warm-50/30 p-6 sm:p-8">
+    <div className="dossier-card border border-teal-200/80 bg-gradient-to-br from-teal-50/40 via-white to-aqua-50/30 p-6 sm:p-8">
       <StampLabel tone="teal">SAVE ACCESS</StampLabel>
       <h3 className="headline-editorial mt-3 text-xl">{title}</h3>
       <div className="mt-4">{children}</div>

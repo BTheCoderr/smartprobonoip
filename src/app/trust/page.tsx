@@ -40,7 +40,7 @@ export default function TrustPage() {
         stamps={
           <>
             <StampLabel tone="teal">TRUST CENTER</StampLabel>
-            <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
+            <StampLabel tone="aqua">PREPARATION ONLY</StampLabel>
           </>
         }
         kicker={TRUST_COPY.subtitle}
@@ -176,7 +176,7 @@ export default function TrustPage() {
       <Section soft>
         <PaperShell className="pb-8">
           <CalloutCard
-            tone="warm"
+            tone="aqua"
             title="Preparation only — not legal advice"
             body="SmartProBonoIP is not a law firm. No attorney-client relationship is created by using this tool."
           />

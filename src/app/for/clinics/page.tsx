@@ -26,7 +26,7 @@ export default function ForClinicsPage() {
         stamps={
           <>
             <StampLabel tone="teal">FOR CLINICS</StampLabel>
-            <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
+            <StampLabel tone="aqua">PREPARATION ONLY</StampLabel>
           </>
         }
         kicker={FOR_CLINICS_COPY.subtitle}

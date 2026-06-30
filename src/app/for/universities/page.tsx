@@ -26,7 +26,7 @@ export default function ForUniversitiesPage() {
         stamps={
           <>
             <StampLabel tone="teal">FOR UNIVERSITIES</StampLabel>
-            <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
+            <StampLabel tone="aqua">PREPARATION ONLY</StampLabel>
           </>
         }
         kicker={FOR_UNIVERSITIES_COPY.subtitle}

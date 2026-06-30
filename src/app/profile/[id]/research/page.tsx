@@ -61,7 +61,7 @@ export default function ResearchPage({
         stamps={
           <>
             <StampLabel tone="teal">RESEARCH PREP</StampLabel>
-            <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
+            <StampLabel tone="aqua">PREPARATION ONLY</StampLabel>
           </>
         }
         kicker={PACKET_COPY.similarReferenceSearchPrepTitle}

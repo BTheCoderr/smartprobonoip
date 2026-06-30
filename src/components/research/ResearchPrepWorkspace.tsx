@@ -271,17 +271,17 @@ export function ResearchPrepWorkspace({
         </ol>
       </div>
 
-      <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+      <p className="rounded-lg border border-aqua-200 bg-aqua-50 px-3 py-2 text-xs leading-relaxed text-navy-900">
         {RESEARCH_PREP_COPY.helperNote}
       </p>
 
       {loadError ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-aqua-200 bg-aqua-50 px-3 py-2 text-sm text-navy-800">
           <span>{loadError}</span>
           <button
             type="button"
             onClick={() => void refreshSavedReferences()}
-            className="rounded border border-amber-300 px-3 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+            className="rounded border border-aqua-300 px-3 py-1 text-xs font-medium text-navy-900 hover:bg-aqua-100"
           >
             Retry
           </button>
@@ -289,7 +289,7 @@ export function ResearchPrepWorkspace({
       ) : null}
 
       {error ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <p className="rounded-lg border border-aqua-200 bg-aqua-50 px-3 py-2 text-sm text-navy-800">
           {error}
         </p>
       ) : null}

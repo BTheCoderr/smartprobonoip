@@ -142,7 +142,7 @@ export function PacketCoach({ record }: { record: ProjectRecord }) {
 
       {error ? (
         <p
-          className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800"
+          className="mt-4 rounded-xl bg-aqua-50 px-4 py-3 text-sm text-navy-800"
           role="alert"
         >
           {error}

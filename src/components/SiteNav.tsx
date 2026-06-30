@@ -10,31 +10,31 @@ export function SiteNav() {
         <div className="flex shrink-0 items-center gap-0.5 text-sm sm:gap-1">
           <Link
             href={ROUTES.sample}
-            className="hidden rounded-md px-2 py-2 font-medium text-navy-600 transition hover:bg-mist-100 sm:inline-block"
+            className="link-brand hidden rounded-md px-2 py-2 font-medium sm:inline-block"
           >
             Sample
           </Link>
           <Link
             href={ROUTES.learn}
-            className="hidden rounded-md px-2 py-2 font-medium text-navy-600 transition hover:bg-mist-100 md:inline-block"
+            className="link-brand hidden rounded-md px-2 py-2 font-medium md:inline-block"
           >
             Learn
           </Link>
           <Link
             href={ROUTES.trust}
-            className="hidden rounded-md px-2 py-2 font-medium text-navy-600 transition hover:bg-mist-100 md:inline-block"
+            className="link-brand hidden rounded-md px-2 py-2 font-medium md:inline-block"
           >
             Trust
           </Link>
           <Link
             href={ROUTES.pilot}
-            className="hidden rounded-md px-2 py-2 font-medium text-navy-600 transition hover:bg-mist-100 lg:inline-block"
+            className="link-brand hidden rounded-md px-2 py-2 font-medium lg:inline-block"
           >
             Pilot
           </Link>
           <Link
             href={ROUTES.forProfessionals}
-            className="hidden rounded-md px-2 py-2 font-medium text-navy-600 transition hover:bg-mist-100 lg:inline-block"
+            className="link-brand hidden rounded-md px-2 py-2 font-medium lg:inline-block"
           >
             Professionals
           </Link>

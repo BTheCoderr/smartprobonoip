@@ -19,7 +19,7 @@ export class ResearchErrorBoundary extends Component<
   render() {
     if (this.state.error) {
       return (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div className="rounded-lg border border-aqua-200 bg-aqua-50 px-4 py-3 text-sm text-navy-900">
           <p className="font-semibold">Research workspace could not load.</p>
           <p className="mt-2">
             Your saved references are still stored. Reload the page or try again.
@@ -27,7 +27,7 @@ export class ResearchErrorBoundary extends Component<
           <button
             type="button"
             onClick={() => this.setState({ error: null })}
-            className="mt-3 rounded border border-amber-300 px-3 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+            className="mt-3 rounded border border-aqua-300 px-3 py-1 text-xs font-medium text-navy-900 hover:bg-aqua-100"
           >
             Try again
           </button>

@@ -321,7 +321,7 @@ export default function DashboardClient() {
   return (
     <PaperShell className="py-12 sm:py-16">
       <div className="dossier-card relative overflow-hidden px-6 py-6 shadow-[var(--shadow-paper-offset)] sm:px-8">
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-teal-600 to-warm-500" />
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-teal-600 to-aqua-400" />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <BrandMark variant="compact" className="mb-4" />
@@ -621,7 +621,7 @@ export default function DashboardClient() {
               label="Public sharing flagged"
               value={metrics.publicDisclosureCount}
               hint="Possible public disclosure noted"
-              accent="warm"
+              accent="aqua"
             />
             <MetricCard
               label="Avg. clarity before → after"
@@ -644,7 +644,7 @@ export default function DashboardClient() {
                 <MetricCard
                   label="Contractor or co-founder noted"
                   value={ownershipMetrics.contractorFreelancerInvolvement}
-                  accent="warm"
+                  accent="aqua"
                 />
                 <MetricCard
                   label="No written agreements"
@@ -714,7 +714,7 @@ export default function DashboardClient() {
                 <MetricCard
                   label="Recovery links"
                   value={analytics.funnel.recoveryLinkCreated}
-                  accent="warm"
+                  accent="aqua"
                 />
                 <MetricCard
                   label="Disclaimer accepted"
@@ -749,7 +749,7 @@ export default function DashboardClient() {
                 label="Strong referral readiness"
                 value={pilotImpact.strongReferralReadiness}
                 hint="2+ recommended resources"
-                accent="warm"
+                accent="aqua"
               />
             </div>
           </Card>
@@ -786,7 +786,7 @@ export default function DashboardClient() {
                 <MetricCard
                   label="Follow-up requested"
                   value={feedbackMetrics.followUpRequestedCount}
-                  accent="warm"
+                  accent="aqua"
                 />
               </div>
               {feedbackMetrics.topSupportNeeds.length > 0 ? (
@@ -997,7 +997,7 @@ export default function DashboardClient() {
                 <MetricCard
                   label="Public sharing flagged"
                   value={activePartnerSummary.metrics.publicDisclosureCount}
-                  accent="warm"
+                  accent="aqua"
                 />
               </div>
               <div className="mt-6 grid gap-6 lg:grid-cols-2">

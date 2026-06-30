@@ -22,7 +22,7 @@ export default function SamplePacketPage() {
   return (
     <div className="pb-16">
       <PageEvent event="sample_packet_viewed" />
-      <div className="border-b border-dashed border-warm-200/80 bg-cream">
+      <div className="border-b border-dashed border-aqua-200/80 bg-cream">
         <div className="page-shell-packet py-4">
           <p className="text-sm leading-relaxed text-navy-700">
             {PILOT_KIT_COPY.sampleBanner}
@@ -36,7 +36,7 @@ export default function SamplePacketPage() {
       <DossierPageHeader
         stamps={
           <>
-            <StampLabel tone="warm">SAMPLE PACKET</StampLabel>
+            <StampLabel tone="aqua">SAMPLE PACKET</StampLabel>
             <StampLabel tone="teal">IP READINESS</StampLabel>
             <StampLabel tone="navy">PREPARATION ONLY</StampLabel>
           </>

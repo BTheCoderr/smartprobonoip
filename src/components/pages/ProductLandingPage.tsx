@@ -206,7 +206,7 @@ export default function ProductLandingPage() {
           </ul>
           <div className="mt-8">
             <CalloutCard
-              tone="warm"
+              tone="aqua"
               title="What this does not do"
               body={LANDING_COPY.whatWeDoNot}
             />

@@ -24,7 +24,7 @@ export function ProgressIndicator({ steps, current }: ProgressIndicatorProps) {
 
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-mist-200">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-teal-500 to-teal-600 transition-all duration-500 ease-out"
+          className="h-full rounded-full bg-gradient-to-r from-teal-600 to-aqua-400 transition-all duration-500 ease-out"
           style={{ width: `${pct}%` }}
         />
       </div>

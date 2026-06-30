@@ -1,3 +1,13 @@
+/** Logo palette — single source of truth for brand colors */
+export const BRAND_COLORS = {
+  deepNavy: "#022E55",
+  midnightNavy: "#03133B",
+  primaryTeal: "#049397",
+  darkTeal: "#037681",
+  softAqua: "#5DAAB0",
+  offWhite: "#FDFDFD",
+} as const;
+
 export const BRAND = {
   umbrella: "SmartProBono",
   product: "SmartProBonoIP",

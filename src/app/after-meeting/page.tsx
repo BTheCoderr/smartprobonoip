@@ -40,7 +40,7 @@ export default function AfterMeetingPage() {
         stamps={
           <>
             <StampLabel tone="teal">FOLLOW-UP</StampLabel>
-            <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
+            <StampLabel tone="aqua">PREPARATION ONLY</StampLabel>
           </>
         }
         kicker={AFTER_MEETING_COPY.subtitle}
@@ -144,7 +144,7 @@ export default function AfterMeetingPage() {
           />
           <BulletList items={AFTER_MEETING_COPY.bringToExpert.items} />
           <CalloutCard
-            tone="warm"
+            tone="aqua"
             title="Preparation only"
             body="This page helps you organize follow-up. It does not replace advice from your expert."
           />

@@ -137,7 +137,7 @@ export default function ProfilePage({
         stamps={
           <>
             <StampLabel tone="teal">IP READINESS</StampLabel>
-            <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
+            <StampLabel tone="aqua">PREPARATION ONLY</StampLabel>
           </>
         }
         kicker="IP Readiness Packet"

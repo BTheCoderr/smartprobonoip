@@ -81,7 +81,7 @@ export function ReferenceGapMapForm({
 
       {expanded ? (
         <>
-          <p className="rounded-lg border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-[11px] leading-relaxed text-amber-900">
+          <p className="rounded-lg border border-aqua-200/80 bg-aqua-50/80 px-3 py-2 text-[11px] leading-relaxed text-navy-900">
             {RESEARCH_PREP_COPY.helperNote}
           </p>
           {GAP_MAP_FIELD_LABELS.map(({ key, label, hint }) => (
@@ -156,7 +156,7 @@ export function ReferenceGapMapForm({
           ) : null}
         </div>
       ) : null}
-      {error ? <p className="text-sm text-amber-800">{error}</p> : null}
+      {error ? <p className="text-sm text-navy-800">{error}</p> : null}
     </form>
   );
 }

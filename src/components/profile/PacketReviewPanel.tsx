@@ -17,7 +17,7 @@ export function PacketReviewPanel({
       ? "from-navy-500 to-navy-600"
       : review.readinessScore >= 50
         ? "from-navy-400 to-navy-500"
-        : "from-warm-400 to-warm-500";
+        : "from-aqua-400 to-teal-600";
 
   return (
     <div id="packet-review" className="paper-card overflow-hidden p-0">
@@ -70,7 +70,7 @@ export function PacketReviewPanel({
               <ul className="space-y-1.5 text-sm text-navy-700">
                 {review.weakSections.map((item) => (
                   <li key={item} className="flex gap-2">
-                    <span className="text-warm-500">!</span>
+                    <span className="text-teal-600">!</span>
                     {item}
                   </li>
                 ))}
@@ -87,7 +87,7 @@ export function PacketReviewPanel({
             <ul className="space-y-1.5 text-sm text-navy-700">
               {review.topGaps.map((gap) => (
                 <li key={gap} className="flex gap-2">
-                  <span className="text-amber-600">•</span>
+                  <span className="text-teal-600">•</span>
                   {gap}
                 </li>
               ))}

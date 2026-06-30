@@ -33,7 +33,7 @@ export default function ForProfessionalsPage() {
         stamps={
           <>
             <StampLabel tone="teal">FOR PROFESSIONALS</StampLabel>
-            <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
+            <StampLabel tone="aqua">PREPARATION ONLY</StampLabel>
           </>
         }
         kicker={PROFESSIONALS_COPY.subtitle}
@@ -192,7 +192,7 @@ export default function ForProfessionalsPage() {
           </div>
           <div className="mt-8">
             <CalloutCard
-              tone="warm"
+              tone="aqua"
               title="Suggested classification areas"
               body={PROFESSIONALS_COPY.cpcNote}
             />

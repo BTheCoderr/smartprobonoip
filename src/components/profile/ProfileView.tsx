@@ -69,7 +69,7 @@ export function ProfileView({
   return (
     <div className="space-y-8">
       <div className="paper-card-elevated relative overflow-hidden border-teal-100 p-0">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 to-warm-400" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 to-aqua-400" />
         <div className="border-b border-dashed border-mist-200 px-6 py-4 sm:px-8">
           <span className="document-tab">Section 01</span>
         </div>
@@ -131,7 +131,7 @@ export function ProfileView({
               key={item.label}
               className={`rounded-lg border p-3 ${
                 item.flagged
-                  ? "border-amber-300 bg-amber-50"
+                  ? "border-aqua-300 bg-aqua-50"
                   : "border-mist-200 bg-mist-50"
               }`}
             >
@@ -203,7 +203,7 @@ export function ProfileView({
               <ul className="space-y-1.5 text-sm text-navy-700">
                 {missingStatus.coreMissing.map((item) => (
                   <li key={item} className="flex gap-2">
-                    <span className="text-amber-600">•</span>
+                    <span className="text-teal-600">•</span>
                     {item}
                   </li>
                 ))}
@@ -240,7 +240,7 @@ export function ProfileView({
         variant={profile.publicDisclosure ? "default" : "soft"}
         className={
           profile.publicDisclosure
-            ? "border-amber-300 bg-amber-50/50"
+            ? "border-aqua-300 bg-aqua-50/50"
             : undefined
         }
       >
@@ -373,7 +373,7 @@ export function ProfileView({
                   <span className="flex items-start gap-2">
                     <span
                       className={
-                        row.complete ? "text-teal-600" : "text-amber-600"
+                        row.complete ? "text-teal-600" : "text-teal-600"
                       }
                     >
                       {row.complete ? "☑" : "☐"}
@@ -421,7 +421,7 @@ export function ProfileView({
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-xs text-amber-700">{DIFFERENCE_MAP_NOTE}</p>
+            <p className="mt-3 text-xs text-teal-700">{DIFFERENCE_MAP_NOTE}</p>
           </Card>
 
           <Card>
@@ -604,7 +604,7 @@ export function ProfileView({
                 </li>
               ))}
             </ul>
-            <p className="mt-3 border-t border-mist-100 pt-2 text-xs text-amber-700">
+            <p className="mt-3 border-t border-mist-100 pt-2 text-xs text-teal-700">
               {searchPrep.safeDisclaimer}
             </p>
           </Card>

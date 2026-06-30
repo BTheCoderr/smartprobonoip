@@ -364,7 +364,7 @@ export default function PilotKitPage() {
         <PaperShell className="pb-8">
           <InterestForm />
           <CalloutCard
-            tone="warm"
+            tone="aqua"
             title={`About ${BRAND.product}`}
             body="Signals and suggestions may be relevant starting points for your next conversation. A professional may want to review the details with you. This is preparation only — not legal advice."
           />

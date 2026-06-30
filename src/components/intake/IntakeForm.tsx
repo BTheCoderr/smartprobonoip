@@ -372,7 +372,7 @@ export function IntakeForm() {
       <PaperCard elevated className="overflow-hidden p-6 sm:p-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-mist-200 pb-5">
           <div>
-            <StampLabel tone="warm">PREP PACKET</StampLabel>
+            <StampLabel tone="aqua">PREP PACKET</StampLabel>
             <h2 className="mt-3 text-lg font-semibold text-navy-900">
               {STEP_LABELS[step]}
             </h2>
@@ -387,7 +387,7 @@ export function IntakeForm() {
               </p>
             ) : null}
             {whyCopy ? (
-              <div className="mb-6 rounded-xl border border-navy-100 bg-sky-50/60 px-4 py-4 text-sm leading-relaxed text-navy-700">
+              <div className="mb-6 rounded-xl border border-navy-100 bg-teal-50/60 px-4 py-4 text-sm leading-relaxed text-navy-700">
                 <p className="font-semibold text-navy-900">Why this matters</p>
                 <p className="mt-2">{whyCopy.why}</p>
                 <p className="mt-3 text-xs text-navy-600">{whyCopy.example}</p>
@@ -659,7 +659,7 @@ export function IntakeForm() {
 
         {fieldError ? (
           <p
-            className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+            className="mt-6 rounded-xl border border-aqua-200 bg-aqua-50 px-4 py-3 text-sm text-navy-900"
             role="alert"
           >
             {fieldError}

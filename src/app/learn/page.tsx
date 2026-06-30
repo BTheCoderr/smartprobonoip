@@ -30,7 +30,7 @@ export default function LearnPage() {
         stamps={
           <>
             <StampLabel tone="teal">PHASE 1 · LEARN</StampLabel>
-            <StampLabel tone="warm">PREPARATION ONLY</StampLabel>
+            <StampLabel tone="aqua">PREPARATION ONLY</StampLabel>
           </>
         }
         kicker={LEARN_COPY.subtitle}
@@ -81,7 +81,7 @@ export default function LearnPage() {
             ))}
           </div>
           <CalloutCard
-            tone="warm"
+            tone="aqua"
             title="v1.0 scope"
             body={`${COMMERCIALIZATION_COPY.statusNote} ${LEARN_COPY.futureNote}`}
           />

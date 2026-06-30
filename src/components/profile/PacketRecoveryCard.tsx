@@ -137,7 +137,7 @@ export function PacketRecoveryCard({ record }: { record: ProjectRecord }) {
         <p className="mt-4 text-sm text-teal-800">{message}</p>
       ) : null}
       {error ? (
-        <p className="mt-4 text-sm text-amber-800" role="alert">
+        <p className="mt-4 text-sm text-navy-800" role="alert">
           {error}
         </p>
       ) : null}

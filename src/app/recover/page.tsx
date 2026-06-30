@@ -80,7 +80,7 @@ function RecoverForm() {
           />
         </label>
         {error ? (
-          <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert">
+          <p className="rounded-xl bg-aqua-50 px-4 py-3 text-sm text-navy-900" role="alert">
             {error}
           </p>
         ) : null}
