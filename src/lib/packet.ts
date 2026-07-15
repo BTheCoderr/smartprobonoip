@@ -7,11 +7,8 @@ import {
   getIdeaLabel as resolveIdeaLabel,
   normalizeAnswersForPacket,
 } from "./intakeValidation";
-import {
-  cleanText,
-  extractBrandName,
-  preserveBrandInText,
-} from "./textCleanup";
+import { resolveBrandName } from "./brandName";
+import { cleanText, preserveBrandInText } from "./textCleanup";
 import type {
   AssetType,
   DevelopmentTimeline,
@@ -93,6 +90,7 @@ export const DEVELOPMENT_TIMELINE_FIELDS = [
   "Date first shared publicly",
   "Date first pitched, sold, or demoed",
   "Date of major improvements",
+  "Date first shown privately",
 ] as const satisfies readonly DevelopmentTimelineField[];
 
 export function sanitizeTimelineValue(value: string): string {
@@ -129,9 +127,7 @@ export function getIdeaLabel(answers: IntakeAnswers): string {
 
 export function buildIdeaSummaryFields(answers: IntakeAnswers): SummaryField[] {
   const normalized = normalizeAnswersForPacket(answers);
-  const brand =
-    extractBrandName(normalized.whatCreated) ??
-    extractBrandName(normalized.problemSolved);
+  const brand = resolveBrandName(normalized);
   const fields: SummaryField[] = [
     { label: "What you created", value: normalized.whatCreated },
     { label: "What problem it solves", value: normalized.problemSolved },
@@ -337,8 +333,7 @@ export function buildExpertHandoff(record: ProjectRecord): ExpertHandoff {
   const { profile } = record;
   const answers = normalizeAnswersForPacket(record.answers);
   const brand =
-    extractBrandName(answers.whatCreated) ??
-    extractProductNameFromAnswers(answers);
+    resolveBrandName(answers) ?? extractProductNameFromAnswers(answers);
   const clip = (value: string, max = 240) => {
     const text = preserveBrandInText(cleanText(value), brand);
     return text.length > max ? `${text.slice(0, max - 1)}…` : text;
@@ -527,6 +522,67 @@ export function buildNextBestAction(
   return cleanText(
     `Consider your next preparation step: ${steps.join(", ")}, before speaking with a patent professional or PTRC resource.`,
   );
+}
+
+/**
+ * Discrete next preparation steps derived from the same signals as
+ * buildNextBestAction, for rendering as a numbered list.
+ * buildNextBestAction remains unchanged for ReadinessProfile.suggestedNextStep.
+ */
+export function buildNextBestSteps(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): string[] {
+  const { profile } = record;
+  const optionalGaps = deriveOptionalGaps(record, savedReferenceCount);
+  const coreMissing = profile.missingInfo;
+
+  if (coreMissing.length >= 2) {
+    return [
+      "Consider filling in the core gaps listed above — especially how your idea works and what makes it different.",
+      "Once your description feels clear, a professional may want to review it with you.",
+    ].map(cleanText);
+  }
+
+  if (coreMissing.length === 1) {
+    return [
+      `Consider completing the remaining core item (${coreMissing[0].toLowerCase()}).`,
+      "Then consider speaking with a patent professional or PTRC resource.",
+    ].map(cleanText);
+  }
+
+  const steps: string[] = [];
+  if (optionalGaps.includes("Development timeline")) {
+    steps.push("Organize your development timeline.");
+  }
+  if (
+    optionalGaps.includes("Testing notes") ||
+    optionalGaps.includes("Customer feedback / pitch notes")
+  ) {
+    steps.push("Gather prototype and testing notes.");
+  }
+  if (optionalGaps.includes("Similar references saved")) {
+    steps.push(
+      "Review possible similar references using the suggested search queries.",
+    );
+  }
+  if (optionalGaps.includes("Flowcharts")) {
+    steps.push("Add flowcharts or diagrams if you have them.");
+  }
+  if (optionalGaps.includes("Public sharing details")) {
+    steps.push("Note when and how you shared this publicly.");
+  }
+
+  if (steps.length === 0) {
+    return [
+      "Consider bringing this packet and your materials to a patent resource, clinic, mentor, or innovation partner for review.",
+    ].map(cleanText);
+  }
+
+  steps.push(
+    "Then consider speaking with a patent professional or PTRC resource.",
+  );
+  return steps.map(cleanText);
 }
 
 export function assertPacketContentSafe(): void {

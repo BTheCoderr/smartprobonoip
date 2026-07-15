@@ -8,6 +8,7 @@ export function TextField({
   value,
   onChange,
   placeholder,
+  example,
   rows = 3,
 }: {
   label: string;
@@ -15,6 +16,7 @@ export function TextField({
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  example?: string;
   rows?: number;
 }) {
   return (
@@ -25,10 +27,20 @@ export function TextField({
           {hint}
         </span>
       ) : null}
+      {example && !value.trim() ? (
+        <button
+          type="button"
+          onClick={() => onChange(example)}
+          className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-mist-200 bg-cream/80 px-3 py-1 text-xs font-medium text-navy-600 transition hover:border-teal-200 hover:bg-teal-50/50 hover:text-teal-800"
+        >
+          <span aria-hidden>💡</span>
+          Use example
+        </button>
+      ) : null}
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? example}
         rows={rows}
         className="input-surface mt-3"
       />

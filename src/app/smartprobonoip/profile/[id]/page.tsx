@@ -14,6 +14,7 @@ import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
 import { AttorneyExportModal } from "@/components/profile/AttorneyExportModal";
 import { downloadPacketPdf } from "@/lib/pdf";
+import { ExportGuidance } from "@/components/profile/ExportGuidance";
 import { loadWorkspace } from "@/lib/research/client";
 import type { SavedReference } from "@/lib/research/types";
 import { getIdeaLabel } from "@/lib/packet";
@@ -39,6 +40,7 @@ export default function ProfilePage({
   const [feedbackInput, setFeedbackInput] = useState<PilotFeedbackInput | null>(null);
   const [savedReferences, setSavedReferences] = useState<SavedReference[]>([]);
   const [attorneyExportOpen, setAttorneyExportOpen] = useState(false);
+  const [showExportGuidance, setShowExportGuidance] = useState(false);
   const packetViewTracked = useRef(false);
 
   const handleReferencesChange = useCallback((refs: SavedReference[]) => {
@@ -195,6 +197,7 @@ export default function ProfilePage({
                         savedReferenceCount: refs.length,
                       },
                     });
+                    setShowExportGuidance(true);
                   })();
                 }}
                 className="btn-primary w-full sm:w-auto"
@@ -207,6 +210,9 @@ export default function ProfilePage({
       />
 
       <div className="page-shell-packet mt-8 space-y-8">
+        {showExportGuidance ? (
+          <ExportGuidance onDismiss={() => setShowExportGuidance(false)} />
+        ) : null}
         {editing ? (
           <ProfileEditor
             profile={record.profile}
@@ -238,6 +244,19 @@ export default function ProfilePage({
             Rate your clarity to help us measure pilot impact. You rated{" "}
             {record.preClarity}/5 before seeing your packet.
           </p>
+          {postClarity && postClarity > 0 ? (
+            <p className="mt-3 rounded-md border border-teal-200 bg-teal-50/60 px-3 py-2 text-sm text-navy-800">
+              Clarity lift:{" "}
+              <span className="font-semibold tabular-nums">
+                {record.preClarity}/5 → {postClarity}/5
+              </span>
+              {postClarity > record.preClarity
+                ? " — up after reviewing your packet."
+                : postClarity === record.preClarity
+                  ? " — same as before."
+                  : " — noted for pilot tracking."}
+            </p>
+          ) : null}
           <div className="mt-5">
             <ClarityScale label="" value={postClarity} onChange={saveClarity} />
           </div>

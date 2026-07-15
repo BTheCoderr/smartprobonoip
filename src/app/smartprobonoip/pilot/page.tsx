@@ -8,12 +8,14 @@ import { appendTrackingQuery } from "@/lib/partnerTracking";
 import {
   CalloutCard,
   DossierPageHeader,
+  InlineDisclaimer,
   PaperShell,
   Section,
   SectionHeader,
   StampLabel,
   ValueCard,
 } from "@/components/ui/design";
+import { SearchPrepHomePreview } from "@/components/ui/FeaturedGooglePatentsCard";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import { InterestForm } from "@/components/contact/InterestForm";
 import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
@@ -48,19 +50,25 @@ export default function PilotKitPage() {
         title={PILOT_KIT_COPY.title}
         lead={PILOT_KIT_COPY.lead}
         aside={
-          <div className="flex flex-wrap gap-3 lg:flex-col">
-            <Link href="/smartprobonoip/sample" className="btn-primary">
+          <div className="flex w-full flex-col gap-3 lg:max-w-xs">
+            <Link href="/smartprobonoip/sample" className="btn-primary-lg w-full">
               View sample packet
             </Link>
             <PartnerInterestLink
               href="/smartprobonoip/disclaimer?partner=smartprobonoip-ri-pilot&source=qr&campaign=pilot-2026"
               ctaName="Start RI pilot intake"
               pageSection="pilot_hero"
-              className="btn-secondary"
+              className="btn-secondary w-full"
             >
               Start RI pilot intake
             </PartnerInterestLink>
-            <Link href="/smartprobonoip/dashboard?demo=1" className="btn-ghost px-0">
+            <Link href="/for-professionals/playbook" className="btn-secondary w-full">
+              Partner playbook
+            </Link>
+            <Link href="/smartprobonoip/pilot-tracker" className="btn-secondary w-full">
+              Pilot tracker (local)
+            </Link>
+            <Link href="/smartprobonoip/dashboard?demo=1" className="btn-ghost w-full justify-center px-0">
               Partner Impact Desk →
             </Link>
           </div>
@@ -74,11 +82,19 @@ export default function PilotKitPage() {
             title="Patent & similar-reference search prep"
             lead={PILOT_KIT_COPY.similarReferencePrepBlurb}
           />
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/smartprobonoip/sample#similar-reference-search-prep" className="btn-primary">
+          <div className="mt-8">
+            <SearchPrepHomePreview />
+          </div>
+          <p className="mt-4">
+            <InlineDisclaimer>
+              Preparation only — not a patentability or clearance opinion.
+            </InlineDisclaimer>
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link href="/smartprobonoip/sample#similar-reference-search-prep" className="btn-primary w-full sm:w-auto">
               View sample workspace
             </Link>
-            <Link href="/for-professionals" className="btn-secondary">
+            <Link href="/for-professionals" className="btn-secondary w-full sm:w-auto">
               Export schema for professionals
             </Link>
           </div>

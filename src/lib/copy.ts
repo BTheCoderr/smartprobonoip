@@ -30,6 +30,17 @@ export const PACKET_COPY = {
   coreComplete: "Core intake is complete.",
   coreNeedsAttention: (count: number) =>
     `${count} core intake item${count === 1 ? "" : "s"} still need attention.`,
+  disclosureEventsTableTitle: "Sharing events you recorded",
+  disclosureGuidance:
+    "Sharing history can be time-sensitive; a professional may want to review your dates before any filing or broader disclosure decision.",
+  searchReadinessTitle: "In your words",
+  searchReadinessSubtitle:
+    "Search prep details you described during intake — used to build your starter search queries.",
+  searchFirmQuestionsTitle: "Questions for a search firm or patent professional",
+  searchFirmQuestionsSubtitle:
+    "Neutral questions people commonly ask before or during a professional search conversation.",
+  pathwayTitle: "A common preparation pathway",
+  resourceTypesTitle: "Types of resources that exist",
 } as const;
 
 export const COACH_COPY = {
@@ -52,6 +63,51 @@ export const INTAKE_COPY = {
   ownershipSectionTitle: "People and ownership",
   ownershipSectionHint:
     "Help organize who helped and what agreements may exist. This is preparation only — not an ownership determination.",
+  draftSaved: "Draft saved on this device",
+  draftRestored: "We restored your last draft from this browser.",
+  saveAndExit: "Progress saved. Return anytime from Start free packet.",
+  wizard: {
+    ideaCoreNote:
+      "Start with three basics — what you made, who it is for, and how it works. Optional details help your packet but can wait until review.",
+    timelineNote:
+      "Public sharing and collaborator details help professionals ask better questions. A full development timeline editor unlocks in your packet after generation.",
+    searchPrepLead:
+      "Start with Google Patents when you explore possible similar references. You can skip this preview — the full workspace is in your packet.",
+    searchReadinessTitle: "In your words: search prep (optional)",
+    searchReadinessHint:
+      "These optional questions help your packet build better starter search queries from your own words. Answer any that feel easy — skip the rest.",
+    disclosureEventsTitle: "Have you shown it to anyone? (optional)",
+    disclosureEventsHint:
+      "Add anyone you have shown the idea to — demos, pitches, friends, posts. Approximate dates are fine. This helps a professional understand your sharing history.",
+  },
+  fieldExamples: {
+    whatCreated:
+      "A portable water bottle with a twist-lock seal and replaceable filter cartridge.",
+    problemSolved:
+      "Hikers and travelers need clean water without carrying bulky filter gear.",
+    whoFor: "Outdoor enthusiasts, travelers, and emergency-prep households.",
+    howItWorks:
+      "Water passes through a sealed cartridge when the user squeezes or sips; the seal prevents leaks during transport.",
+    mainParts:
+      "Bottle body, twist-lock lid, replaceable filter cartridge, silicone gasket.",
+    whatDifferent:
+      "Combines a field-replaceable cartridge with a leak-proof seal in one compact bottle form factor.",
+    location: "Providence, Rhode Island, USA",
+  },
+} as const;
+
+export const PRODUCT_COPY = {
+  exportGuidance: {
+    title: "What to do with your packet next",
+    steps: [
+      "Review the PDF for accuracy — edit your packet if anything looks incomplete.",
+      "Save 1–3 possible similar references in Search Prep before your expert meeting.",
+      "Share the PDF or attorney export with a clinic, mentor, or IP professional.",
+      "Bring your expert questions and gap map notes to the conversation.",
+    ],
+    disclaimer:
+      "Preparation only — not legal advice. A qualified professional should review all details.",
+  },
 } as const;
 
 export const RECOVERY_COPY = {
@@ -88,7 +144,9 @@ export const RESEARCH_PREP_COPY = {
   outboundToolsLead:
     "Open these resources in a new tab and paste a starter query. Results are for preparation only — not legal conclusions or patentability opinions.",
   outboundToolsRecommended:
-    "Start with Google Patents, USPTO Patent Public Search, or The Lens — then save what you find as possible similar references.",
+    "Start with Google Patents — then use USPTO or The Lens if you need formal US documents or scholarly coverage. Save what you find as possible similar references.",
+  outboundToolsGooglePatentsLead:
+    "Google Patents is the recommended first stop for most inventors. Open it with a starter query, then save possible similar references in your packet.",
   outboundToolsSecondary:
     "Additional patent, product, and web resources if you want broader coverage.",
   outboundToolsOptional:
@@ -115,6 +173,7 @@ export const RESEARCH_PREP_COPY = {
 export const LANDING_COPY = {
   heroStamp: "IP READINESS",
   heroSafety: "Preparation only — not legal advice.",
+  heroSubcta: "Free to start · No account required · ~14 minutes · 5 steps · save anytime",
   ctaPrimary: "Start your free readiness packet",
   ctaSample: "View sample packet",
   ctaHowItWorks: "See how it works",
@@ -181,58 +240,44 @@ export const LANDING_COPY = {
   ],
   productProof: [
     {
+      variant: "builder" as const,
       title: "Packet Builder",
-      body: "Guided intake turns scattered notes into structured packet sections.",
-      previewLines: [
-        "Step 3 · How it works",
-        "Describe the main parts in plain language…",
-        "✓ Idea basics complete",
-      ],
+      body: "Five-step wizard with save & continue — HydroSeal demo shown below.",
+      sampleAnchor: "builder",
     },
     {
+      variant: "snapshot" as const,
       title: "Readiness snapshot",
-      body: "See what is organized and what may still need attention before expert review.",
-      previewLines: [
-        "Readiness snapshot",
-        "Core intake · 6 of 7 complete",
-        "Materials · 2 optional gaps",
-      ],
+      body: "Organization score and gaps before expert review — from the live HydroSeal sample.",
+      sampleAnchor: "snapshot",
     },
     {
-      title: "Development timeline",
-      body: "Capture when you conceived, built, and tested — preparation only.",
-      previewLines: [
-        "Mar 2024 · First sketch",
-        "Jun 2024 · Working prototype",
-        "Jan 2025 · Field testing",
-      ],
-    },
-    {
+      variant: "search" as const,
       title: "Similar Reference Search + Gap Map",
-      body: "Grouped queries, outbound tools (Google Patents, USPTO, WIPO, and more), and gap maps for expert conversation — not patentability opinions.",
-      previewLines: [
-        "Starter query · portable water filter bottle",
-        "CPC areas to discuss · B01D · A45F",
-        "Gap note · What looks different?",
-      ],
+      body: "Google Patents first, grouped queries, and gap maps — preparation only.",
+      sampleAnchor: "search",
     },
     {
-      title: "PDF export",
-      body: "Download a handoff packet to share with a clinic, mentor, or IP professional.",
-      previewLines: [
-        "IP Readiness Packet · PDF",
-        "Idea summary · Timeline · Questions",
-        "Preparation only — not legal advice",
-      ],
+      variant: "pdf" as const,
+      title: "PDF & attorney export",
+      body: "Download a handoff packet or structured JSON for your expert conversation.",
+      sampleAnchor: "export",
+    },
+  ],
+  productProofLead:
+    "Screens below use the fictional HydroSeal demo packet — the same example you can open, download, or start from.",
+  trustQuotes: [
+    {
+      quote:
+        "Inventors showed up with timelines, materials lists, and questions already organized. It felt like a real intake conversation instead of starting from scratch.",
+      role: "Clinic coordinator",
+      context: "Rhode Island pilot feedback — anonymized",
     },
     {
-      title: "Expert handoff summary",
-      body: "Plain-language overview and questions organized for the next conversation.",
-      previewLines: [
-        "Idea at a glance",
-        "Questions to bring with you",
-        "Suggested resource categories",
-      ],
+      quote:
+        "The structured export saved time on basic organization. I still reviewed everything myself — but the packet was a useful starting point.",
+      role: "Patent agent",
+      context: "Professional reviewer feedback — anonymized",
     },
   ],
   valueCards: [
@@ -361,6 +406,9 @@ export const PILOT_KIT_COPY = {
   ],
   sampleBanner:
     "Sample packet — fictional HydroSeal invention for demos only. Preparation help, not legal advice.",
+  sampleStartCta: "Start with this example",
+  sampleStartHint:
+    "Pre-loads the HydroSeal demo in the packet builder — edit anything, then generate your own packet.",
   similarReferencePrepBlurb:
     "Inventors can use grouped starter queries, outbound search tools (Google Patents, USPTO, WIPO, Espacenet, The Lens, PQAI), gap maps, and suggested CPC areas (e.g. B01D, A45F) as preparation only — not legal conclusions.",
   pilotPitch:
@@ -715,6 +763,10 @@ export const PROFESSIONALS_COPY = {
     { field: "recommended_resources", type: "string[]", description: "Suggested resource category labels." },
     { field: "export_metadata.exported_for", type: "string", description: "Attorney email or firm entered at export time." },
     { field: "export_metadata.exported_at", type: "ISO 8601 date", description: "When the export was generated." },
+    { field: "invention.brand_name", type: "string (optional)", description: "User-provided product or brand name, when available." },
+    { field: "search_readiness", type: "object (optional)", description: "Inventor's own search-prep answers: key features, search terms, industries, sources searched, and references found." },
+    { field: "disclosure_events", type: "array (optional)", description: "User-recorded sharing events: kind, approximate date, where, who, what, NDA status, and key-feature inclusion." },
+    { field: "readiness_score_breakdown", type: "array (optional)", description: "Organization score components (core prep, materials, timeline and reference bonuses) — not legal merit." },
   ],
   csvFields: [
     "packet_id",
@@ -742,6 +794,10 @@ export const PROFESSIONALS_COPY = {
     "exported_for",
     "exported_at",
     "inventorship_split",
+    "invention_brand_name",
+    "search_readiness",
+    "disclosure_events",
+    "readiness_score_breakdown",
   ],
   doesNotDo: [
     "Provide legal advice or create an attorney-client relationship",

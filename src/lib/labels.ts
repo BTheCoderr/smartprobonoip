@@ -4,11 +4,14 @@ import type {
   AssetType,
   ContributorHelpType,
   ContributorInvolvement,
+  DisclosureEvent,
   Goal,
   IdeaInclude,
   InstitutionRelationship,
   ItemType,
+  NdaStatus,
   ResourceCategory,
+  SearchSource,
   SharingChannel,
 } from "./types";
 
@@ -191,6 +194,55 @@ export const INSTITUTION_RELATIONSHIP_LABELS: Record<
 > = Object.fromEntries(
   INSTITUTION_RELATIONSHIP_OPTIONS.map((o) => [o.value, o.label]),
 ) as Record<InstitutionRelationship, string>;
+
+export const SEARCH_SOURCE_OPTIONS: Option<SearchSource>[] = [
+  { value: "google", label: "Google or another web search" },
+  { value: "google_patents", label: "Google Patents" },
+  { value: "uspto", label: "USPTO Patent Public Search" },
+  { value: "youtube", label: "YouTube or video sites" },
+  { value: "marketplaces", label: "Marketplaces (Amazon, Etsy, eBay, etc.)" },
+  { value: "academic", label: "Academic papers or journals" },
+  { value: "app_stores", label: "App stores" },
+  { value: "none", label: "I have not searched anywhere yet" },
+];
+
+export const NDA_STATUS_OPTIONS: Option<NdaStatus>[] = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+  { value: "not_sure", label: "Not sure" },
+];
+
+export const DISCLOSURE_KIND_OPTIONS: Option<
+  NonNullable<DisclosureEvent["kind"]>
+>[] = [
+  { value: "private", label: "Private (small group or one-on-one)" },
+  { value: "public", label: "Public (anyone could see it)" },
+  { value: "not_sure", label: "Not sure" },
+];
+
+export const INCLUDED_KEY_FEATURES_OPTIONS: Option<
+  NonNullable<DisclosureEvent["includedKeyFeatures"]>
+>[] = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+  { value: "not_sure", label: "Not sure" },
+];
+
+export const SEARCH_SOURCE_LABELS: Record<SearchSource, string> =
+  Object.fromEntries(
+    SEARCH_SOURCE_OPTIONS.map((o) => [o.value, o.label]),
+  ) as Record<SearchSource, string>;
+
+export const NDA_STATUS_LABELS: Record<NdaStatus, string> = Object.fromEntries(
+  NDA_STATUS_OPTIONS.map((o) => [o.value, o.label]),
+) as Record<NdaStatus, string>;
+
+export const DISCLOSURE_KIND_LABELS: Record<
+  NonNullable<DisclosureEvent["kind"]>,
+  string
+> = Object.fromEntries(
+  DISCLOSURE_KIND_OPTIONS.map((o) => [o.value, o.label]),
+) as Record<NonNullable<DisclosureEvent["kind"]>, string>;
 
 export const RESOURCE_LABELS: Record<ResourceCategory, string> = {
   education: "Education & self-guided learning",

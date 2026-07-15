@@ -28,6 +28,49 @@ export const DEMO_INVENTION: IntakeAnswers = {
   contributorsInvolved: "solo",
   agreementStatus: "not_applicable",
   institutionRelationship: "no",
+  brandName: "HydroSeal",
+  searchReadiness: {
+    keyFeatures:
+      "Inline dual-layer filtration while drinking, twist-lock replaceable cartridge, compostable cartridge material, no pumps or batteries.",
+    whatFeelsNew:
+      "Filtering happens as you sip through the mouthpiece instead of stopping to pump or treat the water first.",
+    closestProducts:
+      "LifeStraw bottles, Grayl press bottles, Sawyer squeeze filters",
+    customerSearchTerms:
+      "water bottle that filters while you drink, hiking water filter bottle, replaceable cartridge filter bottle",
+    technicalSearchTerms:
+      "inline carbon ceramic filter cartridge, twist lock filter housing, one-way intake valve bottle",
+    possibleIndustries:
+      "outdoor gear, camping equipment, travel accessories, emergency preparedness",
+    materialsMechanismsSteps:
+      "Water enters through a one-way intake valve, passes through activated carbon then ceramic mesh, and exits the silicone mouthpiece; the cartridge twists out after about 40 uses.",
+    sourcesAlreadySearched: ["google", "google_patents", "marketplaces"],
+    similarReferencesFound:
+      "Found several straw-style filters and press bottles; none used a twist-lock compostable cartridge with inline sipping.",
+  },
+  disclosureEvents: [
+    {
+      id: "hydroseal-event-1",
+      kind: "private",
+      approximateDate: "around January 2026",
+      whereShown: "A gear-tester meetup in Denver",
+      whoSawIt: "Three hiking friends who signed a simple confidentiality note",
+      whatWasShown: "The working prototype and the cartridge swap process",
+      ndaOrConfidentiality: "yes",
+      includedKeyFeatures: "yes",
+    },
+    {
+      id: "hydroseal-event-2",
+      kind: "public",
+      approximateDate: "March 2026",
+      whereShown: "An outdoor startup pitch night and a social media post",
+      whoSawIt: "Public audience — attendees and followers",
+      whatWasShown:
+        "A short demo of drinking through the bottle; the internal filter layers were not shown",
+      ndaOrConfidentiality: "no",
+      includedKeyFeatures: "not_sure",
+    },
+  ],
 };
 
 export const DEMO_PROFILE_ID = "demo-hydroseal-profile";
@@ -52,6 +95,10 @@ function makeRecord(
 ): ProjectRecord {
   const full: IntakeAnswers = {
     ...DEMO_INVENTION,
+    // HydroSeal-specific extras should not leak into other demo inventions.
+    brandName: undefined,
+    searchReadiness: undefined,
+    disclosureEvents: undefined,
     ...answers,
     preClarity: pre,
   };

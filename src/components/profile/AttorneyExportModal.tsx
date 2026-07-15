@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ExportGuidance } from "@/components/profile/ExportGuidance";
 import { downloadPacketPdf } from "@/lib/pdf";
 import {
   attorneyExportBaseName,
@@ -279,9 +280,12 @@ export function AttorneyExportModal({
           ) : null}
 
           {success ? (
-            <p className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800">
-              {success}
-            </p>
+            <div className="mt-4 space-y-4">
+              <p className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800">
+                {success}
+              </p>
+              <ExportGuidance />
+            </div>
           ) : null}
 
           <div className="mt-6 flex flex-wrap gap-3">

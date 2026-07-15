@@ -20,8 +20,8 @@ export default function StartPage() {
         narrow
         kicker={INTAKE_COPY.builderTitle}
         title="Tell us about your idea"
-        lead={`${INTAKE_COPY.intro} ${INTAKE_COPY.introDetail}`}
-        meta={BRAND.coreMessage}
+        lead={`${INTAKE_COPY.intro} Five quick steps (~14 min). Progress saves automatically.`}
+        meta={`${INTAKE_COPY.safetyLine} · Save & continue later on any step.`}
       />
 
       <div className="page-shell-narrow mt-8">

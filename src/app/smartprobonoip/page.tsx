@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { PageEvent } from "@/components/analytics/PageEvent";
 import { TrackedNavLink } from "@/components/analytics/TrackedNavLink";
+import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
+import { SearchPrepHomePreview } from "@/components/ui/FeaturedGooglePatentsCard";
+import { ProductProofPreview } from "@/components/ui/ProductProofPreview";
 import { BRAND } from "@/lib/brand";
 import { LANDING_COPY, RESEARCH_PREP_COPY } from "@/lib/copy";
 import {
@@ -8,12 +11,13 @@ import {
   CreativeHeroSection,
   DossierCard,
   HowItWorksStep,
+  InlineDisclaimer,
   PaperShell,
-  ProductFeatureMock,
+  ProductProofCard,
   Section,
   SectionHeader,
+  TestimonialCard,
 } from "@/components/ui/design";
-import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
 
 export default function ProductLanding() {
   return (
@@ -24,23 +28,27 @@ export default function ProductLanding() {
         title={BRAND.tagline}
         lead={BRAND.positioning}
         safetyLine={LANDING_COPY.heroSafety}
+        subcta={LANDING_COPY.heroSubcta}
       >
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <TrackedNavLink
             href="/smartprobonoip/disclaimer"
             event="start_clicked"
-            className="btn-primary"
+            className="btn-primary-lg w-full sm:w-auto"
           >
             {LANDING_COPY.ctaPrimary}
           </TrackedNavLink>
           <TrackedNavLink
             href="/smartprobonoip/sample"
             event="sample_packet_viewed"
-            className="btn-secondary"
+            className="btn-secondary-lg w-full sm:w-auto"
           >
             {LANDING_COPY.ctaSample}
           </TrackedNavLink>
-          <Link href="#how-it-works" className="btn-ghost">
+          <Link
+            href="#how-it-works"
+            className="btn-ghost w-full justify-center sm:w-auto"
+          >
             {LANDING_COPY.ctaHowItWorks}
           </Link>
         </div>
@@ -51,33 +59,43 @@ export default function ProductLanding() {
           <SectionHeader
             kicker="See the product"
             title="What you get before expert review"
-            lead="Example views from the IP Readiness Packet workflow — preparation only, not legal advice."
+            lead="Interactive views from the IP Readiness Packet workflow."
           />
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <p className="mt-4 max-w-3xl">
+            <InlineDisclaimer>
+              Preparation only — not legal advice. These previews show organization
+              tools, not legal conclusions.
+            </InlineDisclaimer>
+          </p>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-navy-600">
+            {LANDING_COPY.productProofLead}
+          </p>
+          <div className="mt-10 grid gap-8 lg:grid-cols-2">
             {LANDING_COPY.productProof.map((item, i) => (
-              <ProductFeatureMock
+              <ProductProofCard
                 key={item.title}
                 index={i}
                 title={item.title}
                 body={item.body}
-                previewLines={item.previewLines}
-              />
+              >
+                <ProductProofPreview variant={item.variant} />
+              </ProductProofCard>
             ))}
           </div>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <TrackedNavLink
               href="/smartprobonoip/sample"
               event="sample_packet_viewed"
-              className="btn-secondary"
+              className="btn-primary w-full sm:w-auto"
             >
               {LANDING_COPY.ctaSample}
             </TrackedNavLink>
             <TrackedNavLink
               href="/smartprobonoip/disclaimer?demo=1"
               event="demo_started"
-              className="btn-ghost"
+              className="btn-secondary w-full sm:w-auto"
             >
-              Try demo intake
+              Start with HydroSeal example
             </TrackedNavLink>
           </div>
         </PaperShell>
@@ -88,9 +106,9 @@ export default function ProductLanding() {
           <SectionHeader
             kicker="How it works"
             title="From messy idea to organized handoff"
-            lead="Four steps to prepare for expert review — not a legal conclusion."
+            lead="Four steps to prepare for expert review."
           />
-          <div className="mt-10 grid gap-4 lg:grid-cols-4">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {LANDING_COPY.howItWorks.map((step, i) => (
               <HowItWorksStep
                 key={step.title}
@@ -105,7 +123,7 @@ export default function ProductLanding() {
             <TrackedNavLink
               href="/smartprobonoip/disclaimer"
               event="start_clicked"
-              className="btn-primary"
+              className="btn-primary-lg w-full sm:w-auto"
             >
               {LANDING_COPY.ctaPrimary}
             </TrackedNavLink>
@@ -120,15 +138,18 @@ export default function ProductLanding() {
             title={RESEARCH_PREP_COPY.similarReferenceSection.title}
             lead={RESEARCH_PREP_COPY.similarReferenceSection.lead}
           />
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8">
+            <SearchPrepHomePreview />
+          </div>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <TrackedNavLink
               href="/smartprobonoip/sample#similar-reference-search-prep"
               event="sample_packet_viewed"
-              className="btn-primary"
+              className="btn-primary w-full sm:w-auto"
             >
-              {LANDING_COPY.ctaSample}
+              See it in the sample packet
             </TrackedNavLink>
-            <Link href="/for-professionals" className="btn-secondary">
+            <Link href="/for-professionals" className="btn-secondary w-full sm:w-auto">
               View export schema
             </Link>
           </div>
@@ -140,7 +161,6 @@ export default function ProductLanding() {
           <SectionHeader
             kicker="What the packet includes"
             title="Everything organized for your next conversation"
-            lead="Preparation only — not legal advice and not a legal conclusion."
           />
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {LANDING_COPY.whatYouGet.map((item, i) => (
@@ -179,21 +199,59 @@ export default function ProductLanding() {
           <SectionHeader
             kicker="Trust & safety"
             title="Preparation only — with clear limits"
+            lead="SmartProBonoIP is built for expert review, not to replace it."
           />
-          <ul className="mt-8 space-y-2 text-sm leading-relaxed text-navy-700">
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+            {LANDING_COPY.trustQuotes.map((item) => (
+              <TestimonialCard
+                key={item.role}
+                quote={item.quote}
+                role={item.role}
+                context={item.context}
+              />
+            ))}
+          </div>
+          <ul className="mt-8 grid gap-2 sm:grid-cols-2">
             {LANDING_COPY.trustPoints.map((point) => (
-              <li key={point} className="flex gap-2">
-                <span className="text-teal-600">•</span>
+              <li
+                key={point}
+                className="flex gap-2 rounded-md border border-mist-200/80 bg-white px-4 py-3 text-sm leading-relaxed text-navy-700"
+              >
+                <span className="shrink-0 text-teal-600">✓</span>
                 <span>{point}</span>
               </li>
             ))}
           </ul>
-          <div className="mt-8">
+          <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
             <CalloutCard
               tone="warm"
               title="What this does not do"
               body={LANDING_COPY.whatWeDoNot}
             />
+            <div className="dossier-card flex flex-col justify-between px-5 py-5 sm:px-6 sm:py-6">
+              <div>
+                <p className="section-kicker text-teal-700">Rhode Island pilot</p>
+                <h3 className="headline-editorial mt-2 text-xl text-navy-900">
+                  {LANDING_COPY.riPilotTeaser.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-navy-600">
+                  {LANDING_COPY.riPilotTeaser.body}
+                </p>
+              </div>
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Link href="/smartprobonoip/pilot" className="btn-secondary w-full sm:w-auto">
+                  {LANDING_COPY.riPilotTeaser.cta}
+                </Link>
+                <PartnerInterestLink
+                  href="/contact"
+                  ctaName="Request pilot conversation"
+                  pageSection="homepage_trust"
+                  className="btn-ghost w-full justify-center sm:w-auto"
+                >
+                  Request conversation
+                </PartnerInterestLink>
+              </div>
+            </div>
           </div>
         </PaperShell>
       </Section>
@@ -211,29 +269,6 @@ export default function ProductLanding() {
       </Section>
 
       <Section>
-        <PaperShell>
-          <SectionHeader
-            kicker="Rhode Island pilot"
-            title={LANDING_COPY.riPilotTeaser.title}
-            lead={LANDING_COPY.riPilotTeaser.body}
-          />
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/smartprobonoip/pilot" className="btn-secondary">
-              {LANDING_COPY.riPilotTeaser.cta}
-            </Link>
-            <PartnerInterestLink
-              href="/contact"
-              ctaName="Request pilot conversation"
-              pageSection="homepage_pilot"
-              className="btn-ghost"
-            >
-              Request pilot conversation
-            </PartnerInterestLink>
-          </div>
-        </PaperShell>
-      </Section>
-
-      <Section soft>
         <PaperShell className="pb-8 text-center">
           <SectionHeader
             kicker="Ready to start"
@@ -241,18 +276,18 @@ export default function ProductLanding() {
             lead="Free to start. Preparation only — not legal advice."
             center
           />
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
             <TrackedNavLink
               href="/smartprobonoip/disclaimer"
               event="start_clicked"
-              className="btn-primary"
+              className="btn-primary-lg w-full sm:w-auto"
             >
               {LANDING_COPY.ctaPrimary}
             </TrackedNavLink>
             <TrackedNavLink
               href="/smartprobonoip/sample"
               event="sample_packet_viewed"
-              className="btn-secondary"
+              className="btn-secondary-lg w-full sm:w-auto"
             >
               {LANDING_COPY.ctaSample}
             </TrackedNavLink>

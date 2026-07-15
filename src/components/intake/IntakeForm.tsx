@@ -3,19 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PaperCard, StampLabel } from "@/components/ui/design";
-import { ProgressIndicator } from "@/components/ui/ProgressIndicator";
-import {
-  AGREEMENT_STATUS_OPTIONS,
-  AGREEMENT_TYPE_OPTIONS,
-  ASSET_OPTIONS,
-  CONTRIBUTOR_HELP_OPTIONS,
-  CONTRIBUTOR_INVOLVEMENT_OPTIONS,
-  GOAL_OPTIONS,
-  IDEA_INCLUDE_OPTIONS,
-  INSTITUTION_RELATIONSHIP_OPTIONS,
-  ITEM_TYPE_OPTIONS,
-  SHARING_OPTIONS,
-} from "@/lib/labels";
+import { IntakeWizardNav } from "@/components/intake/IntakeWizardNav";
+import { IntakeWizardProgress } from "@/components/intake/IntakeWizardProgress";
+import { StepMaterialsPrototype } from "@/components/intake/steps/StepMaterialsPrototype";
+import { StepReviewExport } from "@/components/intake/steps/StepReviewExport";
+import { StepSearchPrep } from "@/components/intake/steps/StepSearchPrep";
+import { StepTimelineDisclosures } from "@/components/intake/steps/StepTimelineDisclosures";
+import { StepYourIdea } from "@/components/intake/steps/StepYourIdea";
+import { IntakePacketPreview } from "@/components/intake/IntakePacketPreview";
 import { suggestIdeaIncludes } from "@/lib/signals";
 import { ownershipInfoCompleted } from "@/lib/ownership";
 import { getStore } from "@/lib/store";
@@ -25,51 +20,20 @@ import { trackEvent } from "@/lib/analytics/client";
 import { activateDemoFromQuery, DEMO_INVENTION, isDemoMode } from "@/lib/demo";
 import { INTAKE_COPY } from "@/lib/copy";
 import {
-  REVIEW_FIELDS,
-  validateForGeneration,
-  validateIntakeStep,
-} from "@/lib/intakeValidation";
+  clearIntakeDraft,
+  loadIntakeDraft,
+  saveIntakeDraft,
+} from "@/lib/intake/draftStorage";
+import {
+  validateWizardStep,
+  WIZARD_STEPS,
+} from "@/lib/intake/wizardConfig";
+import { validateForGeneration } from "@/lib/intakeValidation";
 import type {
-  AgreementStatus,
-  AgreementType,
-  AssetType,
-  ContributorHelpType,
-  ContributorInvolvement,
-  Goal,
-  IdeaInclude,
-  InstitutionRelationship,
   IntakeAnswers,
   ReadinessProfile,
   SharingChannel,
 } from "@/lib/types";
-import {
-  CheckboxGroup,
-  ClarityScale,
-  RadioGroup,
-  ReviewFieldCard,
-  SelectField,
-  TextField,
-  YesNoField,
-} from "./fields";
-
-const STEP_LABELS = [
-  "Idea basics",
-  "How it works",
-  "What it includes",
-  "Sharing + materials",
-  "Support goals",
-  "Review",
-  "Readiness",
-];
-
-const STEP_HINTS: Record<number, string | undefined> = {
-  0: "Start with plain language. You can refine the details later.",
-  1: "Describe how it works and what makes it different from what already exists.",
-  2: "Help us understand the shape of your idea and what it includes.",
-  3: "Materials, sharing history, and people who helped prepare your packet.",
-  4: "Tell us what kind of support you are looking for.",
-  6: "One last check before we build your packet.",
-};
 
 const INITIAL: IntakeAnswers = {
   whatCreated: "",
@@ -78,12 +42,12 @@ const INITIAL: IntakeAnswers = {
   howItWorks: "",
   mainParts: "",
   whatDifferent: "",
-  itemType: "software",
+  itemType: "physical_product",
   hasPrototype: false,
   assets: [],
   sharedChannels: [],
   hasBrandIdentity: false,
-  goals: [],
+  goals: ["expert_review"],
   location: "",
   wantsProBono: false,
   preClarity: 3,
@@ -93,6 +57,9 @@ const INITIAL: IntakeAnswers = {
   agreementTypes: [],
   institutionRelationship: undefined,
   ownershipNotes: "",
+  brandName: "",
+  searchReadiness: undefined,
+  disclosureEvents: [],
 };
 
 function toggle<T>(list: T[], value: T): T[] {
@@ -101,97 +68,113 @@ function toggle<T>(list: T[], value: T): T[] {
     : [...list, value];
 }
 
-function IntakeActions({
-  step,
-  last,
-  canProceed,
-  submitting,
-  demoActive,
-  onBack,
-  onNext,
-  onSubmit,
-}: {
-  step: number;
-  last: number;
-  canProceed: boolean;
-  submitting: boolean;
-  demoActive: boolean;
-  onBack: () => void;
-  onNext: () => void;
-  onSubmit: () => void;
-}) {
-  return (
-    <div className="sticky bottom-0 -mx-6 -mb-6 mt-8 border-t border-mist-200 bg-white/95 px-6 py-4 backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none">
-      <div className="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={step === 0 || submitting}
-          className="btn-ghost disabled:invisible"
-        >
-          ← Back
-        </button>
-
-        {step < last ? (
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!canProceed}
-            className="btn-primary min-w-[120px] disabled:cursor-not-allowed disabled:bg-mist-300 disabled:text-navy-500 disabled:shadow-none"
-          >
-            Continue →
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onSubmit}
-            disabled={submitting}
-            className="btn-primary min-w-[160px] disabled:cursor-not-allowed disabled:bg-mist-300 disabled:shadow-none"
-          >
-            {submitting
-              ? "Generating…"
-              : demoActive
-                ? "Generate demo packet"
-                : "Generate my packet"}
-          </button>
-        )}
-      </div>
-    </div>
-  );
+function applySmartDefaults(answers: IntakeAnswers, step: number): IntakeAnswers {
+  const next = { ...answers };
+  if (step === 0 && (!next.ideaIncludes || next.ideaIncludes.length === 0)) {
+    next.ideaIncludes = suggestIdeaIncludes(next);
+  }
+  if (step === 1) {
+    if (next.sharedChannels.length === 0) {
+      next.sharedChannels = ["none"];
+    }
+    if (!next.contributorsInvolved) {
+      next.contributorsInvolved = "solo";
+    }
+    if (!next.agreementStatus) {
+      next.agreementStatus = "not_applicable";
+    }
+    if (!next.institutionRelationship) {
+      next.institutionRelationship = "no";
+    }
+  }
+  return next;
 }
 
 export function IntakeForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const demoFromUrl = searchParams.get("demo") === "1";
-  const [step, setStep] = useState(0);
+  const last = WIZARD_STEPS.length - 1;
+
+  const [step, setStep] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    if (demoFromUrl || isDemoMode()) return 0;
+    const draft = loadIntakeDraft();
+    if (draft?.answers.whatCreated.trim()) {
+      return Math.min(draft.step, last);
+    }
+    return 0;
+  });
+
   const [answers, setAnswers] = useState<IntakeAnswers>(() => {
     if (typeof window !== "undefined") {
       const active =
         activateDemoFromQuery(`?${searchParams.toString()}`) || isDemoMode();
-      return active ? DEMO_INVENTION : INITIAL;
+      if (active) return DEMO_INVENTION;
+      const draft = loadIntakeDraft();
+      if (draft?.answers.whatCreated.trim()) return draft.answers;
+      return INITIAL;
     }
     return demoFromUrl ? DEMO_INVENTION : INITIAL;
   });
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [draftRestored, setDraftRestored] = useState(() => {
+    if (typeof window === "undefined") return false;
+    if (demoFromUrl || isDemoMode()) return false;
+    const draft = loadIntakeDraft();
+    return Boolean(draft?.answers.whatCreated.trim());
+  });
+  const [savedExitMessage, setSavedExitMessage] = useState<string | null>(null);
+  const [previewDismissed, setPreviewDismissed] = useState(false);
+
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intakeStarted = useRef(false);
+  const ownershipStepTracked = useRef(false);
+
   const demoActive =
     demoFromUrl ||
     isDemoMode() ||
     answers.whatCreated === DEMO_INVENTION.whatCreated;
 
-  const last = STEP_LABELS.length - 1;
-  const stepHint = STEP_HINTS[step];
-  const intakeStarted = useRef(false);
-  const ownershipStepTracked = useRef(false);
+  const currentStep = WIZARD_STEPS[step];
+  const canProceed =
+    step !== 0 ||
+    (answers.whatCreated.trim().length > 0 &&
+      answers.whoFor.trim().length > 0 &&
+      answers.howItWorks.trim().length >= 12);
+
+  const showPacketPreview =
+    step >= 1 &&
+    !previewDismissed &&
+    answers.whatCreated.trim().length > 0;
 
   useEffect(() => {
-    if (step === 3 && !ownershipStepTracked.current) {
+    if (step === 1 && !ownershipStepTracked.current) {
       ownershipStepTracked.current = true;
       trackEvent("ownership_step_viewed", { metadata: { demo: demoActive } });
     }
   }, [step, demoActive]);
+
+  useEffect(() => {
+    if (demoActive || submitting) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      if (!answers.whatCreated.trim() && step === 0) return;
+      saveIntakeDraft({
+        answers,
+        step,
+        savedAt: new Date().toISOString(),
+      });
+      setSaveStatus(INTAKE_COPY.draftSaved);
+    }, 800);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [answers, step, demoActive, submitting]);
 
   useEffect(() => {
     if (step !== 0 || intakeStarted.current) return;
@@ -203,14 +186,15 @@ export function IntakeForm() {
     trackEvent("intake_step_viewed", {
       metadata: {
         stepNumber: step + 1,
-        completionPercent: Math.round(((step + 1) / STEP_LABELS.length) * 100),
+        stepName: currentStep.label,
+        completionPercent: Math.round(((step + 1) / WIZARD_STEPS.length) * 100),
         demo: demoActive,
       },
     });
-    if (step === 5) {
+    if (step === last) {
       trackEvent("intake_review_viewed", { metadata: { demo: demoActive } });
     }
-  }, [step, demoActive]);
+  }, [step, demoActive, currentStep.label, last]);
 
   function update<K extends keyof IntakeAnswers>(
     key: K,
@@ -228,67 +212,68 @@ export function IntakeForm() {
     });
   }
 
-  function goNext() {
-    if (demoActive) {
-      setStep((s) => Math.min(last, s + 1));
-      trackEvent("intake_step_completed", {
-        metadata: {
-          stepNumber: step + 1,
-          stepName: STEP_LABELS[step],
-          demo: demoActive,
-        },
-      });
-      return;
-    }
-    if (step === 5) {
-      const validationErrors = validateForGeneration(answers);
-      if (validationErrors.length > 0) {
-        setFieldError(validationErrors[0].message);
-        trackEvent("intake_validation_error", {
-          metadata: {
-            validationField: validationErrors[0].field,
-            demo: demoActive,
-          },
-        });
-        return;
-      }
-    } else {
-      const validation = validateIntakeStep(step, answers);
-      if (validation) {
-        setFieldError(validation.message);
-        trackEvent("intake_validation_error", {
-          metadata: {
-            validationField: validation.field,
-            demo: demoActive,
-          },
-        });
-        return;
-      }
-    }
-    setFieldError(null);
-    if (step === 3 && ownershipInfoCompleted(answers)) {
-      trackEvent("ownership_info_completed", { metadata: { demo: demoActive } });
-    }
-    if (
-      step === 1 &&
-      (!answers.ideaIncludes || answers.ideaIncludes.length === 0)
-    ) {
-      setAnswers((prev) => ({
-        ...prev,
-        ideaIncludes: suggestIdeaIncludes(prev),
-      }));
-    }
-    setStep((s) => Math.min(last, s + 1));
+  function advanceStep(nextStep: number) {
+    setStep(nextStep);
     trackEvent("intake_step_completed", {
       metadata: {
         stepNumber: step + 1,
-        stepName: STEP_LABELS[step],
+        stepName: currentStep.label,
         demo: demoActive,
       },
     });
   }
 
-  const canProceed = step !== 0 || answers.whatCreated.trim().length > 0;
+  function validateCurrentStep(): boolean {
+    if (demoActive) return true;
+    const validation = validateWizardStep(step, answers);
+    if (validation) {
+      setFieldError(validation.message);
+      trackEvent("intake_validation_error", {
+        metadata: {
+          validationField: validation.field,
+          demo: demoActive,
+        },
+      });
+      return false;
+    }
+    setFieldError(null);
+    return true;
+  }
+
+  function goNext() {
+    if (!validateCurrentStep()) return;
+
+    const nextAnswers = applySmartDefaults(answers, step);
+    setAnswers(nextAnswers);
+
+    if (step === 1 && ownershipInfoCompleted(nextAnswers)) {
+      trackEvent("ownership_info_completed", { metadata: { demo: demoActive } });
+    }
+
+    advanceStep(Math.min(last, step + 1));
+  }
+
+  function goSkip() {
+    const nextAnswers = applySmartDefaults(answers, step);
+    setAnswers(nextAnswers);
+    setFieldError(null);
+    advanceStep(Math.min(last, step + 1));
+  }
+
+  function saveAndExit() {
+    saveIntakeDraft({
+      answers,
+      step,
+      savedAt: new Date().toISOString(),
+    });
+    setSavedExitMessage(INTAKE_COPY.saveAndExit);
+    trackEvent("intake_draft_saved", {
+      metadata: { stepNumber: step + 1, demo: demoActive },
+    });
+    window.setTimeout(() => {
+      router.push("/smartprobonoip");
+    }, 900);
+  }
 
   async function handleSubmit() {
     if (!demoActive) {
@@ -329,10 +314,11 @@ export function IntakeForm() {
         route: "/smartprobonoip/start",
         projectId: record.id,
         metadata: {
-          totalSteps: STEP_LABELS.length,
+          totalSteps: WIZARD_STEPS.length,
           demo: demoActive,
         },
       });
+      clearIntakeDraft();
       if (data.profile.signals.includes("ownership_collaborator")) {
         trackEvent("ownership_signal_triggered", {
           projectId: record.id,
@@ -353,273 +339,87 @@ export function IntakeForm() {
   return (
     <div className="space-y-6">
       {demoActive ? (
-        <div className="rounded-2xl border border-teal-200 bg-teal-50/80 px-5 py-4 text-sm text-teal-900 shadow-sm">
-          <strong>Demo mode:</strong> Sample invention loaded — click through or
-          edit, then generate your packet.
+        <div className="rounded-md border border-teal-200 bg-teal-50/80 px-4 py-3 text-sm text-teal-900">
+          <strong>Demo mode:</strong> Sample invention loaded — walk through the
+          wizard or edit fields, then generate your packet.
         </div>
       ) : null}
 
-      <ProgressIndicator steps={STEP_LABELS} current={step} />
-      <p className="text-center text-xs font-medium uppercase tracking-wide text-muted-blue">
-        {INTAKE_COPY.builderProgress} · Step {step + 1} of {STEP_LABELS.length}
-      </p>
+      {draftRestored && !demoActive ? (
+        <div className="flex items-start justify-between gap-3 rounded-md border border-teal-200 bg-teal-50/80 px-4 py-3 text-sm text-teal-900">
+          <span>{INTAKE_COPY.draftRestored}</span>
+          <button
+            type="button"
+            onClick={() => setDraftRestored(false)}
+            className="shrink-0 text-xs font-medium text-teal-700 hover:text-teal-900"
+          >
+            Dismiss
+          </button>
+        </div>
+      ) : null}
 
-      <PaperCard elevated className="overflow-hidden p-6 sm:p-8">
+      {savedExitMessage ? (
+        <p className="rounded-md border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-800">
+          {savedExitMessage}
+        </p>
+      ) : null}
+
+      <IntakeWizardProgress current={step} saveStatus={saveStatus} />
+
+      <PaperCard elevated className="overflow-hidden p-5 sm:p-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-mist-200 pb-5">
           <div>
-            <StampLabel tone="warm">PREP PACKET</StampLabel>
-            <h2 className="mt-3 text-lg font-semibold text-navy-900">
-              {STEP_LABELS[step]}
+            <StampLabel tone="warm">WIZARD</StampLabel>
+            <h2 className="headline-editorial mt-2 text-xl text-navy-900 sm:text-2xl">
+              {currentStep.label}
             </h2>
           </div>
           <span className="document-tab">{INTAKE_COPY.builderTitle}</span>
         </div>
-        {step !== 5 ? (
-          stepHint ? (
-            <p className="mb-6 rounded-xl bg-mist-50 px-4 py-3 text-sm leading-relaxed text-navy-600">
-              {stepHint}
-            </p>
-          ) : null
-        ) : (
-          <div className="mb-8 rounded-2xl border border-dashed border-teal-200 bg-gradient-to-br from-teal-50/60 to-white px-5 py-5 shadow-[var(--shadow-paper)]">
-            <StampLabel tone="teal">PACKET PREVIEW</StampLabel>
-            <h2 className="mt-3 text-xl font-semibold text-navy-900">
-              {INTAKE_COPY.reviewTitle}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-navy-600">
-              {INTAKE_COPY.reviewSubcopy}
-            </p>
-          </div>
-        )}
 
-        {step === 0 && (
-          <div className="space-y-8">
-            <TextField
-              label="What did you create?"
-              hint="Describe it in plain language — no jargon needed."
-              value={answers.whatCreated}
-              onChange={(v) => update("whatCreated", v)}
-              placeholder="e.g. A reusable water bottle that filters as you drink."
-            />
-            <TextField
-              label="What problem does it solve?"
-              value={answers.problemSolved}
-              onChange={(v) => update("problemSolved", v)}
-            />
-            <TextField
-              label="Who is it for?"
-              value={answers.whoFor}
-              onChange={(v) => update("whoFor", v)}
+        <p className="mb-6 rounded-md bg-mist-50/80 px-4 py-3 text-sm leading-relaxed text-navy-600">
+          {currentStep.hint}
+        </p>
+
+        {showPacketPreview ? (
+          <div className="mb-6">
+            <IntakePacketPreview
+              answers={answers}
+              onDismiss={() => setPreviewDismissed(true)}
             />
           </div>
-        )}
+        ) : null}
 
-        {step === 1 && (
-          <div className="space-y-8">
-            <TextField
-              label="How does it work?"
-              value={answers.howItWorks}
-              onChange={(v) => update("howItWorks", v)}
-            />
-            <TextField
-              label="What are the main parts or components?"
-              value={answers.mainParts}
-              onChange={(v) => update("mainParts", v)}
-            />
-            <TextField
-              label="What makes it different from what already exists?"
-              value={answers.whatDifferent}
-              onChange={(v) => update("whatDifferent", v)}
-            />
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-8">
-            <SelectField
-              label="What kind of thing is it?"
-              value={answers.itemType}
-              options={ITEM_TYPE_OPTIONS}
-              onChange={(v) => update("itemType", v)}
-            />
-            <YesNoField
-              label="Do you have a prototype?"
-              value={answers.hasPrototype}
-              onChange={(v) => update("hasPrototype", v)}
-            />
-            <YesNoField
-              label="Do you have a name, logo, slogan, or brand identity?"
-              value={answers.hasBrandIdentity}
-              onChange={(v) => update("hasBrandIdentity", v)}
-            />
-            <CheckboxGroup<IdeaInclude>
-              label="What does your idea include?"
-              hint="Optional — check anything that fits. We use this to suggest what your packet may touch."
-              options={IDEA_INCLUDE_OPTIONS}
-              selected={answers.ideaIncludes ?? []}
-              onToggle={(v) =>
-                update("ideaIncludes", toggle(answers.ideaIncludes ?? [], v))
-              }
-            />
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-8">
-            <CheckboxGroup<AssetType>
-              label="Which materials do you already have?"
-              hint="Select all that apply."
-              options={ASSET_OPTIONS}
-              selected={answers.assets}
-              onToggle={(v) => update("assets", toggle(answers.assets, v))}
-            />
-            <CheckboxGroup<SharingChannel>
-              label="Have you shared it anywhere?"
-              hint="This helps us flag possible public disclosure."
-              options={SHARING_OPTIONS}
-              selected={answers.sharedChannels}
-              onToggle={toggleSharing}
-            />
-
-            <div className="rounded-2xl border border-dashed border-mist-200 bg-cream/50 p-5">
-              <p className="section-kicker text-teal-700">
-                {INTAKE_COPY.ownershipSectionTitle}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-navy-600">
-                {INTAKE_COPY.ownershipSectionHint}
-              </p>
-              <div className="mt-6 space-y-8">
-                <RadioGroup<ContributorInvolvement>
-                  label="Did anyone else help create, design, build, code, test, fund, or document this idea?"
-                  options={CONTRIBUTOR_INVOLVEMENT_OPTIONS}
-                  value={answers.contributorsInvolved}
-                  onChange={(v) => update("contributorsInvolved", v)}
-                />
-                {answers.contributorsInvolved &&
-                answers.contributorsInvolved !== "solo" ? (
-                  <CheckboxGroup<ContributorHelpType>
-                    label="What did they help with?"
-                    options={CONTRIBUTOR_HELP_OPTIONS}
-                    selected={answers.contributorHelpTypes ?? []}
-                    onToggle={(v) =>
-                      update(
-                        "contributorHelpTypes",
-                        toggle(answers.contributorHelpTypes ?? [], v),
-                      )
-                    }
-                  />
-                ) : null}
-                <RadioGroup<AgreementStatus>
-                  label="Do you have written agreements with anyone who helped?"
-                  options={AGREEMENT_STATUS_OPTIONS}
-                  value={answers.agreementStatus}
-                  onChange={(v) => update("agreementStatus", v)}
-                />
-                {answers.agreementStatus === "yes" ||
-                answers.agreementStatus === "not_sure" ? (
-                  <CheckboxGroup<AgreementType>
-                    label="What agreement types might exist?"
-                    options={AGREEMENT_TYPE_OPTIONS}
-                    selected={answers.agreementTypes ?? []}
-                    onToggle={(v) =>
-                      update(
-                        "agreementTypes",
-                        toggle(answers.agreementTypes ?? [], v),
-                      )
-                    }
-                  />
-                ) : null}
-                <RadioGroup<InstitutionRelationship>
-                  label="Was any part created through an employer, school, grant, client project, or paid contractor relationship?"
-                  options={INSTITUTION_RELATIONSHIP_OPTIONS}
-                  value={answers.institutionRelationship}
-                  onChange={(v) => update("institutionRelationship", v)}
-                />
-                <TextField
-                  label="Anything you want to remember about who helped or what agreements exist?"
-                  hint="Optional — for your own notes in the packet."
-                  value={answers.ownershipNotes ?? ""}
-                  onChange={(v) => update("ownershipNotes", v)}
-                  rows={3}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-8">
-            <CheckboxGroup<Goal>
-              label="What are you looking for?"
-              hint="Select all that apply."
-              options={GOAL_OPTIONS}
-              selected={answers.goals}
-              onToggle={(v) => update("goals", toggle(answers.goals, v))}
-            />
-            <TextField
-              label="What is your location?"
-              hint="City / state / country — used to suggest local resources."
-              value={answers.location}
-              onChange={(v) => update("location", v)}
-              rows={1}
-            />
-            <YesNoField
-              label="Are you interested in low-cost or pro bono support?"
-              value={answers.wantsProBono}
-              onChange={(v) => update("wantsProBono", v)}
-            />
-          </div>
-        )}
-
-        {step === 5 && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {REVIEW_FIELDS.map(({ key, label }) => (
-              <ReviewFieldCard
-                key={key}
-                label={label}
-                value={String(answers[key] ?? "")}
-                onChange={(v) => update(key, v)}
-                rows={
-                  key === "whatCreated" || key === "howItWorks" ? 4 : 3
-                }
-              />
-            ))}
-            <div className="rounded-2xl border border-mist-200/80 bg-mist-50/50 p-5 shadow-sm sm:col-span-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-                What your idea includes
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-navy-700">
-                {(answers.ideaIncludes ?? []).length > 0
-                  ? (answers.ideaIncludes ?? [])
-                      .map(
-                        (v) =>
-                          IDEA_INCLUDE_OPTIONS.find((o) => o.value === v)
-                            ?.label ?? v,
-                      )
-                      .join(" · ")
-                  : "None selected — you can go back to step 3 to add these."}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {step === 6 && (
-          <div className="space-y-6">
-            <ClarityScale
-              label="Before we generate your profile: how clear are you on your next IP step?"
-              value={answers.preClarity}
-              onChange={(v) => update("preClarity", v)}
-            />
-            <p className="rounded-2xl bg-mist-50 px-5 py-4 text-sm leading-relaxed text-navy-600">
-              We&rsquo;ll ask you again after you see your packet so we can
-              measure how much clearer you feel.
-            </p>
-          </div>
-        )}
+        {step === 0 ? (
+          <StepYourIdea answers={answers} onUpdate={update} />
+        ) : null}
+        {step === 1 ? (
+          <StepTimelineDisclosures
+            answers={answers}
+            onUpdate={update}
+            onToggleSharing={toggleSharing}
+          />
+        ) : null}
+        {step === 2 ? (
+          <StepMaterialsPrototype answers={answers} onUpdate={update} />
+        ) : null}
+        {step === 3 ? (
+          <StepSearchPrep answers={answers} onUpdate={update} />
+        ) : null}
+        {step === 4 ? (
+          <StepReviewExport
+            answers={answers}
+            onUpdate={update}
+            onGoToStep={(target) => {
+              setFieldError(null);
+              setStep(target);
+            }}
+          />
+        ) : null}
 
         {fieldError ? (
           <p
-            className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+            className="mt-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
             role="alert"
           >
             {fieldError}
@@ -628,21 +428,24 @@ export function IntakeForm() {
 
         {error ? (
           <p
-            className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
             role="alert"
           >
             {error}
           </p>
         ) : null}
 
-        <IntakeActions
+        <IntakeWizardNav
           step={step}
           last={last}
           canProceed={canProceed}
           submitting={submitting}
           demoActive={demoActive}
+          skippable={currentStep.skippable}
           onBack={() => setStep((s) => Math.max(0, s - 1))}
           onNext={goNext}
+          onSkip={goSkip}
+          onSaveAndExit={saveAndExit}
           onSubmit={handleSubmit}
         />
       </PaperCard>

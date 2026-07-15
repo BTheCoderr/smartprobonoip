@@ -6,9 +6,9 @@ import {
   assertSignalCatalogSafe,
   deriveSignals,
 } from "./signals";
+import { resolveBrandName } from "./brandName";
 import {
   cleanText,
-  extractBrandName,
   joinSentences,
   preserveBrandInText,
 } from "./textCleanup";
@@ -36,7 +36,7 @@ function stripTrailingPunctuation(value: string): string {
 }
 
 function buildSummary(answers: IntakeAnswers): string {
-  const brand = extractBrandName(answers.whatCreated);
+  const brand = resolveBrandName(answers);
   const createdRaw = hasText(answers.whatCreated)
     ? stripTrailingPunctuation(clean(answers.whatCreated))
     : "";

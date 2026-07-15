@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
+import { SaveFeedback } from "@/components/ui/SaveFeedback";
 import { trackEvent } from "@/lib/analytics/client";
 import { RESEARCH_PREP_COPY } from "@/lib/copy";
 import { QuerySearchLauncher } from "@/components/research/QuerySearchLauncher";
@@ -179,6 +180,7 @@ export function ResearchPrepWorkspace({
       setSaveSuccess(
         editingId ? "Reference updated." : "Reference saved — it will appear in your PDF.",
       );
+      window.setTimeout(() => setSaveSuccess(null), 4000);
       await refreshSavedReferences();
     } catch {
       setError("Could not save reference.");
@@ -260,20 +262,33 @@ export function ResearchPrepWorkspace({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-teal-200/80 bg-teal-50/30 px-4 py-4 sm:px-5">
+      <div className="rounded-md border border-teal-200/80 bg-gradient-to-br from-teal-50/40 to-white px-4 py-4 sm:px-5 sm:py-5">
         <p className="text-sm font-semibold text-navy-900">
           {RESEARCH_PREP_COPY.helperTitle}
         </p>
-        <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-navy-700">
-          {RESEARCH_PREP_COPY.helperSteps.map((step) => (
-            <li key={step}>{step}</li>
+        <ol className="mt-3 grid gap-2 sm:grid-cols-2">
+          {RESEARCH_PREP_COPY.helperSteps.map((step, i) => (
+            <li
+              key={step}
+              className="flex gap-2 rounded-md border border-mist-200/80 bg-white/70 px-3 py-2.5 text-sm leading-relaxed text-navy-700"
+            >
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-800">
+                {i + 1}
+              </span>
+              <span>{step}</span>
+            </li>
           ))}
         </ol>
       </div>
 
-      <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
-        {RESEARCH_PREP_COPY.helperNote}
+      <p className="inline-disclaimer w-full">
+        <span className="shrink-0 text-warm-600" aria-hidden>
+          ⓘ
+        </span>
+        <span>{RESEARCH_PREP_COPY.helperNote}</span>
       </p>
+
+      <SaveFeedback message={saveSuccess} />
 
       {loadError ? (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -306,14 +321,15 @@ export function ResearchPrepWorkspace({
           title={editingId ? "Edit saved reference" : "Save a possible similar reference"}
           subtitle={RESEARCH_PREP_COPY.saveReferenceHelper}
         />
-        <form onSubmit={onSaveReference} className="grid gap-3 sm:grid-cols-2">
+        <form onSubmit={onSaveReference} className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm sm:col-span-2">
             <span className="font-medium text-navy-800">Reference title</span>
             <input
               required
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
+              className="input-surface mt-1"
+              placeholder="e.g. US patent for portable filter bottle"
             />
           </label>
           <label className="text-sm">
@@ -321,7 +337,8 @@ export function ResearchPrepWorkspace({
             <input
               value={form.url}
               onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
-              className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
+              className="input-surface mt-1"
+              placeholder="https://"
             />
           </label>
           <label className="text-sm">
@@ -331,7 +348,7 @@ export function ResearchPrepWorkspace({
               onChange={(e) =>
                 setForm((f) => ({ ...f, referenceType: e.target.value }))
               }
-              className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
+              className="input-surface mt-1"
             >
               {REFERENCE_TYPE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -347,7 +364,7 @@ export function ResearchPrepWorkspace({
               onChange={(e) =>
                 setForm((f) => ({ ...f, searchQueryUsed: e.target.value }))
               }
-              className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
+              className="input-surface mt-1"
             />
           </label>
           <label className="text-sm sm:col-span-2">
@@ -358,7 +375,7 @@ export function ResearchPrepWorkspace({
                 setForm((f) => ({ ...f, looksSimilar: e.target.value }))
               }
               rows={2}
-              className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
+              className="input-surface mt-1"
             />
           </label>
           <label className="text-sm sm:col-span-2">
@@ -369,7 +386,7 @@ export function ResearchPrepWorkspace({
                 setForm((f) => ({ ...f, seemsDifferent: e.target.value }))
               }
               rows={2}
-              className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
+              className="input-surface mt-1"
             />
           </label>
           <label className="text-sm sm:col-span-2">
@@ -382,7 +399,7 @@ export function ResearchPrepWorkspace({
                 setForm((f) => ({ ...f, expertQuestions: e.target.value }))
               }
               rows={2}
-              className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
+              className="input-surface mt-1"
             />
           </label>
           <label className="text-sm sm:col-span-2">
@@ -391,14 +408,14 @@ export function ResearchPrepWorkspace({
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={2}
-              className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
+              className="input-surface mt-1"
             />
           </label>
           <div className="flex flex-wrap gap-2 sm:col-span-2">
             <button
               type="submit"
               disabled={saving}
-              className="rounded-lg bg-teal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+              className="btn-primary disabled:opacity-50"
             >
               {saving ? "Saving…" : editingId ? "Update reference" : "Save reference"}
             </button>
@@ -416,9 +433,6 @@ export function ResearchPrepWorkspace({
             ) : null}
           </div>
         </form>
-        {saveSuccess ? (
-          <p className="mt-3 text-sm font-medium text-teal-700">{saveSuccess}</p>
-        ) : null}
       </Card>
 
       <Card>
@@ -433,112 +447,138 @@ export function ResearchPrepWorkspace({
         {refsLoading ? (
           <p className="text-sm text-navy-500">Loading saved references…</p>
         ) : workspace.savedReferences.length === 0 ? (
-          <p className="text-sm text-navy-500">
-            No saved references yet. Try a query card or save one manually.
-          </p>
+          <div className="rounded-md border border-dashed border-mist-300 bg-cream/40 px-4 py-6 sm:px-5">
+            <p className="text-sm font-medium text-navy-800">
+              No saved references yet — start here
+            </p>
+            <ol className="mt-3 space-y-2 text-sm leading-relaxed text-navy-700">
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-800">
+                  1
+                </span>
+                <span>Copy a starter query from the cards above.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-800">
+                  2
+                </span>
+                <span>Open Google Patents (recommended first stop).</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-800">
+                  3
+                </span>
+                <span>
+                  Save 1–3 possible similar references with what looks similar or
+                  different.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-800">
+                  4
+                </span>
+                <span>
+                  Bring them to your next expert conversation — preparation only.
+                </span>
+              </li>
+            </ol>
+          </div>
         ) : (
           <ul className="space-y-4">
             {workspace.savedReferences.map((ref) => (
-              <li
-                key={ref.id}
-                className="rounded-lg border border-mist-200 p-4 text-sm"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="font-semibold text-navy-900">{ref.title}</p>
-                    {ref.referenceType ? (
-                      <p className="text-xs text-navy-500">Type: {ref.referenceType}</p>
-                    ) : null}
-                    {ref.url ? (
-                      <a
-                        href={ref.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-teal-700 underline"
+              <li key={ref.id} className="dossier-card overflow-hidden">
+                <div className="border-b border-dashed border-mist-200 bg-cream/50 px-4 py-3">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="font-semibold text-navy-900">{ref.title}</p>
+                      {ref.referenceType ? (
+                        <span className="mt-1 inline-flex rounded-full bg-mist-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-navy-600">
+                          {ref.referenceType}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={comparingId === ref.id}
+                        onClick={() => void onCompare(ref)}
+                        className="btn-secondary px-2.5 py-1 text-xs"
                       >
-                        Open link
-                      </a>
-                    ) : null}
-                    <p className="mt-1 text-xs text-navy-400">
-                      Saved {new Date(ref.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      disabled={comparingId === ref.id}
-                      onClick={() => void onCompare(ref)}
-                      className="rounded border border-teal-300 px-2 py-1 text-xs font-medium text-teal-800"
-                    >
-                      {comparingId === ref.id
-                        ? "Organizing…"
-                        : "Help me compare this reference"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => startEdit(ref)}
-                      className="rounded border border-mist-300 px-2 py-1 text-xs text-navy-600"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void onDelete(ref.id)}
-                      className="rounded border border-mist-300 px-2 py-1 text-xs text-navy-600"
-                    >
-                      Delete
-                    </button>
+                        {comparingId === ref.id ? "Organizing…" : "Compare helper"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startEdit(ref)}
+                        className="btn-ghost px-2 py-1 text-xs"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void onDelete(ref.id)}
+                        className="btn-ghost px-2 py-1 text-xs text-navy-500"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
-                {ref.searchQueryUsed ? (
-                  <p className="mt-2">
-                    <span className="font-medium">Search query: </span>
-                    {ref.searchQueryUsed}
-                  </p>
-                ) : null}
-                {ref.looksSimilar ? (
-                  <p className="mt-1">
-                    <span className="font-medium">Looks similar: </span>
-                    {ref.looksSimilar}
-                  </p>
-                ) : null}
-                {ref.seemsDifferent ? (
-                  <p className="mt-1">
-                    <span className="font-medium">Seems different: </span>
-                    {ref.seemsDifferent}
-                  </p>
-                ) : null}
-                {ref.expertQuestions ? (
-                  <p className="mt-1 whitespace-pre-wrap">
-                    <span className="font-medium">Questions for an expert: </span>
-                    {ref.expertQuestions}
-                  </p>
-                ) : null}
-                {ref.comparison ? (
-                  <div className="mt-3 rounded-lg border border-teal-100 bg-teal-50/40 p-3 text-xs text-navy-700">
-                    <p className="font-semibold text-teal-800">Comparison helper</p>
-                    {(ref.comparison.whatAppearsRelated?.length ?? 0) > 0 ? (
-                      <p className="mt-2">
-                        <span className="font-medium">What appears related: </span>
-                        {(ref.comparison.whatAppearsRelated ?? []).join(" ")}
-                      </p>
-                    ) : null}
-                    {(ref.comparison.clarifyFurther?.length ?? 0) > 0 ? (
-                      <p className="mt-1">
-                        <span className="font-medium">What you may want to clarify: </span>
-                        {(ref.comparison.clarifyFurther ?? []).join(" ")}
-                      </p>
-                    ) : null}
-                  </div>
-                ) : null}
-                {editingId !== ref.id ? (
-                  <ReferenceGapMapForm
-                    key={`${ref.id}-${ref.updatedAt ?? ref.createdAt}`}
-                    record={record}
-                    reference={ref}
-                    onSaved={() => void refreshSavedReferences()}
-                  />
-                ) : null}
+                <div className="space-y-2 px-4 py-4 text-sm text-navy-700">
+                  {ref.url ? (
+                    <a
+                      href={ref.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-teal-700 underline"
+                    >
+                      Open link →
+                    </a>
+                  ) : null}
+                  {ref.searchQueryUsed ? (
+                    <p>
+                      <span className="text-xs font-mono uppercase tracking-wide text-navy-400">
+                        Query
+                      </span>
+                      <span className="mt-0.5 block">{ref.searchQueryUsed}</span>
+                    </p>
+                  ) : null}
+                  {ref.looksSimilar ? (
+                    <p>
+                      <span className="font-medium text-navy-900">Looks similar: </span>
+                      {ref.looksSimilar}
+                    </p>
+                  ) : null}
+                  {ref.seemsDifferent ? (
+                    <p>
+                      <span className="font-medium text-navy-900">Seems different: </span>
+                      {ref.seemsDifferent}
+                    </p>
+                  ) : null}
+                  {ref.expertQuestions ? (
+                    <p className="whitespace-pre-wrap">
+                      <span className="font-medium text-navy-900">Expert questions: </span>
+                      {ref.expertQuestions}
+                    </p>
+                  ) : null}
+                  {ref.comparison ? (
+                    <div className="rounded-md border border-teal-100 bg-teal-50/40 p-3 text-xs">
+                      <p className="font-semibold text-teal-800">Comparison helper</p>
+                      {(ref.comparison.whatAppearsRelated?.length ?? 0) > 0 ? (
+                        <p className="mt-2">
+                          {(ref.comparison.whatAppearsRelated ?? []).join(" ")}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  {editingId !== ref.id ? (
+                    <ReferenceGapMapForm
+                      key={`${ref.id}-${ref.updatedAt ?? ref.createdAt}`}
+                      record={record}
+                      reference={ref}
+                      onSaved={() => void refreshSavedReferences()}
+                    />
+                  ) : null}
+                </div>
               </li>
             ))}
           </ul>

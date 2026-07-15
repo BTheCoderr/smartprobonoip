@@ -14,8 +14,13 @@ import {
   getTimelineFieldValue,
 } from "./packet";
 import { buildPatentSearchPrep } from "./patentSearchPrep";
+import { resolveBrandName } from "./brandName";
 import type { SavedReference } from "./research/types";
-import type { DevelopmentTimelineField, ProjectRecord } from "./types";
+import type {
+  DevelopmentTimelineField,
+  ProjectRecord,
+  SearchReadiness,
+} from "./types";
 
 export interface InventorshipEntry {
   role: string;
@@ -48,6 +53,7 @@ export interface AttorneyExportPacket {
     how_it_works: string;
     key_components: string[];
     differences: string[];
+    brand_name?: string;
   };
   timeline: {
     conception_date: string | null;
@@ -69,6 +75,31 @@ export interface AttorneyExportPacket {
     exported_for: string;
     exported_at: string;
   };
+  search_readiness?: {
+    key_features: string;
+    what_feels_new: string;
+    closest_products: string;
+    customer_search_terms: string;
+    technical_search_terms: string;
+    possible_industries: string;
+    materials_mechanisms_steps: string;
+    sources_already_searched: string[];
+    similar_references_found: string;
+  };
+  disclosure_events?: {
+    kind: string;
+    approximate_date: string;
+    where_shown: string;
+    who_saw_it: string;
+    what_was_shown: string;
+    nda_or_confidentiality: string;
+    included_key_features: string;
+  }[];
+  readiness_score_breakdown?: {
+    label: string;
+    points: number;
+    max: number;
+  }[];
 }
 
 export interface AttorneyExportOptions {
@@ -85,19 +116,23 @@ function splitList(text: string): string[] {
     .filter(Boolean);
 }
 
-export function computeReadinessScore(
+export interface ReadinessScoreBreakdownEntry {
+  label: string;
+  points: number;
+  max: number;
+}
+
+export function computeReadinessScoreBreakdown(
   record: ProjectRecord,
   savedReferenceCount = 0,
-): number {
+): ReadinessScoreBreakdownEntry[] {
   const prep = buildPatentPrepChecklist(record);
   const materials = buildMaterialsChecklist(record);
   const prepComplete = prep.filter((row) => row.complete).length;
   const materialsAvailable = materials.filter((item) => item.available).length;
-  const base = Math.round(
-    ((prepComplete / prep.length) * 0.65 +
-      (materialsAvailable / materials.length) * 0.35) *
-      100,
-  );
+  const corePrepPoints = (prepComplete / prep.length) * 0.65 * 100;
+  const materialsPoints =
+    (materialsAvailable / materials.length) * 0.35 * 100;
   const timelineBonus = Math.min(
     10,
     [
@@ -112,7 +147,25 @@ export function computeReadinessScore(
     ).length * 3,
   );
   const referenceBonus = savedReferenceCount > 0 ? 5 : 0;
-  return Math.min(100, Math.max(0, base + timelineBonus + referenceBonus));
+
+  return [
+    { label: "Core preparation details", points: corePrepPoints, max: 65 },
+    { label: "Supporting materials", points: materialsPoints, max: 35 },
+    { label: "Timeline dates bonus", points: timelineBonus, max: 9 },
+    { label: "Saved reference bonus", points: referenceBonus, max: 5 },
+  ];
+}
+
+export function computeReadinessScore(
+  record: ProjectRecord,
+  savedReferenceCount = 0,
+): number {
+  const breakdown = computeReadinessScoreBreakdown(
+    record,
+    savedReferenceCount,
+  );
+  const total = breakdown.reduce((sum, entry) => sum + entry.points, 0);
+  return Math.min(100, Math.max(0, Math.round(total)));
 }
 
 function buildInventorshipSplit(record: ProjectRecord): InventorshipEntry[] {
@@ -170,6 +223,53 @@ function buildPublicDisclosures(record: ProjectRecord) {
     });
   }
   return events;
+}
+
+function hasSearchReadinessContent(readiness?: SearchReadiness): boolean {
+  if (!readiness) return false;
+  return (
+    Boolean(
+      readiness.keyFeatures?.trim() ||
+        readiness.whatFeelsNew?.trim() ||
+        readiness.closestProducts?.trim() ||
+        readiness.customerSearchTerms?.trim() ||
+        readiness.technicalSearchTerms?.trim() ||
+        readiness.possibleIndustries?.trim() ||
+        readiness.materialsMechanismsSteps?.trim() ||
+        readiness.similarReferencesFound?.trim(),
+    ) || (readiness.sourcesAlreadySearched ?? []).length > 0
+  );
+}
+
+function buildSearchReadinessExport(
+  readiness: SearchReadiness,
+): NonNullable<AttorneyExportPacket["search_readiness"]> {
+  return {
+    key_features: readiness.keyFeatures?.trim() ?? "",
+    what_feels_new: readiness.whatFeelsNew?.trim() ?? "",
+    closest_products: readiness.closestProducts?.trim() ?? "",
+    customer_search_terms: readiness.customerSearchTerms?.trim() ?? "",
+    technical_search_terms: readiness.technicalSearchTerms?.trim() ?? "",
+    possible_industries: readiness.possibleIndustries?.trim() ?? "",
+    materials_mechanisms_steps:
+      readiness.materialsMechanismsSteps?.trim() ?? "",
+    sources_already_searched: readiness.sourcesAlreadySearched ?? [],
+    similar_references_found: readiness.similarReferencesFound?.trim() ?? "",
+  };
+}
+
+function buildDisclosureEventsExport(
+  record: ProjectRecord,
+): NonNullable<AttorneyExportPacket["disclosure_events"]> {
+  return (record.answers.disclosureEvents ?? []).map((event) => ({
+    kind: event.kind ?? "",
+    approximate_date: event.approximateDate?.trim() ?? "",
+    where_shown: event.whereShown?.trim() ?? "",
+    who_saw_it: event.whoSawIt?.trim() ?? "",
+    what_was_shown: event.whatWasShown?.trim() ?? "",
+    nda_or_confidentiality: event.ndaOrConfidentiality ?? "",
+    included_key_features: event.includedKeyFeatures ?? "",
+  }));
 }
 
 function buildPriorArtNotes(savedReferences: SavedReference[]): string {
@@ -251,6 +351,7 @@ export function buildAttorneyExportPacket(
       how_it_works: handoffAnswers.howItWorks.trim(),
       key_components: components.length > 0 ? components : [handoffAnswers.mainParts.trim()].filter(Boolean),
       differences,
+      brand_name: resolveBrandName(handoffAnswers) ?? undefined,
     },
     timeline: {
       conception_date:
@@ -289,6 +390,19 @@ export function buildAttorneyExportPacket(
       exported_for: exportedFor.trim(),
       exported_at: new Date().toISOString(),
     },
+    search_readiness: hasSearchReadinessContent(
+      record.answers.searchReadiness,
+    )
+      ? buildSearchReadinessExport(record.answers.searchReadiness!)
+      : undefined,
+    disclosure_events:
+      (record.answers.disclosureEvents ?? []).length > 0
+        ? buildDisclosureEventsExport(record)
+        : undefined,
+    readiness_score_breakdown: computeReadinessScoreBreakdown(
+      record,
+      savedReferences.length,
+    ).map((entry) => ({ ...entry, points: Math.round(entry.points) })),
   };
 }
 
@@ -350,6 +464,25 @@ export function buildAttorneyExportCsv(packet: AttorneyExportPacket): string {
     [
       "inventorship_split",
       JSON.stringify(packet.inventor.inventorship_split),
+    ],
+    ["invention_brand_name", packet.invention.brand_name ?? ""],
+    [
+      "search_readiness",
+      packet.search_readiness ? JSON.stringify(packet.search_readiness) : "",
+    ],
+    [
+      "disclosure_events",
+      packet.disclosure_events
+        ? JSON.stringify(packet.disclosure_events)
+        : "",
+    ],
+    [
+      "readiness_score_breakdown",
+      packet.readiness_score_breakdown
+        ? packet.readiness_score_breakdown
+            .map((entry) => `${entry.label}: ${entry.points}/${entry.max}`)
+            .join("; ")
+        : "",
     ],
   ];
 

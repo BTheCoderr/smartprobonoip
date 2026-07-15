@@ -7,6 +7,7 @@ import {
   isUrlOrRoute,
   normalizeAnswersForPacket,
 } from "./intakeValidation";
+import { resolveBrandName } from "./brandName";
 import {
   cleanSearchQuery,
   cleanText,
@@ -210,11 +211,82 @@ function buildPhysicalProductQueries(answers: IntakeAnswers): string[] {
   ].filter((query) => query.length > 0);
 }
 
+function splitUserPhrases(text: string | undefined): string[] {
+  if (!text?.trim()) return [];
+  return text
+    .split(/[,;\n]+/)
+    .map((phrase) => stripBlockedTokensFromQuery(phrase))
+    .filter((phrase) => phrase.length > 2);
+}
+
+/** Queries built directly from the user's own search-readiness answers. */
+function buildUserTermQueries(answers: IntakeAnswers): string[] {
+  const readiness = answers.searchReadiness;
+  if (!readiness) return [];
+
+  const queries: string[] = [];
+
+  const customerPhrases = splitUserPhrases(readiness.customerSearchTerms);
+  queries.push(...customerPhrases.slice(0, 1));
+
+  const technicalPhrases = splitUserPhrases(readiness.technicalSearchTerms);
+  queries.push(...technicalPhrases.slice(0, 1));
+
+  const mechanismKw = extractKeywords(
+    readiness.materialsMechanismsSteps ?? "",
+    4,
+  );
+  if (mechanismKw.length > 0) {
+    const anchor = technicalPhrases[0] ?? customerPhrases[0] ?? "";
+    queries.push(
+      stripBlockedTokensFromQuery(`${mechanismKw.join(" ")} ${anchor}`.trim()),
+    );
+  }
+
+  const closestProduct = splitUserPhrases(readiness.closestProducts)[0];
+  if (closestProduct) {
+    queries.push(stripBlockedTokensFromQuery(`alternatives to ${closestProduct}`));
+  }
+
+  const industry = splitUserPhrases(readiness.possibleIndustries)[0];
+  if (industry) {
+    const feature =
+      splitUserPhrases(readiness.keyFeatures)[0] ??
+      extractKeywords(answers.whatCreated, 3).join(" ");
+    queries.push(stripBlockedTokensFromQuery(`${industry} ${feature}`.trim()));
+  }
+
+  const unique: string[] = [];
+  const seen = new Set<string>();
+  for (const q of queries) {
+    if (q.length > 2 && !seen.has(q)) {
+      seen.add(q);
+      unique.push(q);
+    }
+  }
+  return unique.slice(0, 5);
+}
+
 function buildSuggestedQueries(record: ProjectRecord): string[] {
   const answers = normalizeAnswersForPacket(record.answers);
+  const userTermQueries = buildUserTermQueries(answers);
+  const heuristicQueries = buildHeuristicQueries(record);
+
+  const merged: string[] = [];
+  const seen = new Set<string>();
+  for (const q of [...userTermQueries, ...heuristicQueries]) {
+    if (q.length > 0 && !seen.has(q)) {
+      seen.add(q);
+      merged.push(q);
+    }
+  }
+  return merged.slice(0, userTermQueries.length > 0 ? 6 : 5);
+}
+
+function buildHeuristicQueries(record: ProjectRecord): string[] {
+  const answers = normalizeAnswersForPacket(record.answers);
   const brand =
-    extractBrandName(answers.whatCreated) ??
-    extractProductNameFromAnswers(answers);
+    resolveBrandName(answers) ?? extractProductNameFromAnswers(answers);
   const blob = textBlob(answers);
 
   const problemKw = extractKeywords(answers.problemSolved, 4);
@@ -424,6 +496,29 @@ export function buildPatentSearchPrep(record: ProjectRecord): PatentSearchPrep {
     expertPrepQuestions,
     safeDisclaimer: PATENT_SEARCH_PREP_DISCLAIMER,
   };
+}
+
+/**
+ * Neutral questions someone may want to ask a patent search firm or
+ * patent professional before commissioning a search — preparation only.
+ */
+export function buildSearchFirmQuestions(record: ProjectRecord): string[] {
+  const questions = [
+    "What does the search cover, and what does it not cover?",
+    "What scope of search do you suggest for an idea like mine, and what would it cost?",
+    "How are the results reported, and how should I read the report?",
+    "What materials or descriptions should I bring to make the search more useful?",
+    "Does the search include non-patent literature such as products, articles, or videos?",
+    "How do you handle confidentiality when I share details about my idea?",
+  ];
+
+  if (record.answers.whatDifferent?.trim()) {
+    questions.push(
+      "How should I explain my user-described differences when we review the results together?",
+    );
+  }
+
+  return questions.slice(0, 7).map(cleanText);
 }
 
 export function assertPatentSearchPrepSafe(): void {

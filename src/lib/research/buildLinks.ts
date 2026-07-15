@@ -66,7 +66,7 @@ export function buildOutboundSearchTools(primaryQuery?: string): OutboundSearchT
     {
       id: "google_patents",
       label: "Google Patents",
-      badge: "Recommended",
+      badge: "#1 · Start here",
       description:
         "Best overall for most users — search published patents and applications worldwide. Preparation only, not a patentability opinion.",
       url: query ? buildGooglePatentsUrl(query) : "https://patents.google.com/",
@@ -77,24 +77,24 @@ export function buildOutboundSearchTools(primaryQuery?: string): OutboundSearchT
     {
       id: "uspto",
       label: "USPTO Patent Public Search",
-      badge: "Recommended",
+      badge: "US formal",
       description:
         "Best for formal US patent work — official US patent document search workspace.",
       url: buildUsptoSearchUrl(),
       supportsQuery: false,
       categories: ["patent"],
-      priority: "recommended",
+      priority: "secondary",
     },
     {
       id: "lens",
       label: "The Lens",
-      badge: "Recommended",
+      badge: "Research",
       description:
         "Best for comprehensive research — patents plus scholarly articles and possible similar references.",
       url: buildLensPatentUrl(query),
       supportsQuery: true,
       categories: ["patent", "general"],
-      priority: "recommended",
+      priority: "secondary",
     },
     {
       id: "wipo",

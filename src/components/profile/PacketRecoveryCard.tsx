@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RecoveryCard } from "@/components/ui/design";
 import { RECOVERY_COPY } from "@/lib/copy";
 import { trackEvent } from "@/lib/analytics/client";
@@ -11,10 +11,21 @@ import type { ProjectRecord } from "@/lib/types";
 export function PacketRecoveryCard({ record }: { record: ProjectRecord }) {
   const [recoveryUrl, setRecoveryUrl] = useState<string | null>(null);
   const [email, setEmail] = useState("");
+  const [emailEnabled, setEmailEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isApiStoreAvailable() || record.isDemo) return;
+    fetch("/api/recovery/config")
+      .then((res) => res.json())
+      .then((data: { emailEnabled?: boolean }) => {
+        setEmailEnabled(Boolean(data.emailEnabled));
+      })
+      .catch(() => setEmailEnabled(false));
+  }, [record.isDemo]);
 
   if (record.isDemo) {
     return (
@@ -98,29 +109,28 @@ export function PacketRecoveryCard({ record }: { record: ProjectRecord }) {
         ) : null}
       </div>
 
-      <div className="mt-5">
-        <label className="block text-sm font-semibold text-navy-900">
-          Email (optional)
-        </label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          className="input-surface mt-2 max-w-md"
-        />
-        <button
-          type="button"
-          onClick={() => createLink(true)}
-          disabled={loading || !email.trim()}
-          className="btn-ghost mt-2"
-        >
-          {RECOVERY_COPY.email}
-        </button>
-        <p className="mt-2 text-xs text-navy-500">
-          {RECOVERY_COPY.emailUnavailable}
-        </p>
-      </div>
+      {emailEnabled ? (
+        <div className="mt-5">
+          <label className="block text-sm font-semibold text-navy-900">
+            Email me the link (optional)
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className="input-surface mt-2 max-w-md"
+          />
+          <button
+            type="button"
+            onClick={() => createLink(true)}
+            disabled={loading || !email.trim()}
+            className="btn-ghost mt-2"
+          >
+            {RECOVERY_COPY.email}
+          </button>
+        </div>
+      ) : null}
 
       {recoveryUrl ? (
         <div className="mt-5 rounded-xl border border-mist-200 bg-white p-4">

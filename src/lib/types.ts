@@ -88,6 +88,48 @@ export type AgreementType =
 
 export type InstitutionRelationship = "no" | "yes" | "not_sure";
 
+export type SearchSource =
+  | "google"
+  | "google_patents"
+  | "uspto"
+  | "youtube"
+  | "marketplaces"
+  | "academic"
+  | "app_stores"
+  | "none";
+
+export interface SearchReadiness {
+  keyFeatures?: string;
+  whatFeelsNew?: string;
+  closestProducts?: string;
+  customerSearchTerms?: string;
+  technicalSearchTerms?: string;
+  possibleIndustries?: string;
+  materialsMechanismsSteps?: string;
+  sourcesAlreadySearched?: SearchSource[];
+  similarReferencesFound?: string;
+}
+
+export type NdaStatus = "yes" | "no" | "not_sure";
+
+export interface DisclosureEvent {
+  id: string;
+  kind?: "private" | "public" | "not_sure";
+  approximateDate?: string;
+  whereShown?: string;
+  whoSawIt?: string;
+  whatWasShown?: string;
+  ndaOrConfidentiality?: NdaStatus;
+  includedKeyFeatures?: "yes" | "no" | "not_sure";
+}
+
+export interface EducationCardContent {
+  id: string;
+  title: string;
+  shortAnswer: string;
+  detail?: string;
+}
+
 export interface IntakeAnswers {
   whatCreated: string;
   problemSolved: string;
@@ -111,6 +153,9 @@ export interface IntakeAnswers {
   agreementTypes?: AgreementType[];
   institutionRelationship?: InstitutionRelationship;
   ownershipNotes?: string;
+  brandName?: string;
+  searchReadiness?: SearchReadiness;
+  disclosureEvents?: DisclosureEvent[];
 }
 
 export type IpSignal =
@@ -155,7 +200,8 @@ export type DevelopmentTimelineField =
   | "Date first prototype built"
   | "Date first shared publicly"
   | "Date first pitched, sold, or demoed"
-  | "Date of major improvements";
+  | "Date of major improvements"
+  | "Date first shown privately";
 
 export type DevelopmentTimeline = Partial<
   Record<DevelopmentTimelineField, string>

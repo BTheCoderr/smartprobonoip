@@ -216,6 +216,70 @@ export function ProductFeatureMock({
   );
 }
 
+export function ProductProofCard({
+  title,
+  body,
+  index,
+  children,
+}: {
+  title: string;
+  body: string;
+  index?: number;
+  children: ReactNode;
+}) {
+  return (
+    <article className="flex h-full flex-col gap-4">
+      <div>
+        <div className="flex items-center gap-2">
+          {index != null ? (
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center border border-dashed border-teal-300 bg-teal-50 text-[10px] font-bold text-teal-700">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+          ) : null}
+          <h3 className="headline-editorial text-lg leading-snug text-navy-900 sm:text-xl">
+            {title}
+          </h3>
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-muted-blue">{body}</p>
+      </div>
+      <div className="flex-1">{children}</div>
+    </article>
+  );
+}
+
+export function TestimonialCard({
+  quote,
+  role,
+  context,
+}: {
+  quote: string;
+  role: string;
+  context: string;
+}) {
+  return (
+    <figure className="testimonial-card h-full">
+      <blockquote className="relative pt-4 text-sm leading-relaxed text-navy-800 sm:text-base">
+        {quote}
+      </blockquote>
+      <figcaption className="mt-4 border-t border-dashed border-mist-200 pt-4">
+        <p className="text-sm font-semibold text-navy-900">{role}</p>
+        <p className="mt-0.5 text-xs text-navy-500">{context}</p>
+      </figcaption>
+    </figure>
+  );
+}
+
+export function InlineDisclaimer({ children }: { children: ReactNode }) {
+  return (
+    <p className="inline-disclaimer">
+      <span className="shrink-0 text-warm-600" aria-hidden>
+        ⓘ
+      </span>
+      <span>{children}</span>
+    </p>
+  );
+}
+
 export function HowItWorksStep({
   step,
   title,
@@ -329,6 +393,7 @@ export function CreativeHeroSection({
   lead,
   mission,
   safetyLine,
+  subcta,
   children,
 }: {
   stamp: string;
@@ -336,42 +401,48 @@ export function CreativeHeroSection({
   lead: string;
   mission?: string;
   safetyLine?: string;
+  subcta?: string;
   children?: ReactNode;
 }) {
   return (
     <section className="paper-grid relative overflow-hidden border-b border-mist-200/80">
-      <div className="paper-shell relative py-14 sm:py-20 lg:py-24">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
-          <div>
-            <BrandMark variant="full" size="lg" className="mb-6" />
+      <div className="paper-shell relative py-12 sm:py-16 lg:py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
+          <div className="max-w-2xl">
+            <BrandMark variant="full" size="lg" className="mb-5 sm:mb-6" />
             <StampLabel tone="teal">{stamp}</StampLabel>
-            <h1 className="headline-editorial mt-5 text-[2rem] leading-[1.06] sm:text-5xl lg:text-[3.15rem]">
+            <h1 className="headline-editorial mt-4 text-[1.85rem] leading-[1.08] sm:text-[2.75rem] lg:text-[3.25rem]">
               {title}
             </h1>
-            <RuledDivider className="mt-6 max-w-md" />
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-blue sm:text-lg">
+            <RuledDivider className="mt-5 max-w-md sm:mt-6" />
+            <p className="mt-5 text-base leading-relaxed text-muted-blue sm:mt-6 sm:text-lg">
               {lead}
             </p>
             {mission ? (
-              <blockquote className="mt-6 max-w-lg border-l-2 border-warm-400/80 pl-4">
-                <p className="text-base italic leading-relaxed text-navy-700">
+              <blockquote className="mt-5 max-w-lg border-l-2 border-warm-400/80 pl-4 sm:mt-6">
+                <p className="text-sm italic leading-relaxed text-navy-700 sm:text-base">
                   {mission}
                 </p>
               </blockquote>
             ) : null}
-            {children ? <div className="mt-9">{children}</div> : null}
+            {children ? <div className="mt-8 sm:mt-9">{children}</div> : null}
+            {subcta ? (
+              <p className="mt-4 text-xs font-medium text-navy-500 sm:text-sm">
+                {subcta}
+              </p>
+            ) : null}
             {safetyLine ? (
-              <p className="mt-5 max-w-lg border border-dashed border-mist-300 bg-white/60 px-3 py-2 text-[11px] leading-relaxed text-navy-500">
-                {safetyLine}
+              <p className="mt-4 inline-disclaimer sm:mt-5">
+                <span className="shrink-0 text-warm-600" aria-hidden>
+                  ⓘ
+                </span>
+                <span>{safetyLine}</span>
               </p>
             ) : null}
           </div>
-          <div className="hidden sm:block lg:justify-self-end">
+          <div className="mx-auto w-full max-w-[380px] lg:max-w-none lg:justify-self-end">
             <PacketMockup />
           </div>
-        </div>
-        <div className="mt-10 sm:hidden">
-          <PacketMockup />
         </div>
       </div>
     </section>
@@ -443,7 +514,7 @@ export function Section({
       ? "bg-cream"
       : "";
   return (
-    <section id={id} className={`py-14 sm:py-20 ${bg} ${className}`}>
+    <section id={id} className={`py-12 sm:py-16 lg:py-20 ${bg} ${className}`}>
       {children}
     </section>
   );

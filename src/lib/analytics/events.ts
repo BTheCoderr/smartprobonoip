@@ -13,6 +13,7 @@ export const ANALYTICS_EVENTS = [
   "intake_validation_error",
   "intake_review_viewed",
   "intake_completed",
+  "intake_draft_saved",
   "ownership_step_viewed",
   "ownership_info_completed",
   "ownership_signal_triggered",

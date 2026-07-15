@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PageEvent } from "@/components/analytics/PageEvent";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
+import { FeaturedGooglePatentsCard } from "@/components/ui/FeaturedGooglePatentsCard";
 import { buildAttorneyExportPacket } from "@/lib/attorneyExport";
 import { PROFESSIONALS_COPY } from "@/lib/copy";
 import { SAMPLE_RECORD } from "@/lib/samplePacket";
@@ -9,10 +10,12 @@ import {
   CalloutCard,
   DossierCard,
   DossierPageHeader,
+  InlineDisclaimer,
   PaperShell,
   Section,
   SectionHeader,
   StampLabel,
+  TestimonialCard,
 } from "@/components/ui/design";
 
 const EXAMPLE_EXPORT = buildAttorneyExportPacket(
@@ -39,18 +42,24 @@ export default function ForProfessionalsPage() {
         title={PROFESSIONALS_COPY.title}
         lead={PROFESSIONALS_COPY.lead}
         aside={
-          <div className="flex flex-wrap gap-3 lg:flex-col">
-            <Link href="/smartprobonoip/sample" className="btn-primary">
+          <div className="flex w-full flex-col gap-3 lg:max-w-xs">
+            <Link href="/smartprobonoip/sample" className="btn-primary-lg w-full">
               View sample packet
             </Link>
-            <Link href="/smartprobonoip/pilot" className="btn-secondary">
+            <Link href="/for-professionals/playbook" className="btn-secondary w-full">
+              Partner playbook
+            </Link>
+            <Link href="/smartprobonoip/pilot" className="btn-secondary w-full">
               Explore pilot
+            </Link>
+            <Link href="/smartprobonoip/pilot-tracker" className="btn-ghost w-full justify-center px-0">
+              Pilot tracker (local) →
             </Link>
             <PartnerInterestLink
               href="/contact"
               ctaName="Request conversation"
               pageSection="professionals_hero"
-              className="btn-ghost px-0"
+              className="btn-ghost w-full justify-center px-0"
             >
               Request pilot conversation →
             </PartnerInterestLink>
@@ -67,13 +76,29 @@ export default function ForProfessionalsPage() {
           <p className="mt-6 max-w-3xl text-base leading-relaxed text-navy-700">
             {PROFESSIONALS_COPY.positioning}
           </p>
-          <p className="mt-4 max-w-3xl text-sm font-medium text-teal-800">
+          <p className="mt-4 max-w-3xl text-sm font-semibold text-teal-800">
             {PROFESSIONALS_COPY.corePromise}
+          </p>
+          <p className="mt-4">
+            <InlineDisclaimer>{PROFESSIONALS_COPY.lead}</InlineDisclaimer>
           </p>
         </PaperShell>
       </Section>
 
       <Section soft>
+        <PaperShell>
+          <SectionHeader
+            kicker="Search prep"
+            title="Google Patents as the recommended starting point"
+            lead="Inventors are guided to start with Google Patents, then save possible similar references for expert review."
+          />
+          <div className="mt-8">
+            <FeaturedGooglePatentsCard query="portable water filter bottle seal" />
+          </div>
+        </PaperShell>
+      </Section>
+
+      <Section>
         <PaperShell>
           <SectionHeader
             kicker="Who this is for"
@@ -246,10 +271,25 @@ export default function ForProfessionalsPage() {
             kicker="Trust & data handling"
             title="How exports and pilot data are handled"
           />
-          <ul className="mt-8 space-y-2 text-sm leading-relaxed text-navy-700">
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+            <TestimonialCard
+              quote="The structured export saved time on basic organization. I still reviewed everything myself — but the packet was a useful starting point."
+              role="Patent agent"
+              context="Professional reviewer feedback — anonymized"
+            />
+            <TestimonialCard
+              quote="Inventors showed up with timelines, materials lists, and questions already organized. It felt like a real intake conversation instead of starting from scratch."
+              role="Clinic coordinator"
+              context="Rhode Island pilot feedback — anonymized"
+            />
+          </div>
+          <ul className="mt-8 grid gap-2 sm:grid-cols-2">
             {PROFESSIONALS_COPY.trustPoints.map((point) => (
-              <li key={point} className="flex gap-2">
-                <span className="text-teal-600">•</span>
+              <li
+                key={point}
+                className="flex gap-2 rounded-md border border-mist-200/80 bg-white px-4 py-3 text-sm leading-relaxed text-navy-700"
+              >
+                <span className="shrink-0 text-teal-600">✓</span>
                 <span>{point}</span>
               </li>
             ))}
@@ -270,6 +310,9 @@ export default function ForProfessionalsPage() {
             </Link>
             <Link href="/smartprobonoip/sample" className="btn-secondary">
               View sample packet
+            </Link>
+            <Link href="/smartprobonoip/pilot-tracker" className="btn-secondary">
+              Pilot tracker (local)
             </Link>
             <PartnerInterestLink
               href="/contact"

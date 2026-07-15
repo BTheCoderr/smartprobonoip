@@ -103,8 +103,16 @@ body {
     @apply inline-flex items-center justify-center rounded-md border border-teal-700 bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-[var(--shadow-btn)] transition hover:-translate-y-px hover:bg-teal-700 hover:shadow-[var(--shadow-btn-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 active:translate-y-0;
   }
 
+  .btn-primary-lg {
+    @apply inline-flex min-h-[3rem] items-center justify-center rounded-md border border-teal-700 bg-teal-600 px-7 py-3.5 text-base font-semibold text-white shadow-[var(--shadow-btn)] transition hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-[var(--shadow-btn-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 active:translate-y-0 sm:min-h-[3.25rem] sm:px-8 sm:py-4;
+  }
+
   .btn-secondary {
     @apply inline-flex items-center justify-center rounded-md border border-mist-300 bg-white px-6 py-3 text-sm font-semibold text-navy-700 shadow-[var(--shadow-paper)] transition hover:-translate-y-px hover:border-teal-200 hover:bg-cream focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 active:translate-y-0;
+  }
+
+  .btn-secondary-lg {
+    @apply inline-flex min-h-[3rem] items-center justify-center rounded-md border border-mist-300 bg-white px-7 py-3.5 text-base font-semibold text-navy-700 shadow-[var(--shadow-paper)] transition hover:-translate-y-px hover:border-teal-200 hover:bg-cream focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 active:translate-y-0;
   }
 
   .btn-ghost {
@@ -220,6 +228,41 @@ body {
 
   .text-muted-blue {
     @apply text-navy-500;
+  }
+
+  .inline-disclaimer {
+    @apply inline-flex max-w-prose items-start gap-2 rounded-md border border-mist-200/90 bg-white/70 px-3 py-2 text-[11px] leading-relaxed text-navy-500;
+  }
+
+  .product-proof-frame {
+    @apply overflow-hidden rounded-md border border-mist-200/90 bg-white shadow-[var(--shadow-paper)];
+  }
+
+  .featured-tool-card {
+    @apply rounded-md border-2 border-teal-500/40 bg-gradient-to-br from-teal-50/80 via-white to-cream shadow-[var(--shadow-paper-offset)];
+  }
+
+  .featured-tool-card-sm {
+    @apply rounded-md border-2 border-teal-400/50 bg-gradient-to-br from-teal-50/90 to-white px-3 py-2.5 shadow-sm;
+  }
+
+  .featured-tool-badge {
+    font-family: var(--font-mono);
+    @apply inline-flex rounded-full border border-teal-600/30 bg-teal-600 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white;
+  }
+
+  .testimonial-card {
+    @apply relative rounded-md border border-mist-200/90 bg-white px-5 py-5 shadow-[var(--shadow-paper)] sm:px-6 sm:py-6;
+  }
+
+  .testimonial-card::before {
+    content: "\201C";
+    font-family: var(--font-serif);
+    @apply absolute -top-1 left-4 text-4xl leading-none text-teal-300/80;
+  }
+
+  .hero-stat-pill {
+    @apply inline-flex items-center gap-2 rounded-full border border-mist-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-navy-700 shadow-sm;
   }
 
 }

@@ -370,6 +370,45 @@ export function validateProblemField(
 
 const MIN_STEP_DETAIL_LENGTH = 12;
 
+/** Minimum fields to advance Step 1 (Your Idea) — rest can strengthen the packet later. */
+export function validateIdeaCoreStep(
+  answers: IntakeAnswers,
+): FieldValidationError | null {
+  const basics = validateIntakeStep(0, answers);
+  if (basics) return basics;
+
+  const whoFor = answers.whoFor.trim();
+  if (!whoFor) {
+    return {
+      field: "whoFor",
+      message: "Please describe who this is for.",
+    };
+  }
+  if (looksLikeWorkflowAnswer(whoFor)) {
+    return {
+      field: "whoFor",
+      message:
+        "This sounds like how the idea works. Please describe who the idea is for.",
+    };
+  }
+
+  const howItWorks = answers.howItWorks.trim();
+  if (!howItWorks) {
+    return {
+      field: "howItWorks",
+      message: "Please add a few sentences describing how it works.",
+    };
+  }
+  if (howItWorks.length < MIN_STEP_DETAIL_LENGTH) {
+    return {
+      field: "howItWorks",
+      message: "Please add a bit more detail about how it works.",
+    };
+  }
+
+  return null;
+}
+
 export function validateHowItWorksStep(
   answers: IntakeAnswers,
 ): FieldValidationError | null {
@@ -460,10 +499,8 @@ export function validateForGeneration(
   answers: IntakeAnswers,
 ): FieldValidationError[] {
   const errors: FieldValidationError[] = [];
-  const step0 = validateIntakeStep(0, answers);
-  if (step0) errors.push(step0);
-  const howItWorksStep = validateHowItWorksStep(answers);
-  if (howItWorksStep) errors.push(howItWorksStep);
+  const core = validateIdeaCoreStep(answers);
+  if (core) errors.push(core);
   return errors;
 }
 

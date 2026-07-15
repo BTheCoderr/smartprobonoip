@@ -1,13 +1,24 @@
 import { Card, CardHeader } from "@/components/ui/Card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { ReadinessScoreCard } from "@/components/profile/ReadinessScoreCard";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import {
+  DISCLOSURE_KIND_LABELS,
+  NDA_STATUS_LABELS,
   RESOURCE_DESCRIPTIONS,
   RESOURCE_LABELS,
+  SEARCH_SOURCE_LABELS,
   SIGNAL_LABELS,
 } from "@/lib/labels";
 import { PACKET_COPY } from "@/lib/copy";
+import {
+  RESOURCE_CATEGORIES_INTRO,
+  RESOURCE_CATEGORY_TYPES,
+} from "@/lib/content/resourceCategories";
+import { PatentPathwaySection } from "@/components/profile/PatentPathwaySection";
+import { getEducationCards } from "@/lib/content/educationCards";
+import { EducationCardList } from "@/components/ui/EducationCard";
 import { SIGNAL_CATALOG } from "@/lib/signals";
 import { SignalCard } from "@/components/ui/design";
 import {
@@ -17,7 +28,7 @@ import {
   buildIdeaSummaryFields,
   buildMaterialsChecklist,
   buildMissingInfoStatus,
-  buildNextBestAction,
+  buildNextBestSteps,
   buildPatentPrepChecklist,
   buildReadinessMetrics,
   buildReadinessSnapshot,
@@ -29,6 +40,7 @@ import { MiniPrepSectionCard } from "@/components/profile/MiniPrepSectionCard";
 import { DevelopmentTimelineEditor } from "@/components/profile/DevelopmentTimelineEditor";
 import {
   buildPatentSearchPrep,
+  buildSearchFirmQuestions,
   WORKSHEET_HEADERS,
 } from "@/lib/patentSearchPrep";
 import { ResearchPrepWorkspace } from "@/components/research/ResearchPrepWorkspace";
@@ -55,12 +67,63 @@ export function ProfileView({
   const patentPrep = buildPatentPrepChecklist(record);
   const missingStatus = buildMissingInfoStatus(record, savedReferenceCount);
   const readinessMetrics = buildReadinessMetrics(record, savedReferenceCount);
-  const nextBestAction = buildNextBestAction(record, savedReferenceCount);
+  const nextBestSteps = buildNextBestSteps(record, savedReferenceCount);
   const differenceMap = buildDifferenceMap(record);
   const materials = buildMaterialsChecklist(record);
   const handoff = buildExpertHandoff(record);
   const searchPrep = buildPatentSearchPrep(record);
+  const searchFirmQuestions = buildSearchFirmQuestions(record);
   const miniPrepSections = getTriggeredMiniPrepSections(record);
+  const disclosureEvents = record.answers.disclosureEvents ?? [];
+
+  const searchReadiness = record.answers.searchReadiness;
+  const searchReadinessItems: { label: string; value: string }[] = [];
+  if (searchReadiness) {
+    const textFields: {
+      label: string;
+      value: string | undefined;
+    }[] = [
+      { label: "Key features", value: searchReadiness.keyFeatures },
+      { label: "What feels new", value: searchReadiness.whatFeelsNew },
+      {
+        label: "Closest existing products",
+        value: searchReadiness.closestProducts,
+      },
+      {
+        label: "Customer search terms",
+        value: searchReadiness.customerSearchTerms,
+      },
+      {
+        label: "Technical or industry terms",
+        value: searchReadiness.technicalSearchTerms,
+      },
+      {
+        label: "Possible industries",
+        value: searchReadiness.possibleIndustries,
+      },
+      {
+        label: "Materials, mechanisms, steps, or workflows",
+        value: searchReadiness.materialsMechanismsSteps,
+      },
+      {
+        label: "Similar references already found",
+        value: searchReadiness.similarReferencesFound,
+      },
+    ];
+    for (const field of textFields) {
+      if (field.value?.trim()) {
+        searchReadinessItems.push({ label: field.label, value: field.value.trim() });
+      }
+    }
+    if ((searchReadiness.sourcesAlreadySearched ?? []).length > 0) {
+      searchReadinessItems.push({
+        label: "Sources already searched",
+        value: (searchReadiness.sourcesAlreadySearched ?? [])
+          .map((source) => SEARCH_SOURCE_LABELS[source] ?? source)
+          .join(", "),
+      });
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -102,7 +165,11 @@ export function ProfileView({
         <div className="border-b border-dashed border-mist-200 px-6 py-4 sm:px-8">
           <span className="document-tab">Readiness report</span>
         </div>
-        <div className="px-6 pb-6 sm:px-8">
+        <div className="space-y-6 px-6 pb-6 sm:px-8">
+        <ReadinessScoreCard
+          record={record}
+          savedReferenceCount={savedReferenceCount}
+        />
         <CardHeader
           title={PACKET_COPY.readinessSnapshotTitle}
           subtitle="A quick view of where your idea stands today."
@@ -140,6 +207,29 @@ export function ProfileView({
         </dl>
         </div>
       </div>
+
+      <Card
+        variant="elevated"
+        className="border-teal-200/80 bg-gradient-to-br from-teal-50/50 via-white to-cream"
+      >
+        <CardHeader
+          title={PACKET_COPY.nextBestStepTitle}
+          subtitle={profile.suggestedNextStep}
+        />
+        <ol className="space-y-2">
+          {nextBestSteps.map((step, idx) => (
+            <li
+              key={step}
+              className="flex gap-3 text-base leading-relaxed text-navy-800"
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">
+                {idx + 1}
+              </span>
+              {step}
+            </li>
+          ))}
+        </ol>
+      </Card>
 
       <div className="paper-card overflow-hidden p-0">
         <div className="border-b border-dashed border-mist-200 px-6 py-4 sm:px-8">
@@ -247,6 +337,62 @@ export function ProfileView({
           }
         />
         <p className="text-sm text-navy-700">{profile.publicDisclosureNote}</p>
+        {disclosureEvents.length > 0 ? (
+          <div className="mt-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-navy-500">
+              {PACKET_COPY.disclosureEventsTableTitle}
+            </p>
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-mist-200 text-xs uppercase text-navy-500">
+                    <th className="py-2 pr-3">Type</th>
+                    <th className="py-2 pr-3">Approximate date</th>
+                    <th className="py-2 pr-3">Where</th>
+                    <th className="py-2 pr-3">Who saw it</th>
+                    <th className="py-2 pr-3">What was shown</th>
+                    <th className="py-2 pr-3">NDA</th>
+                    <th className="py-2">Key features included</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {disclosureEvents.map((event) => (
+                    <tr key={event.id} className="border-b border-mist-100 align-top">
+                      <td className="py-2 pr-3 text-navy-700">
+                        {event.kind ? DISCLOSURE_KIND_LABELS[event.kind] : "—"}
+                      </td>
+                      <td className="py-2 pr-3 text-navy-700">
+                        {event.approximateDate?.trim() || "—"}
+                      </td>
+                      <td className="py-2 pr-3 text-navy-600">
+                        {event.whereShown?.trim() || "—"}
+                      </td>
+                      <td className="py-2 pr-3 text-navy-600">
+                        {event.whoSawIt?.trim() || "—"}
+                      </td>
+                      <td className="py-2 pr-3 text-navy-600">
+                        {event.whatWasShown?.trim() || "—"}
+                      </td>
+                      <td className="py-2 pr-3 text-navy-600">
+                        {event.ndaOrConfidentiality
+                          ? NDA_STATUS_LABELS[event.ndaOrConfidentiality]
+                          : "—"}
+                      </td>
+                      <td className="py-2 text-navy-600">
+                        {event.includedKeyFeatures
+                          ? NDA_STATUS_LABELS[event.includedKeyFeatures]
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs text-amber-700">
+              {PACKET_COPY.disclosureGuidance}
+            </p>
+          </div>
+        ) : null}
       </Card>
 
       {miniPrepSections.length > 0 ? (
@@ -267,13 +413,6 @@ export function ProfileView({
           ))}
         </div>
       ) : null}
-
-      <Card variant="accent">
-        <CardHeader title={PACKET_COPY.nextBestStepTitle} />
-        <p className="text-base leading-relaxed text-navy-800">
-          {profile.suggestedNextStep}
-        </p>
-      </Card>
 
       <Card variant="elevated">
         <CardHeader
@@ -315,6 +454,28 @@ export function ProfileView({
             </div>
           ))}
         </div>
+        <details className="group mt-4">
+          <summary className="cursor-pointer list-none rounded-2xl border border-mist-200 bg-white px-4 py-3 text-sm font-medium text-navy-800 hover:bg-mist-50 [&::-webkit-details-marker]:hidden">
+            {PACKET_COPY.resourceTypesTitle}
+          </summary>
+          <div className="mt-3 rounded-2xl border border-mist-200/80 bg-mist-50/50 p-4">
+            <p className="text-xs leading-relaxed text-navy-500">
+              {RESOURCE_CATEGORIES_INTRO}
+            </p>
+            <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+              {RESOURCE_CATEGORY_TYPES.map((category) => (
+                <div key={category.id}>
+                  <dt className="text-sm font-semibold text-navy-800">
+                    {category.title}
+                  </dt>
+                  <dd className="mt-0.5 text-xs leading-relaxed text-navy-600">
+                    {category.description}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </details>
       </Card>
 
       <Card>
@@ -515,6 +676,27 @@ export function ProfileView({
         </div>
 
         <div className="space-y-6 p-2">
+          {searchReadinessItems.length > 0 ? (
+            <Card>
+              <CardHeader
+                title={PACKET_COPY.searchReadinessTitle}
+                subtitle={PACKET_COPY.searchReadinessSubtitle}
+              />
+              <dl className="grid gap-3 sm:grid-cols-2">
+                {searchReadinessItems.map((item) => (
+                  <div key={item.label}>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-navy-500">
+                      {item.label}
+                    </dt>
+                    <dd className="mt-0.5 text-sm leading-relaxed text-navy-700">
+                      {item.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </Card>
+          ) : null}
+
           <Card>
             <CardHeader title="Search keywords" />
             <div className="flex flex-wrap gap-2">
@@ -602,12 +784,39 @@ export function ProfileView({
               {searchPrep.safeDisclaimer}
             </p>
           </Card>
+
+          <Card>
+            <CardHeader
+              title={PACKET_COPY.searchFirmQuestionsTitle}
+              subtitle={PACKET_COPY.searchFirmQuestionsSubtitle}
+            />
+            <ul className="space-y-1.5 text-sm text-navy-700">
+              {searchFirmQuestions.map((q) => (
+                <li key={q} className="flex gap-2">
+                  <span className="text-navy-400">?</span>
+                  {q}
+                </li>
+              ))}
+            </ul>
+          </Card>
+
+          <Card>
+            <EducationCardList
+              title="Quick explainers"
+              cards={getEducationCards([
+                "search_firm_role",
+                "validity_search",
+                "clearance_review",
+                "freedom_to_operate",
+              ])}
+            />
+          </Card>
         </div>
       </div>
 
       <Card variant="accent">
         <CardHeader
-          title={PACKET_COPY.readinessSnapshotTitle}
+          title="Detailed readiness metrics"
           subtitle="Preparation only — not legal outcomes."
         />
         <dl className="grid gap-3 sm:grid-cols-2">
@@ -624,11 +833,13 @@ export function ProfileView({
         </dl>
       </Card>
 
-      <Card variant="elevated" className="border-navy-200 bg-gradient-to-br from-navy-50/60 to-white">
-        <CardHeader title={PACKET_COPY.nextBestStepTitle} />
-        <p className="text-base leading-relaxed text-navy-800">
-          {nextBestAction}
-        </p>
+      <PatentPathwaySection />
+
+      <Card>
+        <EducationCardList
+          title="Quick explainers"
+          cards={getEducationCards(["pct", "after_filing"])}
+        />
       </Card>
 
       <DisclaimerNotice />

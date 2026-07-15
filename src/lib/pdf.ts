@@ -1,6 +1,24 @@
 import { jsPDF } from "jspdf";
+import {
+  computeReadinessScore,
+  computeReadinessScoreBreakdown,
+} from "./attorneyExport";
 import { BRAND } from "./brand";
 import { PACKET_COPY } from "./copy";
+import {
+  PATENT_PATHWAY_INTRO,
+  PATENT_PATHWAY_STAGES,
+} from "./content/patentPathway";
+import {
+  RESOURCE_CATEGORIES_INTRO,
+  RESOURCE_CATEGORY_TYPES,
+} from "./content/resourceCategories";
+import { stripUrlsFromText } from "./intakeValidation";
+import {
+  DISCLOSURE_KIND_LABELS,
+  NDA_STATUS_LABELS,
+  SEARCH_SOURCE_LABELS,
+} from "./labels";
 import {
   RESOURCE_DESCRIPTIONS,
   RESOURCE_LABELS,
@@ -13,7 +31,7 @@ import {
   buildIdeaSummaryFields,
   buildMaterialsChecklist,
   buildMissingInfoStatus,
-  buildNextBestAction,
+  buildNextBestSteps,
   buildPatentPrepChecklist,
   buildReadinessMetrics,
   buildReadinessSnapshot,
@@ -26,6 +44,7 @@ import {
 } from "./packet";
 import {
   buildPatentSearchPrep,
+  buildSearchFirmQuestions,
   PATENT_SEARCH_PREP_INTRO,
   WORKSHEET_HEADERS,
 } from "./patentSearchPrep";
@@ -155,12 +174,14 @@ export function buildPacketPdf(
   }
 
   function heading(value: string) {
-    ensureSpace(LINE + 10);
-    y += 6;
+    ensureSpace(LINE + 14);
+    y += 8;
+    doc.setFillColor(MIST[0], MIST[1], MIST[2]);
+    doc.rect(MARGIN, y - 12, maxWidth, 1, "F");
     doc.setDrawColor(TEAL[0], TEAL[1], TEAL[2]);
     doc.setLineWidth(2);
-    doc.line(MARGIN, y - 10, MARGIN + 24, y - 10);
-    text(value, { size: 12, color: TEAL, bold: true, gap: 6 });
+    doc.line(MARGIN, y - 8, MARGIN + 28, y - 8);
+    text(value, { size: 13, color: TEAL, bold: true, gap: 8 });
   }
 
   function labeledBlock(label: string, value: string) {
@@ -173,6 +194,7 @@ export function buildPacketPdf(
       text("None recorded.", { color: GRAY });
       return;
     }
+    const drawOpenCircle = marker === "o";
     for (const item of items) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
@@ -180,7 +202,15 @@ export function buildPacketPdf(
       const lines = doc.splitTextToSize(item, maxWidth - 16) as string[];
       lines.forEach((line, idx) => {
         ensureSpace(LINE);
-        doc.text(idx === 0 ? marker : "", MARGIN, y);
+        if (idx === 0) {
+          if (drawOpenCircle) {
+            doc.setDrawColor(GRAY[0], GRAY[1], GRAY[2]);
+            doc.setLineWidth(0.75);
+            doc.circle(MARGIN + 3, y - 3, 2.4, "S");
+          } else {
+            doc.text(marker, MARGIN, y);
+          }
+        }
         doc.text(line, MARGIN + 16, y);
         y += LINE;
       });
@@ -188,11 +218,80 @@ export function buildPacketPdf(
     y += 4;
   }
 
+  function numberedList(items: string[]) {
+    items.forEach((item, idx) => {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      const lines = doc.splitTextToSize(item, maxWidth - 20) as string[];
+      lines.forEach((line, lineIdx) => {
+        ensureSpace(LINE);
+        if (lineIdx === 0) {
+          doc.setFont("helvetica", "bold");
+          doc.text(`${idx + 1}.`, MARGIN, y);
+          doc.setFont("helvetica", "normal");
+        }
+        doc.text(line, MARGIN + 20, y);
+        y += LINE;
+      });
+    });
+    y += 4;
+  }
+
+  function drawChecklistRow(
+    label: string,
+    complete: boolean,
+    opts: { bold?: boolean; gap?: number } = {},
+  ) {
+    const { bold = false, gap = 2 } = opts;
+    const boxSize = 8;
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    const lines = doc.splitTextToSize(label, maxWidth - 18) as string[];
+    lines.forEach((line, idx) => {
+      ensureSpace(LINE);
+      if (idx === 0) {
+        const boxTop = y - boxSize + 1;
+        doc.setDrawColor(
+          complete ? TEAL[0] : GRAY[0],
+          complete ? TEAL[1] : GRAY[1],
+          complete ? TEAL[2] : GRAY[2],
+        );
+        doc.setLineWidth(1);
+        doc.rect(MARGIN, boxTop, boxSize, boxSize, "S");
+        if (complete) {
+          doc.setLineWidth(1.2);
+          doc.line(
+            MARGIN + 1.8,
+            boxTop + 4.2,
+            MARGIN + 3.4,
+            boxTop + 6.2,
+          );
+          doc.line(
+            MARGIN + 3.4,
+            boxTop + 6.2,
+            MARGIN + 6.4,
+            boxTop + 1.8,
+          );
+        }
+      }
+      doc.text(line, MARGIN + 16, y);
+      y += LINE;
+    });
+    y += gap;
+  }
+
   const profile = record.profile;
   const missingStatus = buildMissingInfoStatus(record, savedReferenceCount);
   const readinessMetrics = buildReadinessMetrics(record, savedReferenceCount);
-  const nextBestAction = buildNextBestAction(record, savedReferenceCount);
-  const ideaLabel = getIdeaLabel(record.answers);
+  const nextBestSteps = buildNextBestSteps(record, savedReferenceCount);
+  const scoreBreakdown = computeReadinessScoreBreakdown(
+    record,
+    savedReferenceCount,
+  );
+  const disclosureEvents = record.answers.disclosureEvents ?? [];
+  const ideaLabel = stripUrlsFromText(getIdeaLabel(record.answers));
 
   // ---------------------------------------------------------------------------
   // 1. Cover page
@@ -244,16 +343,6 @@ export function buildPacketPdf(
   doc.setDrawColor(TEAL[0], TEAL[1], TEAL[2]);
   doc.setLineWidth(1);
   doc.line(pageWidth / 2 - 40, cy + 36, pageWidth / 2 + 40, cy + 36);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(220, 230, 240);
-  doc.text(
-    "Educational readiness tool. Not legal advice.",
-    pageWidth / 2,
-    pageHeight - 80,
-    { align: "center" },
-  );
 
   // ---------------------------------------------------------------------------
   // Body
@@ -318,6 +407,26 @@ export function buildPacketPdf(
 
   // 3. Readiness snapshot
   heading(PACKET_COPY.readinessSnapshotTitle);
+  const organizationScore = computeReadinessScore(record, savedReferenceCount);
+  text(`Organization score: ${organizationScore} / 100`, {
+    size: 11,
+    bold: true,
+    color: TEAL,
+    gap: 2,
+  });
+  text(
+    "Measures packet organization only — not legal merit, patentability, or clearance.",
+    { size: 9, color: GRAY, gap: 2 },
+  );
+  for (const entry of scoreBreakdown) {
+    text(
+      `${entry.label}: ${Math.round(entry.points)} of ${
+        entry.max <= 9 ? `+${entry.max}` : entry.max
+      }`,
+      { size: 9, color: GRAY, gap: 1 },
+    );
+  }
+  y += 5;
   if (profile.signals.length > 0) {
     text(PACKET_COPY.signalsSection, { size: 10, bold: true, gap: 1 });
     for (const s of profile.signals) {
@@ -360,6 +469,48 @@ export function buildPacketPdf(
   );
   text(profile.publicDisclosureNote, { color: GRAY });
 
+  if (disclosureEvents.length > 0) {
+    text("Sharing events you recorded", { size: 10, bold: true, gap: 4 });
+    disclosureEvents.forEach((event, idx) => {
+      const kindLabel = event.kind
+        ? DISCLOSURE_KIND_LABELS[event.kind]
+        : "Not specified";
+      text(`Event ${idx + 1} — ${kindLabel}`, {
+        size: 10,
+        bold: true,
+        color: TEAL,
+        gap: 1,
+      });
+      const rows: [string, string | undefined][] = [
+        ["Approximate date", event.approximateDate],
+        ["Where shown", event.whereShown],
+        ["Who saw it", event.whoSawIt],
+        ["What was shown", event.whatWasShown],
+        [
+          "NDA or confidentiality",
+          event.ndaOrConfidentiality
+            ? NDA_STATUS_LABELS[event.ndaOrConfidentiality]
+            : undefined,
+        ],
+        [
+          "Included key features",
+          event.includedKeyFeatures
+            ? NDA_STATUS_LABELS[event.includedKeyFeatures]
+            : undefined,
+        ],
+      ];
+      for (const [label, value] of rows) {
+        text(`${label}: ${value?.trim() || "Not recorded"}`, {
+          size: 9,
+          color: GRAY,
+          gap: 1,
+        });
+      }
+      y += 4;
+    });
+    text(PACKET_COPY.disclosureGuidance, { size: 9, color: AMBER, gap: 6 });
+  }
+
   // 6. Expert conversation prep
   heading(PACKET_COPY.expertPrepTitle);
   bullets(profile.expertQuestions, "?");
@@ -388,6 +539,13 @@ export function buildPacketPdf(
     text(RESOURCE_DESCRIPTIONS[r], { color: GRAY });
   }
 
+  text("Other resource types that exist", { size: 10, bold: true, gap: 2 });
+  text(RESOURCE_CATEGORIES_INTRO, { size: 9, color: GRAY, gap: 4 });
+  for (const category of RESOURCE_CATEGORY_TYPES) {
+    text(category.title, { size: 10, bold: true, gap: 1 });
+    text(category.description, { size: 9, color: GRAY, gap: 3 });
+  }
+
   // 8. 30/60/90 day follow-up plan
   heading("30 / 60 / 90 day follow-up plan");
   for (const step of buildFollowUpPlan()) {
@@ -406,11 +564,7 @@ export function buildPacketPdf(
   // Patent prep checklist
   heading("Patent prep checklist");
   for (const row of buildPatentPrepChecklist(record)) {
-    text(`${row.complete ? "[x]" : "[ ]"} ${row.label}`, {
-      size: 10,
-      bold: true,
-      gap: 1,
-    });
+    drawChecklistRow(row.label, row.complete, { bold: true, gap: 1 });
     if (row.value) text(row.value, { size: 10, color: GRAY, gap: 6 });
   }
 
@@ -436,10 +590,7 @@ export function buildPacketPdf(
   // Drawings and materials checklist
   heading("Drawings and materials checklist");
   for (const item of buildMaterialsChecklist(record)) {
-    text(`${item.available ? "[x]" : "[ ]"} ${item.label}`, {
-      size: 10,
-      gap: 2,
-    });
+    drawChecklistRow(item.label, item.available, { gap: 2 });
   }
 
   // Expert handoff summary
@@ -466,6 +617,45 @@ export function buildPacketPdf(
   y = MARGIN;
   text(PACKET_COPY.similarRefPrepTitle, { size: 14, color: NAVY, bold: true, gap: 2 });
   text(PATENT_SEARCH_PREP_INTRO, { size: 9, color: GRAY, gap: 6 });
+
+  const searchReadiness = record.answers.searchReadiness;
+  const searchReadinessRows: [string, string][] = [];
+  if (searchReadiness) {
+    const textEntries: [string, string | undefined][] = [
+      ["Key features", searchReadiness.keyFeatures],
+      ["What feels new", searchReadiness.whatFeelsNew],
+      ["Closest existing products", searchReadiness.closestProducts],
+      ["Customer search terms", searchReadiness.customerSearchTerms],
+      ["Technical or industry terms", searchReadiness.technicalSearchTerms],
+      ["Possible industries", searchReadiness.possibleIndustries],
+      [
+        "Materials, mechanisms, steps, or workflows",
+        searchReadiness.materialsMechanismsSteps,
+      ],
+      [
+        "Similar references already found",
+        searchReadiness.similarReferencesFound,
+      ],
+    ];
+    for (const [label, value] of textEntries) {
+      if (value?.trim()) searchReadinessRows.push([label, value.trim()]);
+    }
+    const sources = searchReadiness.sourcesAlreadySearched ?? [];
+    if (sources.length > 0) {
+      searchReadinessRows.push([
+        "Sources already searched",
+        sources.map((source) => SEARCH_SOURCE_LABELS[source] ?? source).join(", "),
+      ]);
+    }
+  }
+
+  if (searchReadinessRows.length > 0) {
+    heading(PACKET_COPY.searchReadinessTitle);
+    text(PACKET_COPY.searchReadinessSubtitle, { size: 9, color: GRAY, gap: 4 });
+    for (const [label, value] of searchReadinessRows) {
+      labeledBlock(label, value);
+    }
+  }
 
   heading("Search keywords");
   text(searchPrep.searchKeywords.join(", ") || "Add more detail to your packet to generate keywords.", {
@@ -494,6 +684,14 @@ export function buildPacketPdf(
 
   heading("Expert prep questions");
   bullets(searchPrep.expertPrepQuestions, "?");
+
+  heading(PACKET_COPY.searchFirmQuestionsTitle);
+  text(PACKET_COPY.searchFirmQuestionsSubtitle, {
+    size: 9,
+    color: GRAY,
+    gap: 4,
+  });
+  bullets(buildSearchFirmQuestions(record), "?");
 
   text(searchPrep.safeDisclaimer, { size: 9, color: AMBER, gap: 6 });
 
@@ -580,19 +778,48 @@ export function buildPacketPdf(
 
   // Readiness metrics
   heading(PACKET_COPY.readinessSnapshotTitle);
-  text("Preparation only — not legal outcomes.", { size: 9, color: GRAY, gap: 4 });
   for (const metric of readinessMetrics) {
     labeledBlock(metric.label, metric.value);
   }
 
-  // Next best action
+  // Common preparation pathway
+  heading(PACKET_COPY.pathwayTitle);
+  text(PATENT_PATHWAY_INTRO, { size: 9, color: GRAY, gap: 4 });
+  numberedList(
+    PATENT_PATHWAY_STAGES.map(
+      (stage) => `${stage.title} — ${stage.description}`,
+    ),
+  );
+
+  // Next best steps
   heading(PACKET_COPY.nextBestStepTitle);
-  text(nextBestAction, { gap: 6 });
+  numberedList(nextBestSteps);
 
   // Full legal disclaimer
   heading("Important — please read");
   for (const para of profile.disclaimer.split("\n\n")) {
     text(para, { size: 9, color: AMBER });
+  }
+
+  // Single subtle footer per page — keeps extracted text clean (one line per
+  // page instead of repeated inline disclaimer marks).
+  const totalPages = doc.getNumberOfPages();
+  for (let page = 1; page <= totalPages; page += 1) {
+    doc.setPage(page);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    if (page === 1) {
+      // Cover page has a navy background; use a lighter tone.
+      doc.setTextColor(150, 170, 190);
+    } else {
+      doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
+    }
+    doc.text(
+      `Preparation only — not legal advice · SmartProBonoIP · page ${page} of ${totalPages}`,
+      pageWidth / 2,
+      pageHeight - 24,
+      { align: "center" },
+    );
   }
 
   return doc;
