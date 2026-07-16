@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { PageEvent } from "@/components/analytics/PageEvent";
+import { TrackedNavLink } from "@/components/analytics/TrackedNavLink";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { CoachPreview } from "@/components/pilot/CoachPreview";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
@@ -57,20 +58,33 @@ export default function SamplePacketPage() {
         meta="Fictional demo · HydroSeal portable filter bottle"
         aside={
           <PaperCard elevated className="p-5 sm:p-6">
-            <p className="section-kicker text-muted-blue">Demo handoff</p>
+            <p className="section-kicker text-muted-blue">Start from this sample</p>
             <p className="mt-2 text-sm leading-relaxed text-navy-700">
-              Share this sample with a clinic director, patent agent, or innovation
-              partner to show what an organized readiness packet looks like.
+              See how an organized readiness packet looks, then start the builder
+              with this example or with your own idea.
             </p>
             <div className="mt-5 flex flex-col gap-3">
-              <Link
+              <TrackedNavLink
                 href={ROUTES.disclaimerDemo}
+                event="demo_started"
+                metadata={{ ctaName: "sample_start_example", pageSection: "sample_aside" }}
                 className="btn-primary w-full sm:w-auto"
               >
                 {PILOT_KIT_COPY.sampleStartCta}
-              </Link>
+              </TrackedNavLink>
               <p className="text-xs leading-relaxed text-navy-600">
                 {PILOT_KIT_COPY.sampleStartHint}
+              </p>
+              <TrackedNavLink
+                href={ROUTES.disclaimer}
+                event="start_clicked"
+                metadata={{ ctaName: "sample_start_own", pageSection: "sample_aside" }}
+                className="btn-secondary w-full sm:w-auto"
+              >
+                {PILOT_KIT_COPY.sampleStartOwnCta}
+              </TrackedNavLink>
+              <p className="text-xs leading-relaxed text-navy-600">
+                {PILOT_KIT_COPY.sampleStartOwnHint}
               </p>
               <button
                 type="button"
@@ -98,12 +112,22 @@ export default function SamplePacketPage() {
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-mist-200 bg-white/95 p-3 shadow-[0_-4px_24px_rgb(11_31_58_/_0.08)] backdrop-blur-sm sm:hidden">
         <div className="flex gap-2">
-          <Link
-            href="/smartprobonoip/disclaimer?demo=1"
+          <TrackedNavLink
+            href={ROUTES.disclaimerDemo}
+            event="demo_started"
+            metadata={{ ctaName: "sample_start_example", pageSection: "sample_mobile_bar" }}
             className="btn-primary flex-1 py-2.5 text-xs"
           >
             Start example
-          </Link>
+          </TrackedNavLink>
+          <TrackedNavLink
+            href={ROUTES.disclaimer}
+            event="start_clicked"
+            metadata={{ ctaName: "sample_start_own", pageSection: "sample_mobile_bar" }}
+            className="btn-secondary flex-1 py-2.5 text-xs"
+          >
+            Your packet
+          </TrackedNavLink>
           <button
             type="button"
             onClick={() => {
@@ -114,14 +138,7 @@ export default function SamplePacketPage() {
             }}
             className="btn-primary flex-1 py-2.5 text-xs"
           >
-            Download PDF
-          </button>
-          <button
-            type="button"
-            onClick={() => setAttorneyExportOpen(true)}
-            className="btn-secondary flex-1 py-2.5 text-xs"
-          >
-            Export
+            PDF
           </button>
         </div>
       </div>

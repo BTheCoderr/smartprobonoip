@@ -147,10 +147,13 @@ export function IntakeForm() {
       answers.whoFor.trim().length > 0 &&
       answers.howItWorks.trim().length >= 12);
 
-  const showPacketPreview =
-    step >= 1 &&
-    !previewDismissed &&
-    answers.whatCreated.trim().length > 0;
+  const coreIdeaReady =
+    answers.whatCreated.trim().length > 0 &&
+    answers.whoFor.trim().length > 0 &&
+    answers.howItWorks.trim().length >= 12;
+
+  /** Compact preview once the Step 1 core trio is ready; dismissible. */
+  const showPacketPreview = !previewDismissed && coreIdeaReady;
 
   useEffect(() => {
     if (step === 1 && !ownershipStepTracked.current) {
@@ -381,7 +384,7 @@ export function IntakeForm() {
           {currentStep.hint}
         </p>
 
-        {showPacketPreview ? (
+        {showPacketPreview && step >= 1 ? (
           <div className="mb-6">
             <IntakePacketPreview
               answers={answers}
@@ -415,6 +418,15 @@ export function IntakeForm() {
               setStep(target);
             }}
           />
+        ) : null}
+
+        {showPacketPreview && step === 0 ? (
+          <div className="mt-6">
+            <IntakePacketPreview
+              answers={answers}
+              onDismiss={() => setPreviewDismissed(true)}
+            />
+          </div>
         ) : null}
 
         {fieldError ? (

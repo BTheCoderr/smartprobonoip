@@ -68,7 +68,11 @@ export const INTAKE_COPY = {
   saveAndExit: "Progress saved. Return anytime from Start free packet.",
   wizard: {
     ideaCoreNote:
-      "Start with three basics — what you made, who it is for, and how it works. Optional details help your packet but can wait until review.",
+      "Three answers to continue — what you created, who it is for, and how it works. Everything else is optional and can wait.",
+    ideaOptionalNote:
+      "Optional — helps experts later. Skip if you are unsure; you can add these anytime before export.",
+    ideaItemTypeHint:
+      "Optional category for packet sections — defaults are fine to leave as-is.",
     timelineNote:
       "Public sharing and collaborator details help professionals ask better questions. A full development timeline editor unlocks in your packet after generation.",
     searchPrepLead:
@@ -266,6 +270,10 @@ export const LANDING_COPY = {
   ],
   productProofLead:
     "Screens below use the fictional HydroSeal demo packet — the same example you can open, download, or start from.",
+  productProofMediaNote:
+    "Add real screenshots or a short clip under public/product-proof/ when available. Until then, interactive UI previews are shown.",
+  socialProofEmptyLead:
+    "Partner quotes and logos will appear here once we have permission to share them.",
   trustQuotes: [
     {
       quote:
@@ -372,6 +380,38 @@ export const LANDING_COPY = {
     "Educational preparation only. Not legal advice. Not a substitute for a qualified patent agent, attorney, or other professional.",
 } as const;
 
+/**
+ * Drop-in media paths for homepage product proof.
+ * Set a path when a real asset exists (e.g. "/product-proof/builder.png").
+ * Leave null to keep the interactive UI preview fallback — never invent proof.
+ */
+export const PRODUCT_PROOF_MEDIA: {
+  builder: string | null;
+  snapshot: string | null;
+  search: string | null;
+  pdf: string | null;
+  /** Optional short loop/clip shown above the proof grid when set. */
+  video: string | null;
+} = {
+  builder: null,
+  snapshot: null,
+  search: null,
+  pdf: null,
+  video: null,
+};
+
+/**
+ * Named quotes and partner logos — leave empty until permission exists.
+ * Do not invent names, logos, or fake endorsements.
+ */
+export const SOCIAL_PROOF_SLOT: {
+  quotes: Array<{ quote: string; name: string; role: string; org?: string }>;
+  logos: Array<{ name: string; src: string; href?: string }>;
+} = {
+  quotes: [],
+  logos: [],
+};
+
 export const PILOT_KIT_COPY = {
   title: "SmartProBonoIP Rhode Island Pilot",
   subtitle: "Partner launch kit",
@@ -407,8 +447,11 @@ export const PILOT_KIT_COPY = {
   sampleBanner:
     "Sample packet — fictional HydroSeal invention for demos only. Preparation help, not legal advice.",
   sampleStartCta: "Start with this example",
+  sampleStartOwnCta: "Start your own packet",
   sampleStartHint:
     "Pre-loads the HydroSeal demo in the packet builder — edit anything, then generate your own packet.",
+  sampleStartOwnHint:
+    "Begin a blank packet for your idea. Same steps as the sample — your answers instead of HydroSeal.",
   similarReferencePrepBlurb:
     "Inventors can use grouped starter queries, outbound search tools (Google Patents, USPTO, WIPO, Espacenet, The Lens, PQAI), gap maps, and suggested CPC areas (e.g. B01D, A45F) as preparation only — not legal conclusions.",
   pilotPitch:

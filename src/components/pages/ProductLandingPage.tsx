@@ -2,7 +2,11 @@ import Link from "next/link";
 import { PageEvent } from "@/components/analytics/PageEvent";
 import { TrackedNavLink } from "@/components/analytics/TrackedNavLink";
 import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
-import { ProductProofPreview } from "@/components/ui/ProductProofPreview";
+import {
+  ProductProofMedia,
+  ProductProofVideoSlot,
+} from "@/components/pages/ProductProofMedia";
+import { SocialProofSlot } from "@/components/pages/SocialProofSlot";
 import { BRAND } from "@/lib/brand";
 import { LANDING_COPY, RESEARCH_PREP_COPY } from "@/lib/copy";
 import { ROUTES } from "@/lib/routes";
@@ -61,8 +65,12 @@ export default function ProductLandingPage() {
           <SectionHeader
             kicker="Product proof"
             title="Real workflows — sample previews of the IP Readiness Packet"
-            lead="These previews reflect actual product behavior: guided intake, readiness scoring, similar-reference prep, PDF/JSON export, and pilot metrics. Preparation only — not legal advice."
+            lead={LANDING_COPY.productProofLead}
           />
+          <p className="mt-3 text-xs leading-relaxed text-navy-500">
+            {LANDING_COPY.productProofMediaNote}
+          </p>
+          <ProductProofVideoSlot />
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             {LANDING_COPY.productProof.map((item) => (
               <div key={item.title} className="space-y-3">
@@ -70,7 +78,7 @@ export default function ProductLandingPage() {
                   <h3 className="text-base font-semibold text-navy-900">{item.title}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-navy-600">{item.body}</p>
                 </div>
-                <ProductProofPreview variant={item.variant} />
+                <ProductProofMedia variant={item.variant} />
               </div>
             ))}
           </div>
@@ -98,6 +106,8 @@ export default function ProductLandingPage() {
           </div>
         </PaperShell>
       </Section>
+
+      <SocialProofSlot />
 
       <Section id="how-it-works">
         <PaperShell>

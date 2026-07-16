@@ -28,19 +28,13 @@ export function StepYourIdea({
         {INTAKE_COPY.wizard.ideaCoreNote}
       </p>
 
-      <SelectField
-        label="What kind of thing is it?"
-        hint="Helps tailor your packet sections — you can change this later."
-        value={answers.itemType}
-        options={ITEM_TYPE_OPTIONS}
-        onChange={(v) => onUpdate("itemType", v as ItemType)}
-      />
       <TextField
         label="What did you create?"
         hint="One or two sentences in plain language."
         value={answers.whatCreated}
         onChange={(v) => onUpdate("whatCreated", v)}
         example={INTAKE_COPY.fieldExamples.whatCreated}
+        required
       />
       <TextField
         label="Who is it for?"
@@ -48,6 +42,7 @@ export function StepYourIdea({
         value={answers.whoFor}
         onChange={(v) => onUpdate("whoFor", v)}
         example={INTAKE_COPY.fieldExamples.whoFor}
+        required
       />
       <TextField
         label="How does it work?"
@@ -55,21 +50,35 @@ export function StepYourIdea({
         value={answers.howItWorks}
         onChange={(v) => onUpdate("howItWorks", v)}
         example={INTAKE_COPY.fieldExamples.howItWorks}
+        required
       />
+
+      <div className="rounded-md border border-mist-200/80 bg-mist-50/40 px-3 py-3 sm:px-4">
+        <SelectField
+          label="What kind of thing is it?"
+          hint={INTAKE_COPY.wizard.ideaItemTypeHint}
+          value={answers.itemType}
+          options={ITEM_TYPE_OPTIONS}
+          onChange={(v) => onUpdate("itemType", v as ItemType)}
+        />
+      </div>
 
       <div className="border-t border-dashed border-mist-200 pt-2">
         <button
           type="button"
           onClick={() => setShowOptional((open) => !open)}
-          className="flex w-full items-center justify-between gap-3 rounded-md px-1 py-2 text-left text-sm font-semibold text-teal-800 hover:text-teal-900"
+          className="flex w-full items-center justify-between gap-3 rounded-md px-1 py-2 text-left text-sm text-navy-600 hover:text-navy-800"
           aria-expanded={showOptional}
         >
           <span>
-            {showOptional
-              ? "Hide optional details"
-              : "Add optional details (recommended before expert review)"}
+            <span className="font-medium text-navy-700">
+              {showOptional ? "Hide optional details" : "Add optional details"}
+            </span>
+            <span className="mt-0.5 block text-xs font-normal text-navy-500">
+              {INTAKE_COPY.wizard.ideaOptionalNote}
+            </span>
           </span>
-          <span className="text-teal-600" aria-hidden>
+          <span className="shrink-0 text-navy-400" aria-hidden>
             {showOptional ? "−" : "+"}
           </span>
         </button>

@@ -10,6 +10,7 @@ export function TextField({
   placeholder,
   example,
   rows = 3,
+  required,
 }: {
   label: string;
   hint?: string;
@@ -18,10 +19,18 @@ export function TextField({
   placeholder?: string;
   example?: string;
   rows?: number;
+  required?: boolean;
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-semibold text-navy-900">{label}</span>
+      <span className="text-sm font-semibold text-navy-900">
+        {label}
+        {required ? (
+          <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-teal-700">
+            Required
+          </span>
+        ) : null}
+      </span>
       {hint ? (
         <span className="mt-1 block text-sm leading-relaxed text-navy-500">
           {hint}

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { TrackedNavLink } from "@/components/analytics/TrackedNavLink";
 import { ROUTES } from "@/lib/routes";
 import { PaperShell, Section, SectionHeader } from "@/components/ui/design";
 
@@ -18,7 +18,7 @@ export function ProductSamplePreviewBand() {
           <div>
             <SectionHeader
               kicker="Live sample preview"
-              title="Open the full sample packet — not a screenshot"
+              title="Open the full sample packet — then start yours"
               lead="The sample packet is a working demo of the product: readiness review, research workspace, exports, and resource routing. Preparation only — not legal advice."
             />
             <ul className="mt-6 space-y-2 text-sm text-navy-700">
@@ -30,15 +30,33 @@ export function ProductSamplePreviewBand() {
               ))}
             </ul>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href={ROUTES.sample} className="btn-primary">
+              <TrackedNavLink
+                href={ROUTES.sample}
+                event="sample_packet_viewed"
+                metadata={{ ctaName: "homepage_open_sample", pageSection: "sample_band" }}
+                className="btn-primary"
+              >
                 Open live sample packet
-              </Link>
-              <Link href={ROUTES.disclaimerDemo} className="btn-secondary">
-                Try demo intake
-              </Link>
+              </TrackedNavLink>
+              <TrackedNavLink
+                href={ROUTES.disclaimerDemo}
+                event="demo_started"
+                metadata={{ ctaName: "homepage_start_example", pageSection: "sample_band" }}
+                className="btn-secondary"
+              >
+                Start with this example
+              </TrackedNavLink>
+              <TrackedNavLink
+                href={ROUTES.disclaimer}
+                event="start_clicked"
+                metadata={{ ctaName: "homepage_start_own", pageSection: "sample_band" }}
+                className="btn-ghost"
+              >
+                Start your own packet
+              </TrackedNavLink>
             </div>
             <p className="mt-4 text-xs text-navy-500">
-              Product video walkthrough is not included in v1.0 — use the live sample and UI previews below.
+              Add a short product clip later via PRODUCT_PROOF_MEDIA.video — until then, use the live sample and UI previews below.
             </p>
           </div>
           <div className="paper-card-elevated border-navy-100 p-6">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/brand/BrandMark";
+import { TrackedNavLink } from "@/components/analytics/TrackedNavLink";
 import { ROUTES } from "@/lib/routes";
 
 export function SiteNav() {
@@ -38,9 +39,14 @@ export function SiteNav() {
           >
             Professionals
           </Link>
-          <Link href={ROUTES.start} className="btn-primary px-3 py-2 text-xs sm:px-4 sm:text-sm">
+          <TrackedNavLink
+            href={ROUTES.disclaimer}
+            event="start_clicked"
+            metadata={{ ctaName: "nav_start_packet", pageSection: "site_nav" }}
+            className="btn-primary px-3 py-2 text-xs sm:px-4 sm:text-sm"
+          >
             Start your packet
-          </Link>
+          </TrackedNavLink>
         </div>
       </nav>
     </header>
