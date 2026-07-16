@@ -210,7 +210,7 @@ export function InterestForm({ id }: { id?: string }) {
           <p className="text-sm font-medium text-teal-700 sm:col-span-2">{success}</p>
         ) : null}
         {error ? (
-          <p className="text-sm text-amber-800 sm:col-span-2">{error}</p>
+          <p className="text-sm text-navy-800 sm:col-span-2">{error}</p>
         ) : null}
       </form>
     </Card>

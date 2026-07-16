@@ -7,12 +7,13 @@ export function StampLabel({
   tone = "teal",
 }: {
   children: ReactNode;
-  tone?: "teal" | "warm" | "navy";
+  tone?: "teal" | "warm" | "navy" | "aqua";
 }) {
   const toneClass = {
     teal: "stamp-label-teal",
     warm: "stamp-label-warm",
     navy: "stamp-label-navy",
+    aqua: "stamp-label-aqua",
   }[tone];
   return <span className={`stamp-label ${toneClass}`}>{children}</span>;
 }
@@ -681,16 +682,17 @@ export function CalloutCard({
 }: {
   title: string;
   body: string;
-  tone?: "teal" | "warm" | "navy";
+  tone?: "teal" | "warm" | "navy" | "aqua";
 }) {
   const styles = {
     teal: "border-teal-200 bg-teal-50/40",
     warm: "border-warm-200 bg-warm-50/60",
     navy: "border-navy-200 bg-navy-50/40",
+    aqua: "border-aqua-200 bg-aqua-50/50",
   }[tone];
   return (
     <div className={`dossier-card border px-5 py-5 sm:px-6 ${styles}`}>
-      <StampLabel tone={tone === "navy" ? "navy" : tone === "warm" ? "warm" : "teal"}>
+      <StampLabel tone={tone === "navy" ? "navy" : tone === "warm" ? "warm" : tone === "aqua" ? "aqua" : "teal"}>
         Important
       </StampLabel>
       <h3 className="headline-editorial mt-4 text-lg sm:text-xl">{title}</h3>

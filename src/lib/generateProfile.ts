@@ -69,6 +69,12 @@ function lowerFirst(value: string): string {
   return value.charAt(0).toLowerCase() + value.slice(1);
 }
 
+function snippet(value: string, max = 72): string {
+  const trimmed = clean(value);
+  if (trimmed.length <= max) return trimmed;
+  return `${trimmed.slice(0, max - 1)}…`;
+}
+
 function deriveExpertQuestions(
   answers: IntakeAnswers,
   signals: IpSignal[],
@@ -76,46 +82,56 @@ function deriveExpertQuestions(
   const questions: string[] = [];
   if (signals.includes("patent_invention")) {
     questions.push(
-      "Which parts of how my idea works might be most important to describe in detail?",
+      hasText(answers.mainParts)
+        ? `I broke my idea into these parts: ${snippet(answers.mainParts)} — which details should I document more clearly before a patent conversation?`
+        : "Which parts of how my idea works should I describe in more detail before meeting with a patent professional?",
     );
   }
   if (signals.includes("trademark_brand")) {
     questions.push(
-      "What should I check before committing to my name, logo, or slogan?",
+      answers.hasBrandIdentity
+        ? "I already use a name or logo — what should I check before investing further in branding?"
+        : "If I plan to use a product name or logo, what should I prepare before committing to it?",
     );
   }
   if (signals.includes("copyright_creative")) {
     questions.push(
-      "How should I document and organize my creative work?",
+      "What creative files or content should I organize and date before talking with an expert?",
     );
   }
   if (signals.includes("software_code")) {
     questions.push(
-      "How should I organize my app screens, code notes, and technical documentation?",
+      hasText(answers.howItWorks)
+        ? `My app or software works like this: ${snippet(answers.howItWorks)} — what technical documentation would be useful to bring?`
+        : "What technical documentation should I gather for my software or app idea?",
     );
   }
   if (signals.includes("trade_secret")) {
     questions.push(
-      "What should I keep confidential, and how should I handle conversations about it?",
+      "What should stay confidential, and how should I handle early conversations about the idea?",
     );
   }
   if (signals.includes("nda_confidentiality")) {
     questions.push(
-      "Who am I planning to share with, and what should I prepare before those conversations?",
+      "Who am I planning to share this with next, and what should I prepare before those conversations?",
     );
   }
   if (signals.includes("public_disclosure") || isPubliclyShared(answers)) {
     questions.push(
-      "I have already shared this publicly — how might that affect my options and timing?",
+      "I shared this idea publicly — how might timing affect what I should prepare or ask about next?",
     );
   }
   if (signals.includes("prior_art_search")) {
     questions.push(
-      "What search terms or similar products should I bring when discussing possible references?",
+      hasText(answers.whatDifferent)
+        ? `I think my idea differs because: ${snippet(answers.whatDifferent)} — what similar products or references should I bring to discuss?`
+        : "What search terms or similar products should I bring when discussing possible references?",
     );
   }
   questions.push(
-    "Given my situation, what is the most useful next preparation step for me?",
+    hasText(answers.problemSolved)
+      ? `Given the problem I'm solving (${snippet(answers.problemSolved, 48)}), what is the most useful next preparation step for me?`
+      : "Given my situation, what is the most useful next preparation step before expert review?",
   );
   return questions;
 }

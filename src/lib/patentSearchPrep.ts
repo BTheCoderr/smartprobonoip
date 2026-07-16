@@ -283,6 +283,115 @@ function buildSuggestedQueries(record: ProjectRecord): string[] {
   return merged.slice(0, userTermQueries.length > 0 ? 6 : 5);
 }
 
+function isRetailShelfMonitoringApp(blob: string, answers: IntakeAnswers): boolean {
+  const retailContext = mentions(
+    blob,
+    "shelf",
+    "retail",
+    "grocery",
+    "store",
+    "inventory",
+    "stock",
+    "restock",
+    "merchandis",
+  );
+  const visualTech = mentions(
+    blob,
+    "photo",
+    "image",
+    "camera",
+    "scan",
+    "visual",
+    "recognition",
+    "computer vision",
+  );
+  return (
+    retailContext &&
+    visualTech &&
+    (answers.itemType === "software" || mentions(blob, "app", "software", "mobile"))
+  );
+}
+
+function buildRetailShelfMonitoringQueries(): string[] {
+  return [
+    "image recognition shelf monitoring software",
+    "retail shelf scanning inventory app",
+    "out of stock detection using shelf photos",
+    "grocery shelf audit image analysis",
+    "visual inventory management for small retailers",
+    "AI shelf monitoring restock checklist",
+    "photo based retail inventory tracking",
+  ];
+}
+
+function extractIndustryPhrase(answers: IntakeAnswers): string {
+  const who = answers.whoFor?.toLowerCase() ?? "";
+  if (mentions(who, "grocery", "corner store", "retail", "bodega")) {
+    return "small retailers";
+  }
+  if (mentions(who, "nursing", "student", "education")) return "students";
+  if (mentions(who, "hiker", "outdoor", "camp")) return "outdoor users";
+  if (mentions(who, "homeowner", "contractor", "property")) return "property owners";
+  if (mentions(who, "health", "medical", "patient")) return "healthcare users";
+  const keywords = extractKeywords(answers.whoFor, 3);
+  return keywords.length > 0 ? keywords.join(" ") : "users";
+}
+
+function extractFunctionPhrase(answers: IntakeAnswers): string {
+  const blob = textBlob(answers);
+  if (mentions(blob, "detect", "out of stock", "empty shelf", "stockout")) {
+    return "out of stock detection";
+  }
+  if (mentions(blob, "monitor", "tracking", "track")) return "monitoring";
+  if (mentions(blob, "scan", "recognition", "image", "photo", "visual")) {
+    return "image recognition";
+  }
+  if (mentions(blob, "automate", "automation")) return "workflow automation";
+  if (mentions(blob, "filter", "purif")) return "filtration";
+  if (mentions(blob, "plan", "estimate", "budget")) return "planning";
+  const worksKw = extractKeywords(answers.howItWorks, 4);
+  if (worksKw.length >= 2) return worksKw.slice(0, 3).join(" ");
+  const createdKw = extractKeywords(answers.whatCreated, 3);
+  return createdKw.slice(0, 3).join(" ") || "software";
+}
+
+function buildSoftwareAppQueries(answers: IntakeAnswers): string[] {
+  const blob = textBlob(answers);
+
+  if (isRetailShelfMonitoringApp(blob, answers)) {
+    return buildRetailShelfMonitoringQueries().slice(0, 7);
+  }
+
+  const industry = extractIndustryPhrase(answers);
+  const fn = extractFunctionPhrase(answers);
+  const problemKw = extractKeywords(answers.problemSolved, 3);
+  const problemPhrase =
+    problemKw.length >= 2 ? problemKw.join(" ") : "workflow management";
+
+  const queries = [
+    `${fn} software for ${industry}`,
+    `${problemPhrase} ${answers.itemType === "software" ? "application" : "software platform"}`,
+    `${fn} mobile app ${industry}`,
+    `${extractKeywords(answers.mainParts, 3).join(" ") || fn} software system`,
+    `${extractKeywords(answers.whatDifferent, 3).join(" ") || fn} app feature`,
+    `automated ${problemPhrase} software`,
+    `${fn} dashboard for ${industry}`,
+  ]
+    .map(stripBlockedTokensFromQuery)
+    .filter((query) => query.split(/\s+/).length >= 3);
+
+  const unique: string[] = [];
+  const seen = new Set<string>();
+  for (const query of queries) {
+    if (query.length > 0 && !seen.has(query)) {
+      seen.add(query);
+      unique.push(query);
+    }
+  }
+
+  return unique.slice(0, 7);
+}
+
 function buildHeuristicQueries(record: ProjectRecord): string[] {
   const answers = normalizeAnswersForPacket(record.answers);
   const brand =
@@ -312,6 +421,13 @@ function buildHeuristicQueries(record: ProjectRecord): string[] {
       "child pedestrian safety backpack light",
       "automatic flashing backpack clip light",
     ];
+  }
+
+  if (
+    answers.itemType === "software" ||
+    mentions(blob, "software", "app", "application", "platform", "mobile")
+  ) {
+    return buildSoftwareAppQueries(answers).slice(0, 7);
   }
 
   if (mentions(blob, "water", "filter", "bottle", "hydration")) {

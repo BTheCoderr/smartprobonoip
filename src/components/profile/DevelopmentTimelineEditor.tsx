@@ -98,7 +98,7 @@ export function DevelopmentTimelineEditor({
           ) : null}
         </div>
         {error ? (
-          <p className="text-sm text-amber-800">{error}</p>
+          <p className="text-sm text-navy-800">{error}</p>
         ) : null}
       </form>
     </Card>

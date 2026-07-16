@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BRAND } from "@/lib/brand";
+import { BRAND, BRAND_COLORS } from "@/lib/brand";
 
 const ICON_SIZES = {
   sm: "h-8 w-8",
@@ -34,8 +34,8 @@ export function BrandMarkIcon({
         width="30"
         height="30"
         rx="1.5"
-        fill="#eef2f6"
-        stroke="#0b1f3a"
+        fill="#eef5f8"
+        stroke={BRAND_COLORS.deepNavy}
         strokeWidth="1.5"
       />
       <rect
@@ -44,8 +44,8 @@ export function BrandMarkIcon({
         width="30"
         height="30"
         rx="1.5"
-        fill="#faf8f4"
-        stroke="#0b1f3a"
+        fill={BRAND_COLORS.offWhite}
+        stroke={BRAND_COLORS.deepNavy}
         strokeWidth="1.5"
       />
       <rect
@@ -55,25 +55,25 @@ export function BrandMarkIcon({
         height="30"
         rx="1.5"
         fill="#ffffff"
-        stroke="#0b1f3a"
+        stroke={BRAND_COLORS.deepNavy}
         strokeWidth="1.5"
       />
       <path
         d="M2 6h10v5H2V6Z"
-        fill="#faf8f4"
-        stroke="#0b1f3a"
+        fill={BRAND_COLORS.offWhite}
+        stroke={BRAND_COLORS.deepNavy}
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
       <path
         d="M6 10.5h22"
-        stroke="#dde4ec"
+        stroke="#dce6ec"
         strokeWidth="0.75"
         strokeDasharray="2 2"
       />
       <path
         d="M6 14.5h18"
-        stroke="#dde4ec"
+        stroke="#dce6ec"
         strokeWidth="0.75"
         strokeDasharray="2 2"
       />
@@ -83,16 +83,16 @@ export function BrandMarkIcon({
         width="17"
         height="11"
         rx="1"
-        fill="#e6f6f6"
-        stroke="#0f8585"
+        fill="#e8f4f5"
+        stroke={BRAND_COLORS.primaryTeal}
         strokeWidth="1.25"
         strokeDasharray="3 2"
       />
-      <circle cx="21.5" cy="19.5" r="1.25" fill="#d97706" />
+      <circle cx="21.5" cy="19.5" r="1.25" fill={BRAND_COLORS.softAqua} />
       <text
         x="15.5"
         y="25.5"
-        fill="#0b6767"
+        fill={BRAND_COLORS.darkTeal}
         fontSize="7.5"
         fontWeight="700"
         fontFamily="ui-monospace, monospace"
@@ -102,7 +102,7 @@ export function BrandMarkIcon({
       </text>
       <path
         d="M2 34h30"
-        stroke="#14a3a3"
+        stroke={BRAND_COLORS.primaryTeal}
         strokeWidth="2"
         strokeLinecap="round"
       />
@@ -127,7 +127,7 @@ export function BrandMarkWordmark({
         }`}
       >
         {BRAND.umbrella}
-        <span className={light ? "text-teal-300" : "text-teal-600"}>IP</span>
+        <span className={light ? "text-aqua-300" : "text-teal-600"}>IP</span>
       </span>
       {showSubtitle ? (
         <span

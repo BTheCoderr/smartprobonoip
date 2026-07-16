@@ -2,6 +2,7 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { ReadinessScoreCard } from "@/components/profile/ReadinessScoreCard";
+import { PacketReviewPanel } from "@/components/profile/PacketReviewPanel";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import {
   DISCLOSURE_KIND_LABELS,
@@ -170,6 +171,7 @@ export function ProfileView({
           record={record}
           savedReferenceCount={savedReferenceCount}
         />
+      <PacketReviewPanel record={record} savedReferenceCount={savedReferenceCount} />
         <CardHeader
           title={PACKET_COPY.readinessSnapshotTitle}
           subtitle="A quick view of where your idea stands today."

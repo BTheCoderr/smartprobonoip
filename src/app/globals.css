@@ -211,6 +211,12 @@ body {
     color: var(--color-warm-700);
   }
 
+  .stamp-label-aqua {
+    border-color: rgb(93 170 176 / 0.55);
+    background-color: rgb(235 247 248 / 0.95);
+    color: rgb(3 118 129);
+  }
+
   .stamp-label-navy {
     border-color: rgb(74 116 168 / 0.45);
     background-color: rgb(238 242 248 / 0.9);

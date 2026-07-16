@@ -1,6 +1,8 @@
 import "server-only";
 import { createHash, randomBytes } from "crypto";
+import { appPath } from "@/lib/appUrl";
 import { getRecordById } from "@/lib/db/records";
+import { ROUTES } from "@/lib/routes";
 import { getSupabaseService } from "@/lib/supabaseServer";
 import type { ProjectRecord } from "@/lib/types";
 
@@ -15,15 +17,8 @@ export function hashRecoveryToken(token: string): string {
   return createHash("sha256").update(token.trim()).digest("hex");
 }
 
-function appBaseUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ??
-    "http://localhost:3000"
-  );
-}
-
 export function buildRecoveryUrl(token: string): string {
-  return `${appBaseUrl()}/smartprobonoip/recover?token=${encodeURIComponent(token)}`;
+  return appPath(`${ROUTES.recover}?token=${encodeURIComponent(token)}`);
 }
 
 export function isEmailConfigured(): boolean {

@@ -210,7 +210,7 @@ export function PilotFeedbackCard({
         </label>
 
         {error ? (
-          <p className="text-sm text-amber-800" role="alert">
+          <p className="text-sm text-navy-800" role="alert">
             {error}
           </p>
         ) : null}

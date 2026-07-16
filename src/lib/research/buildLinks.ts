@@ -16,6 +16,10 @@ export interface OutboundSearchTool {
   badge?: string;
 }
 
+export function buildGoogleScholarUrl(query: string): string {
+  return `https://scholar.google.com/scholar?q=${encodeURIComponent(query)}`;
+}
+
 export function buildGooglePatentsUrl(query: string): string {
   return `https://patents.google.com/?q=${encodeURIComponent(query)}`;
 }
@@ -116,11 +120,20 @@ export function buildOutboundSearchTools(primaryQuery?: string): OutboundSearchT
     },
     {
       id: "web",
-      label: "Web search",
+      label: "Google Search",
       description: "Find products, articles, and public pages that may look similar.",
       url: query ? buildWebSearchUrl(query) : "https://www.google.com/",
       supportsQuery: true,
       categories: ["product", "general"],
+      priority: "secondary",
+    },
+    {
+      id: "google_scholar",
+      label: "Google Scholar",
+      description: "Explore academic papers and technical publications related to your topic.",
+      url: query ? buildGoogleScholarUrl(query) : "https://scholar.google.com/",
+      supportsQuery: true,
+      categories: ["general", "patent"],
       priority: "secondary",
     },
     {
@@ -190,6 +203,8 @@ export function resolveOutboundToolUrl(
       return buildPqaiUrl(query);
     case "web":
       return buildWebSearchUrl(query);
+    case "google_scholar":
+      return buildGoogleScholarUrl(query);
     case "uspto_trademark":
       return buildUsptoTrademarkSearchUrl(query);
     default:

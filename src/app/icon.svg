@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <rect x="10" y="14" width="30" height="30" rx="1.5" fill="#eef2f6" stroke="#0b1f3a" stroke-width="1.5"/>
-  <rect x="6" y="10" width="30" height="30" rx="1.5" fill="#faf8f4" stroke="#0b1f3a" stroke-width="1.5"/>
-  <rect x="2" y="6" width="30" height="30" rx="1.5" fill="#ffffff" stroke="#0b1f3a" stroke-width="1.5"/>
-  <path d="M2 6h10v5H2V6Z" fill="#faf8f4" stroke="#0b1f3a" stroke-width="1.5" stroke-linejoin="round"/>
-  <rect x="7" y="17" width="17" height="11" rx="1" fill="#e6f6f6" stroke="#0f8585" stroke-width="1.25" stroke-dasharray="3 2"/>
-  <circle cx="21.5" cy="19.5" r="1.25" fill="#d97706"/>
-  <text x="15.5" y="25.5" fill="#0b6767" font-size="7.5" font-weight="700" font-family="monospace" text-anchor="middle">IP</text>
-  <path d="M2 34h30" stroke="#14a3a3" stroke-width="2" stroke-linecap="round"/>
+  <rect x="10" y="14" width="30" height="30" rx="1.5" fill="#eef5f8" stroke="#022E55" stroke-width="1.5"/>
+  <rect x="6" y="10" width="30" height="30" rx="1.5" fill="#FDFDFD" stroke="#022E55" stroke-width="1.5"/>
+  <rect x="2" y="6" width="30" height="30" rx="1.5" fill="#ffffff" stroke="#022E55" stroke-width="1.5"/>
+  <path d="M2 6h10v5H2V6Z" fill="#FDFDFD" stroke="#022E55" stroke-width="1.5" stroke-linejoin="round"/>
+  <rect x="7" y="17" width="17" height="11" rx="1" fill="#e8f4f5" stroke="#049397" stroke-width="1.25" stroke-dasharray="3 2"/>
+  <circle cx="21.5" cy="19.5" r="1.25" fill="#5DAAB0"/>
+  <text x="15.5" y="25.5" fill="#037681" font-size="7.5" font-weight="700" font-family="monospace" text-anchor="middle">IP</text>
+  <path d="M2 34h30" stroke="#049397" stroke-width="2" stroke-linecap="round"/>
 </svg>

@@ -26,10 +26,10 @@ const URL_IN_TEXT =
   /https?:\/\/[^\s]+|www\.[^\s]+|\bsmartprobonoip\.netlify\.app[^\s]*/gi;
 
 const AUDIENCE_HINTS =
-  /\b(users?|customers?|clients?|homeowners?|businesses?|students?|inventors?|creators?|teams?|companies|agents?|brokers?|landlords?|tenants|patients?|hikers?|campers|people|audience|buyers?|sellers?|developers?|founders?|entrepreneurs?|professionals?|parents?|children?|kids?|teens?|adults?|renters?|owners?)\b/i;
+  /\b(users?|customers?|clients?|homeowners?|businesses?|students?|inventors?|creators?|teams?|companies|agents?|brokers?|landlords?|tenants|patients?|hikers?|campers|people|audience|buyers?|sellers?|developers?|founders?|entrepreneurs?|professionals?|parents?|children?|kids?|teens?|adults?|renters?|owners?|retailers?|bodegas?|grocers?|shopkeepers?|merchants?|organizations?|programs?|communities?|clinics?|hospitals?|schools?|universities?|nonprofits?)\b/i;
 
 const WORKFLOW_HINTS =
-  /\b(uploads?|uploaded|generates?|generating|click(s|ed|ing)?|steps?|workflow|process(es)?|then|after|before|creates?|creating|builds?|building|runs?|running|calculates?|stores?|sends?|exports?|imports?|checklist|pdf|database|api|module|feature|algorithm|analyzes?|parses?|transforms?|displays?|outputs?|inputs?|photos?|images?|data|automatically|system)\b/i;
+  /\b(uploads?|uploaded|generates?|generating|click(s|ed|ing)?|steps?|workflow|process(es)?|then|after|before|creates?|creating|builds?|building|runs?|running|calculates?|sends?|exports?|imports?|checklist|pdf|database|api|module|feature|algorithm|analyzes?|parses?|transforms?|displays?|outputs?|inputs?|photos?|images?|data|automatically|system|stores?\s+(data|information|files|records|results|values|preferences|history))\b/i;
 
 const PAIN_POINT_HINTS =
   /\b(problem|frustrat|frustration|pain|struggle|difficult|hard|expensive|cost|costly|risk|danger|unsafe|lack|missing|without|need(s|ed|ing)?|can't|cannot|unable|waste|wasted|slow|heavy|burden|gap|challenge|issue|barrier|obstacle|annoy|inconvenien|inefficien|fail(s|ed|ure|ures)?|break(s|ing)?|damage|lose|lost|run\s+out|shortage|scarce|limited|poor|bad|worse|worst|unreliable|confus|complex|overwhelm|stress|time-consuming|money|afford|pay|spend|hazard|harm|injur|theft|steal|messy|clutter|tangle|tangled|forget|forgot|forgetting|forgets)\b/i;

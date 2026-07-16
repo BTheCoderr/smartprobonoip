@@ -1,44 +1,45 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/brand/BrandMark";
+import { ROUTES } from "@/lib/routes";
 
 export function SiteNav() {
   return (
     <header className="sticky top-0 z-30 border-b border-mist-200/90 bg-cream/95 backdrop-blur-md">
-      <nav className="page-shell flex items-center justify-between gap-4 py-3">
-        <BrandMark variant="compact" href="/smartprobonoip" />
+      <nav className="page-shell flex items-center justify-between gap-3 py-3">
+        <BrandMark variant="compact" href={ROUTES.home} />
         <div className="flex shrink-0 items-center gap-0.5 text-sm sm:gap-1">
           <Link
-            href="/smartprobonoip/sample"
-            className="hidden rounded-md px-2.5 py-2 font-medium text-navy-600 transition hover:bg-mist-100 md:inline-block"
+            href={ROUTES.sample}
+            className="link-brand hidden rounded-md px-2 py-2 font-medium sm:inline-block"
           >
             Sample
           </Link>
           <Link
-            href="/about"
-            className="hidden rounded-md px-2.5 py-2 font-medium text-navy-600 transition hover:bg-mist-100 md:inline-block"
+            href={ROUTES.learn}
+            className="link-brand hidden rounded-md px-2 py-2 font-medium md:inline-block"
           >
-            About
+            Learn
           </Link>
           <Link
-            href="/smartprobonoip/pilot"
-            className="hidden rounded-md px-2.5 py-2 font-medium text-navy-600 transition hover:bg-mist-100 md:inline-block"
+            href={ROUTES.trust}
+            className="link-brand hidden rounded-md px-2 py-2 font-medium md:inline-block"
+          >
+            Trust
+          </Link>
+          <Link
+            href={ROUTES.pilot}
+            className="link-brand hidden rounded-md px-2 py-2 font-medium lg:inline-block"
           >
             Pilot
           </Link>
           <Link
-            href="/for-professionals"
-            className="hidden rounded-md px-2.5 py-2 font-medium text-navy-600 transition hover:bg-mist-100 lg:inline-block"
+            href={ROUTES.forProfessionals}
+            className="link-brand hidden rounded-md px-2 py-2 font-medium lg:inline-block"
           >
             Professionals
           </Link>
-          <Link
-            href="/contact"
-            className="hidden rounded-md px-2.5 py-2 font-medium text-navy-600 transition hover:bg-mist-100 md:inline-block"
-          >
-            Contact
-          </Link>
-          <Link href="/smartprobonoip/start" className="btn-primary px-4 py-2 text-xs sm:text-sm">
-            Start free packet
+          <Link href={ROUTES.start} className="btn-primary px-3 py-2 text-xs sm:px-4 sm:text-sm">
+            Start your packet
           </Link>
         </div>
       </nav>
