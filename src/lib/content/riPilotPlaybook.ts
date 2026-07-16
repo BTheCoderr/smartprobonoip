@@ -27,7 +27,7 @@ export const RI_PILOT_PLAYBOOK = {
     },
     {
       title: "How to introduce it (30-second script)",
-      body: "\"Before your clinic or mentor meeting, try SmartProBonoIP. It helps you organize your idea in plain language — what you built, who it's for, timeline notes, and questions to bring. It's free, takes about fourteen minutes, and it's preparation only — not legal advice. Start at smartprobonoip.org or ask us for a referral link.\"",
+      body: "\"Before your clinic or mentor meeting, try SmartProBonoIP. It helps you organize your idea in plain language — what you built, who it's for, timeline notes, and questions to bring. It's free, takes about fourteen minutes, and it's preparation only — not legal advice. Start at smartprobono.org or ask us for a referral link.\"",
     },
     {
       title: "Recommended partner flow",
@@ -59,7 +59,7 @@ export const RI_PILOT_PLAYBOOK = {
     },
     {
       title: "Support & contact",
-      body: "Questions about the pilot, referral links, or partner metrics: use the contact form at smartprobonoip.org/contact or email privacy@smartprobonoip.org. For technical issues, inventors can use recovery links to return to packets from another browser.",
+      body: "Questions about the pilot, referral links, partner metrics, or technical issues: use the contact form at smartprobono.org/contact or email bferrell@smartprobono.org. Inventors can use private recovery links to return to packets from another browser.",
     },
   ],
 } as const;
