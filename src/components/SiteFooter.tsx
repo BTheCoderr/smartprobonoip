@@ -4,58 +4,71 @@ import { BRAND, formatCopyrightNotice } from "@/lib/brand";
 import { DISCLAIMER_SHORT } from "@/lib/disclaimer";
 import { ROUTES } from "@/lib/routes";
 
+const footerLinkClass =
+  "text-aqua-200 transition hover:text-cream focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300";
+
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-navy-800 bg-navy-950 text-navy-100">
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <footer className="site-footer mt-auto border-t border-teal-500/25 bg-navy-950 text-cream">
+      <div className="page-shell py-8 sm:py-10">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+          <div className="max-w-sm">
             <BrandMark variant="full" size="sm" light />
-            <p className="mt-2 text-xs text-navy-200">{BRAND.tagline}</p>
+            <p className="mt-2 text-xs leading-relaxed text-navy-100">
+              {BRAND.tagline}
+            </p>
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-aqua-200">
-            <Link href={ROUTES.home} className="transition hover:text-white">
+          <nav
+            aria-label="Footer"
+            className="flex flex-wrap gap-x-4 gap-y-2.5 text-xs font-medium"
+          >
+            <Link href={ROUTES.home} className={footerLinkClass}>
               Product
             </Link>
-            <Link href={ROUTES.sample} className="transition hover:text-white">
+            <Link href={ROUTES.sample} className={footerLinkClass}>
               Sample
             </Link>
-            <Link href={ROUTES.learn} className="transition hover:text-white">
+            <Link href={ROUTES.learn} className={footerLinkClass}>
               Learn
             </Link>
-            <Link href={ROUTES.trust} className="transition hover:text-white">
+            <Link href={ROUTES.trust} className={footerLinkClass}>
               Trust
             </Link>
-            <Link href={ROUTES.forProfessionals} className="transition hover:text-white">
+            <Link href={ROUTES.forProfessionals} className={footerLinkClass}>
               For Professionals
             </Link>
-            <Link href={ROUTES.pilot} className="transition hover:text-white">
+            <Link href={ROUTES.pilot} className={footerLinkClass}>
               Pilot kit
             </Link>
-            <Link href={ROUTES.afterMeeting} className="transition hover:text-white">
+            <Link href={ROUTES.afterMeeting} className={footerLinkClass}>
               After Meeting
             </Link>
-            <Link href={ROUTES.privacy} className="transition hover:text-white">
+            <Link href={ROUTES.privacy} className={footerLinkClass}>
               Privacy
             </Link>
-            <Link href={ROUTES.terms} className="transition hover:text-white">
+            <Link href={ROUTES.terms} className={footerLinkClass}>
               Terms
             </Link>
-            <Link href={ROUTES.disclaimer} className="transition hover:text-white">
+            <Link href={ROUTES.disclaimer} className={footerLinkClass}>
               Disclaimer
             </Link>
-            <Link href={ROUTES.contact} className="transition hover:text-white">
+            <Link href={ROUTES.contact} className={footerLinkClass}>
               Contact
             </Link>
-          </div>
+          </nav>
         </div>
-        <p className="mt-4 max-w-3xl text-[11px] leading-relaxed text-navy-200">
+        <p className="mt-6 max-w-3xl text-[11px] leading-relaxed text-navy-100 sm:text-xs">
           {DISCLAIMER_SHORT}{" "}
-          <Link href={ROUTES.trust} className="text-aqua-300 transition hover:text-white hover:underline">
+          <Link
+            href={ROUTES.trust}
+            className="font-medium text-aqua-200 underline-offset-2 transition hover:text-cream hover:underline"
+          >
             Trust Center
           </Link>
         </p>
-        <p className="mt-2 text-[11px] text-navy-300">{formatCopyrightNotice()}</p>
+        <p className="mt-3 text-[11px] text-navy-200 sm:text-xs">
+          {formatCopyrightNotice()}
+        </p>
       </div>
     </footer>
   );

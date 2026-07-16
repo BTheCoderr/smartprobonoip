@@ -11,6 +11,7 @@
   --color-navy-700: #143a6b;
   --color-navy-800: #0f2b50;
   --color-navy-900: #0b1f3a;
+  --color-navy-950: #071526;
 
   --color-teal-50: #e6f6f6;
   --color-teal-100: #c5ecec;
@@ -18,6 +19,12 @@
   --color-teal-500: #14a3a3;
   --color-teal-600: #0f8585;
   --color-teal-700: #0b6767;
+
+  --color-aqua-50: #eef8fa;
+  --color-aqua-100: #d5eef3;
+  --color-aqua-200: #a8dbe6;
+  --color-aqua-300: #6fc4d4;
+  --color-aqua-400: #3aa8bc;
 
   --color-mist-50: #f7f9fb;
   --color-mist-100: #eef2f6;
@@ -234,6 +241,12 @@ body {
 
   .text-muted-blue {
     @apply text-navy-500;
+  }
+
+  .site-footer {
+    background-color: var(--color-navy-950);
+    background-image: none;
+    color: var(--color-cream);
   }
 
   .inline-disclaimer {

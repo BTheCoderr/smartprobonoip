@@ -123,16 +123,16 @@ export function BrandMarkWordmark({
     <span className="min-w-0 flex flex-col leading-tight">
       <span
         className={`truncate font-semibold tracking-tight ${WORDMARK_SIZES[size]} ${
-          light ? "text-white" : "text-navy-900"
+          light ? "text-cream" : "text-navy-900"
         }`}
       >
         {BRAND.umbrella}
-        <span className={light ? "text-aqua-300" : "text-teal-600"}>IP</span>
+        <span className={light ? "text-teal-300" : "text-teal-600"}>IP</span>
       </span>
       {showSubtitle ? (
         <span
           className={`truncate font-mono text-[10px] uppercase tracking-[0.12em] ${
-            light ? "text-navy-100/80" : "text-muted-blue"
+            light ? "text-navy-100" : "text-muted-blue"
           }`}
         >
           {BRAND.feature}
