@@ -12,7 +12,7 @@ export const LEGAL = {
   copyrightHolder: "SmartProBono",
   copyrightYear: 2026,
   productName: "SmartProBonoIP",
-  privacyEmail: "privacy@smartprobonoip.org",
+  privacyEmail: "bferrell@smartprobono.org",
   pdfWatermark:
     "Confidential — Prepared with SmartProBonoIP — For discussion only",
 } as const;
