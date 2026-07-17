@@ -4,8 +4,9 @@ import { TrackedNavLink } from "@/components/analytics/TrackedNavLink";
 import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
 import {
   ProductProofMedia,
-  ProductProofVideoSlot,
 } from "@/components/pages/ProductProofMedia";
+import { ProductDemoVideo } from "@/components/pages/ProductDemoVideo";
+import { ProductWalkthrough } from "@/components/pages/ProductWalkthrough";
 import { SocialProofSlot } from "@/components/pages/SocialProofSlot";
 import { BRAND } from "@/lib/brand";
 import { LANDING_COPY, RESEARCH_PREP_COPY } from "@/lib/copy";
@@ -70,7 +71,12 @@ export default function ProductLandingPage() {
           <p className="mt-3 text-xs leading-relaxed text-navy-500">
             {LANDING_COPY.productProofMediaNote}
           </p>
-          <ProductProofVideoSlot />
+          <div className="mt-10 border-b border-dashed border-mist-200 pb-10">
+            <ProductDemoVideo pageSection="homepage_product_proof" />
+          </div>
+          <div className="mt-10 border-b border-dashed border-mist-200 pb-10">
+            <ProductWalkthrough pageSection="homepage_product_proof" />
+          </div>
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             {LANDING_COPY.productProof.map((item) => (
               <div key={item.title} className="space-y-3">

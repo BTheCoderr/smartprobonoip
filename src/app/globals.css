@@ -249,6 +249,23 @@ body {
     color: var(--color-cream);
   }
 
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-walkthrough * {
+      scroll-behavior: auto !important;
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
   .inline-disclaimer {
     @apply inline-flex max-w-prose items-start gap-2 rounded-md border border-mist-200/90 bg-white/70 px-3 py-2 text-[11px] leading-relaxed text-navy-500;
   }

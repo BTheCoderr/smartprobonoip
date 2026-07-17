@@ -56,7 +56,7 @@ export function ProductSamplePreviewBand() {
               </TrackedNavLink>
             </div>
             <p className="mt-4 text-xs text-navy-500">
-              Add a short product clip later via PRODUCT_PROOF_MEDIA.video — until then, use the live sample and UI previews below.
+              Watch the official product demo on this page, or open the live sample packet below.
             </p>
           </div>
           <div className="paper-card-elevated border-navy-100 p-6">

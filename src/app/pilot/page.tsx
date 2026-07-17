@@ -20,6 +20,8 @@ import { SearchPrepHomePreview } from "@/components/ui/FeaturedGooglePatentsCard
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import { InterestForm } from "@/components/contact/InterestForm";
 import { PartnerInterestLink } from "@/components/analytics/PartnerInterestLink";
+import { ProductDemoVideo } from "@/components/pages/ProductDemoVideo";
+import { ProductWalkthrough } from "@/components/pages/ProductWalkthrough";
 
 function trackedLinks(
   links: readonly {
@@ -377,8 +379,20 @@ export default function PilotKitPage() {
       </Section>
 
       <Section soft>
+        <PaperShell>
+          <ProductWalkthrough pageSection="pilot_page_walkthrough" />
+        </PaperShell>
+      </Section>
+
+      <Section>
+        <PaperShell>
+          <ProductDemoVideo pageSection="pilot_page_demo" />
+        </PaperShell>
+      </Section>
+
+      <Section id="pilot-application">
         <PaperShell className="pb-8">
-          <InterestForm />
+          <InterestForm id="pilot-application-form" />
           <CalloutCard
             tone="aqua"
             title={`About ${BRAND.product}`}

@@ -57,6 +57,12 @@ export const ANALYTICS_EVENTS = [
   "contact_form_viewed",
   "interest_submitted",
   "partner_interest_clicked",
+  "product_walkthrough_viewed",
+  "product_walkthrough_step_viewed",
+  "product_demo_viewed",
+  "product_demo_started",
+  "product_demo_completed",
+  "pilot_cta_clicked",
   "gap_map_saved",
   "timeline_saved",
 ] as const;

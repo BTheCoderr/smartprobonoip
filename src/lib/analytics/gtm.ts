@@ -60,6 +60,12 @@ const GTM_EVENT_MAP: Partial<Record<AnalyticsEventName, string>> = {
   intake_completed: "intake_completed",
   intake_draft_saved: "intake_draft_saved",
   partner_interest_clicked: "partner_interest_clicked",
+  product_walkthrough_viewed: "product_walkthrough_viewed",
+  product_walkthrough_step_viewed: "product_walkthrough_step_viewed",
+  product_demo_viewed: "product_demo_viewed",
+  product_demo_started: "product_demo_started",
+  product_demo_completed: "product_demo_completed",
+  pilot_cta_clicked: "pilot_cta_clicked",
 };
 
 const SAFE_GTM_PARAMS = new Set([
@@ -76,6 +82,7 @@ const SAFE_GTM_PARAMS = new Set([
   "cta_name",
   "page_section",
   "pdf_downloaded",
+  "video_id",
   "utm_source",
   "utm_medium",
   "utm_campaign",

@@ -390,14 +390,11 @@ export const PRODUCT_PROOF_MEDIA: {
   snapshot: string | null;
   search: string | null;
   pdf: string | null;
-  /** Optional short loop/clip shown above the proof grid when set. */
-  video: string | null;
 } = {
   builder: null,
   snapshot: null,
   search: null,
   pdf: null,
-  video: null,
 };
 
 /**
