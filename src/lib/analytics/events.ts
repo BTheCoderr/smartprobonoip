@@ -57,6 +57,7 @@ export const ANALYTICS_EVENTS = [
   "contact_form_viewed",
   "interest_submitted",
   "partner_interest_clicked",
+  "partner_referral_link_clicked",
   "product_walkthrough_viewed",
   "product_walkthrough_step_viewed",
   "product_demo_viewed",

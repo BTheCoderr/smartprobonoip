@@ -24,7 +24,7 @@ SmartProBonoIP helps inventors organize invention information into an **IP Readi
 
 ## 30-second introduction script
 
-> Before your clinic or mentor meeting, try SmartProBonoIP. It helps you organize your idea in plain language — what you built, who it's for, timeline notes, and questions to bring. It's free, takes about fourteen minutes, and it's preparation only — not legal advice. Start at smartprobonoip.org or ask us for a referral link.
+> Before your clinic or mentor meeting, try SmartProBonoIP. It helps you organize your idea in plain language — what you built, who it's for, timeline notes, and questions to bring. It's free, takes about fourteen minutes, and it's preparation only — not legal advice. Start at smartprobono.org or ask us for a referral link.
 
 ## Recommended partner flow
 
@@ -50,6 +50,6 @@ SmartProBonoIP helps inventors organize invention information into an **IP Readi
 
 ## Contact
 
-Questions: smartprobonoip.org/contact · privacy@smartprobonoip.org
+Questions: smartprobono.org/contact · bferrell@smartprobono.org
 
 Online version: `/for-professionals/playbook`
