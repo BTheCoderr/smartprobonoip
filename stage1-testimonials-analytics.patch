@@ -1,0 +1,146 @@
+diff --git a/src/app/for-professionals/page.tsx b/src/app/for-professionals/page.tsx
+index 488ddfd..cde43ba 100644
+--- a/src/app/for-professionals/page.tsx
++++ b/src/app/for-professionals/page.tsx
+@@ -16,7 +16,6 @@ import {
+   Section,
+   SectionHeader,
+   StampLabel,
+-  TestimonialCard,
+ } from "@/components/ui/design";
+ 
+ const EXAMPLE_EXPORT = buildAttorneyExportPacket(
+@@ -281,18 +280,6 @@ export default function ForProfessionalsPage() {
+             kicker="Trust & data handling"
+             title="How exports and pilot data are handled"
+           />
+-          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+-            <TestimonialCard
+-              quote="The structured export saved time on basic organization. I still reviewed everything myself — but the packet was a useful starting point."
+-              role="Patent agent"
+-              context="Professional reviewer feedback — anonymized"
+-            />
+-            <TestimonialCard
+-              quote="Inventors showed up with timelines, materials lists, and questions already organized. It felt like a real intake conversation instead of starting from scratch."
+-              role="Clinic coordinator"
+-              context="Rhode Island pilot feedback — anonymized"
+-            />
+-          </div>
+           <ul className="mt-8 grid gap-2 sm:grid-cols-2">
+             {PROFESSIONALS_COPY.trustPoints.map((point) => (
+               <li
+diff --git a/src/components/PartnerTrackingInit.tsx b/src/components/PartnerTrackingInit.tsx
+index 82fc6b3..7d62d24 100644
+--- a/src/components/PartnerTrackingInit.tsx
++++ b/src/components/PartnerTrackingInit.tsx
+@@ -1,16 +1,55 @@
+ "use client";
+ 
+-import { Suspense, useEffect } from "react";
+-import { useSearchParams } from "next/navigation";
+-import { captureTrackingFromSearch } from "@/lib/partnerTracking";
++import { Suspense, useEffect, useRef } from "react";
++import { usePathname, useSearchParams } from "next/navigation";
++import { trackEvent } from "@/lib/analytics/client";
++import {
++  captureTrackingFromSearch,
++  parseTrackingFromSearch,
++} from "@/lib/partnerTracking";
++
++const REFERRAL_EVENT_PREFIX = "smartprobonoip:partner-referral-clicked:";
+ 
+ function PartnerTrackingCapture() {
++  const pathname = usePathname();
+   const searchParams = useSearchParams();
++  const firedRef = useRef<Set<string>>(new Set());
+ 
+   useEffect(() => {
+     const query = searchParams.toString();
+-    if (query) captureTrackingFromSearch(`?${query}`);
+-  }, [searchParams]);
++    if (!query) return;
++
++    const search = `?${query}`;
++    const incoming = parseTrackingFromSearch(search);
++    captureTrackingFromSearch(search);
++    if (!incoming) return;
++
++    const signature = [
++      incoming.partnerSlug ?? "",
++      incoming.source ?? "",
++      incoming.campaign ?? "",
++    ].join("|");
++    if (!signature.replaceAll("|", "") || firedRef.current.has(signature)) return;
++
++    const storageKey = `${REFERRAL_EVENT_PREFIX}${signature}`;
++    try {
++      if (window.sessionStorage.getItem(storageKey)) return;
++      window.sessionStorage.setItem(storageKey, "1");
++    } catch {
++      // In-memory dedupe below still prevents duplicate firing in this mount.
++    }
++
++    firedRef.current.add(signature);
++    trackEvent("partner_referral_link_clicked", {
++      route: pathname,
++      metadata: {
++        partner: incoming.partnerSlug,
++        source: incoming.source,
++        campaign: incoming.campaign,
++        pageSection: "referral_landing",
++      },
++    });
++  }, [pathname, searchParams]);
+ 
+   return null;
+ }
+diff --git a/src/lib/analytics/events.ts b/src/lib/analytics/events.ts
+index bef501e..8d5eea9 100644
+--- a/src/lib/analytics/events.ts
++++ b/src/lib/analytics/events.ts
+@@ -57,6 +57,7 @@ export const ANALYTICS_EVENTS = [
+   "contact_form_viewed",
+   "interest_submitted",
+   "partner_interest_clicked",
++  "partner_referral_link_clicked",
+   "product_walkthrough_viewed",
+   "product_walkthrough_step_viewed",
+   "product_demo_viewed",
+diff --git a/src/lib/analytics/gtm.ts b/src/lib/analytics/gtm.ts
+index 759fc45..663d3a4 100644
+--- a/src/lib/analytics/gtm.ts
++++ b/src/lib/analytics/gtm.ts
+@@ -60,6 +60,7 @@ const GTM_EVENT_MAP: Partial<Record<AnalyticsEventName, string>> = {
+   intake_completed: "intake_completed",
+   intake_draft_saved: "intake_draft_saved",
+   partner_interest_clicked: "partner_interest_clicked",
++  partner_referral_link_clicked: "partner_referral_link_clicked",
+   product_walkthrough_viewed: "product_walkthrough_viewed",
+   product_walkthrough_step_viewed: "product_walkthrough_step_viewed",
+   product_demo_viewed: "product_demo_viewed",
+diff --git a/src/lib/copy.ts b/src/lib/copy.ts
+index e00fdf5..b46b31c 100644
+--- a/src/lib/copy.ts
++++ b/src/lib/copy.ts
+@@ -274,20 +274,7 @@ export const LANDING_COPY = {
+     "Add real screenshots or a short clip under public/product-proof/ when available. Until then, interactive UI previews are shown.",
+   socialProofEmptyLead:
+     "Partner quotes and logos will appear here once we have permission to share them.",
+-  trustQuotes: [
+-    {
+-      quote:
+-        "Inventors showed up with timelines, materials lists, and questions already organized. It felt like a real intake conversation instead of starting from scratch.",
+-      role: "Clinic coordinator",
+-      context: "Rhode Island pilot feedback — anonymized",
+-    },
+-    {
+-      quote:
+-        "The structured export saved time on basic organization. I still reviewed everything myself — but the packet was a useful starting point.",
+-      role: "Patent agent",
+-      context: "Professional reviewer feedback — anonymized",
+-    },
+-  ],
++  trustQuotes: [] as const,
+   valueCards: [
+     {
+       title: "Organize the idea",

@@ -16,7 +16,6 @@ import {
   Section,
   SectionHeader,
   StampLabel,
-  TestimonialCard,
 } from "@/components/ui/design";
 
 const EXAMPLE_EXPORT = buildAttorneyExportPacket(
@@ -281,18 +280,6 @@ export default function ForProfessionalsPage() {
             kicker="Trust & data handling"
             title="How exports and pilot data are handled"
           />
-          <div className="mt-8 grid gap-6 lg:grid-cols-2">
-            <TestimonialCard
-              quote="The structured export saved time on basic organization. I still reviewed everything myself — but the packet was a useful starting point."
-              role="Patent agent"
-              context="Professional reviewer feedback — anonymized"
-            />
-            <TestimonialCard
-              quote="Inventors showed up with timelines, materials lists, and questions already organized. It felt like a real intake conversation instead of starting from scratch."
-              role="Clinic coordinator"
-              context="Rhode Island pilot feedback — anonymized"
-            />
-          </div>
           <ul className="mt-8 grid gap-2 sm:grid-cols-2">
             {PROFESSIONALS_COPY.trustPoints.map((point) => (
               <li

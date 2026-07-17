@@ -274,20 +274,7 @@ export const LANDING_COPY = {
     "Add real screenshots or a short clip under public/product-proof/ when available. Until then, interactive UI previews are shown.",
   socialProofEmptyLead:
     "Partner quotes and logos will appear here once we have permission to share them.",
-  trustQuotes: [
-    {
-      quote:
-        "Inventors showed up with timelines, materials lists, and questions already organized. It felt like a real intake conversation instead of starting from scratch.",
-      role: "Clinic coordinator",
-      context: "Rhode Island pilot feedback — anonymized",
-    },
-    {
-      quote:
-        "The structured export saved time on basic organization. I still reviewed everything myself — but the packet was a useful starting point.",
-      role: "Patent agent",
-      context: "Professional reviewer feedback — anonymized",
-    },
-  ],
+  trustQuotes: [] as const,
   valueCards: [
     {
       title: "Organize the idea",
@@ -1039,7 +1026,7 @@ export const TRUST_COPY = {
     title: "Contact and support",
     points: [
       "Questions about the tool: use the Contact page or pilot interest form",
-      "Privacy requests: see Privacy summary and email privacy@smartprobonoip.org",
+      "Privacy requests: see Privacy summary and email bferrell@smartprobono.org",
       "Partnership pilots: request a conversation from the Pilot kit page",
     ],
   },

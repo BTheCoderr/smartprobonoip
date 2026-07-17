@@ -60,6 +60,7 @@ const GTM_EVENT_MAP: Partial<Record<AnalyticsEventName, string>> = {
   intake_completed: "intake_completed",
   intake_draft_saved: "intake_draft_saved",
   partner_interest_clicked: "partner_interest_clicked",
+  partner_referral_link_clicked: "partner_referral_link_clicked",
   product_walkthrough_viewed: "product_walkthrough_viewed",
   product_walkthrough_step_viewed: "product_walkthrough_step_viewed",
   product_demo_viewed: "product_demo_viewed",
