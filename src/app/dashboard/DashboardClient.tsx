@@ -216,7 +216,6 @@ export default function DashboardClient() {
     if (!secret) return;
 
     const params = new URLSearchParams({
-      secret,
       partner: filters.partner,
       source: filters.source,
       campaign: filters.campaign,
