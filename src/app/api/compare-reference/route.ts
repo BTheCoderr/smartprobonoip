@@ -8,15 +8,23 @@ import { containsForbiddenLanguage } from "@/lib/safety";
 import {
   GENERIC_SERVER_ERROR,
   GENERIC_UNAUTHORIZED,
+  isValidPilotSessionId,
   readPilotSession,
 } from "@/lib/security/api";
+import {
+  assertTextWithinLimit,
+  limitErrorResponse,
+  MAX_TEXT,
+  readJsonWithLimit,
+} from "@/lib/security/requestLimits";
+import { logServerError } from "@/lib/security/safeLog";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   const pilotSession = readPilotSession(request);
-  if (!pilotSession) {
+  if (!isValidPilotSessionId(pilotSession)) {
     return NextResponse.json({ error: GENERIC_UNAUTHORIZED }, { status: 401 });
   }
 
@@ -39,9 +47,18 @@ export async function POST(request: Request) {
   };
 
   try {
-    body = (await request.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    body = (await readJsonWithLimit(request)) as typeof body;
+    assertTextWithinLimit(body.problemSolved, MAX_TEXT.long);
+    assertTextWithinLimit(body.howItWorks, MAX_TEXT.long);
+    assertTextWithinLimit(body.mainParts, MAX_TEXT.long);
+    assertTextWithinLimit(body.userDescribedDifferences, MAX_TEXT.long);
+    assertTextWithinLimit(body.referenceTitle, MAX_TEXT.researchTitle);
+    assertTextWithinLimit(body.referenceAbstract, MAX_TEXT.researchNotes);
+  } catch (err) {
+    return (
+      limitErrorResponse(err) ??
+      NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+    );
   }
 
   if (!body.projectId?.trim()) {
@@ -79,7 +96,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ comparison });
-  } catch {
+  } catch (err) {
+    logServerError("compare-reference", err, { route: "compare-reference" });
     return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
   }
 }

@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { getRecordById, updateDevelopmentTimeline, updatePostClarity, updateProfile } from "@/lib/db/records";
-import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
+import {
+  GENERIC_SERVER_ERROR,
+  isValidPilotSessionId,
+  readPilotSession,
+} from "@/lib/security/api";
+import {
+  limitErrorResponse,
+  readJsonWithLimit,
+} from "@/lib/security/requestLimits";
+import { logServerError } from "@/lib/security/safeLog";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 import type { DevelopmentTimeline, ReadinessProfile } from "@/lib/types";
 
@@ -14,8 +23,8 @@ export async function GET(
   }
 
   const { id } = await params;
-  const pilotSession = request.headers.get("x-pilot-session");
-  if (!pilotSession) {
+  const pilotSession = readPilotSession(request);
+  if (!isValidPilotSessionId(pilotSession)) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
 
@@ -36,13 +45,13 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const pilotSession = request.headers.get("x-pilot-session");
-  if (!pilotSession) {
+  const pilotSession = readPilotSession(request);
+  if (!isValidPilotSessionId(pilotSession)) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
 
   try {
-    const body = (await request.json()) as {
+    const body = (await readJsonWithLimit(request)) as {
       postClarity?: number;
       profile?: ReadinessProfile;
       developmentTimeline?: DevelopmentTimeline;
@@ -71,7 +80,10 @@ export async function PATCH(
 
     const record = await getRecordById(id, pilotSession);
     return NextResponse.json({ record });
-  } catch {
+  } catch (err) {
+    const limited = limitErrorResponse(err);
+    if (limited) return limited;
+    logServerError("records.patch", err, { route: "records/[id]" });
     return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
   }
 }

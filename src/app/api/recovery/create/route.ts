@@ -1,7 +1,18 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { createRecoveryLink } from "@/lib/db/recovery";
-import { GENERIC_SERVER_ERROR, readPilotSession } from "@/lib/security/api";
+import {
+  GENERIC_SERVER_ERROR,
+  isValidPilotSessionId,
+  readPilotSession,
+} from "@/lib/security/api";
+import {
+  assertTextWithinLimit,
+  limitErrorResponse,
+  MAX_TEXT,
+  readJsonWithLimit,
+} from "@/lib/security/requestLimits";
+import { logServerError } from "@/lib/security/safeLog";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
@@ -11,7 +22,7 @@ export async function POST(request: Request) {
   }
 
   const pilotSession = readPilotSession(request);
-  if (!pilotSession) {
+  if (!isValidPilotSessionId(pilotSession)) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
 
@@ -24,10 +35,11 @@ export async function POST(request: Request) {
   if (limited) return limited;
 
   try {
-    const body = (await request.json()) as {
+    const body = (await readJsonWithLimit(request)) as {
       projectId?: string;
       email?: string;
     };
+    assertTextWithinLimit(body.email, MAX_TEXT.email);
 
     if (!body.projectId?.trim()) {
       return NextResponse.json({ error: "Missing project id" }, { status: 400 });
@@ -55,13 +67,20 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result);
   } catch (err) {
+    const oversized = limitErrorResponse(err);
+    if (oversized) return oversized;
+
     const message = err instanceof Error ? err.message : "";
-    if (message.includes("not found")) {
+    if (message.includes("not found") || message.includes("Packet not found")) {
       return NextResponse.json({ error: "Packet not found" }, { status: 404 });
     }
     if (message.includes("Demo packets")) {
-      return NextResponse.json({ error: message }, { status: 400 });
+      return NextResponse.json(
+        { error: "Demo packets cannot create recovery links" },
+        { status: 400 },
+      );
     }
+    logServerError("recovery.create", err, { route: "recovery/create" });
     return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
   }
 }

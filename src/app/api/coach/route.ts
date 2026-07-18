@@ -8,7 +8,19 @@ import {
 import { generateCoachAI } from "@/lib/coachAI";
 import { getRecordById } from "@/lib/db/records";
 import { isAIConfigured } from "@/lib/generateProfileAI";
-import { GENERIC_SERVER_ERROR, readPilotSession } from "@/lib/security/api";
+import {
+  GENERIC_SERVER_ERROR,
+  isValidPilotSessionId,
+  readPilotSession,
+} from "@/lib/security/api";
+import {
+  assertIntakeAnswersWithinLimits,
+  assertTextWithinLimit,
+  limitErrorResponse,
+  MAX_TEXT,
+  readJsonWithLimit,
+} from "@/lib/security/requestLimits";
+import { logServerError } from "@/lib/security/safeLog";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 import type { ProjectRecord } from "@/lib/types";
@@ -34,7 +46,7 @@ function isValidRecord(value: unknown): value is ProjectRecord {
 
 export async function POST(request: Request) {
   const pilotSession = readPilotSession(request);
-  if (!pilotSession) {
+  if (!isValidPilotSessionId(pilotSession)) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
 
@@ -48,9 +60,12 @@ export async function POST(request: Request) {
 
   let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    body = await readJsonWithLimit(request);
+  } catch (err) {
+    return (
+      limitErrorResponse(err) ??
+      NextResponse.json({ error: "Invalid JSON body" }, { status: 400 })
+    );
   }
 
   const b = body as {
@@ -66,19 +81,30 @@ export async function POST(request: Request) {
     );
   }
 
-  const record = b.record;
-  if (
-    isSupabaseServerConfigured() &&
-    !record.isDemo
-  ) {
+  let record = b.record;
+  try {
+    assertIntakeAnswersWithinLimits(record.answers);
+    assertTextWithinLimit(
+      typeof b.question === "string" ? b.question : null,
+      MAX_TEXT.question,
+    );
+  } catch (err) {
+    const limitedRes = limitErrorResponse(err);
+    if (limitedRes) return limitedRes;
+  }
+
+  if (isSupabaseServerConfigured() && !record.isDemo) {
     const owned = await getRecordById(record.id, pilotSession);
     if (!owned) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    // Prefer server-loaded packet so clients cannot substitute untrusted fields
+    // after an ownership check on id alone.
+    record = owned;
   }
 
   const question =
-    typeof b.question === "string" ? b.question.slice(0, 500) : undefined;
+    typeof b.question === "string" ? b.question.slice(0, MAX_TEXT.question) : undefined;
   const mode: CoachMode | "custom" = isCoachMode(b.mode) ? b.mode : "custom";
 
   if (mode === "custom" && !question) {
@@ -93,7 +119,8 @@ export async function POST(request: Request) {
       try {
         const response = await generateCoachAI(record, mode, question);
         return NextResponse.json({ response });
-      } catch {
+      } catch (err) {
+        logServerError("coach.ai_fallback", err, { route: "coach" });
         // Fall back to the rule-based coach if the AI call fails or is unsafe.
       }
     }
@@ -104,7 +131,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ response: fallback });
-  } catch {
+  } catch (err) {
+    logServerError("coach", err, { route: "coach" });
     return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
   }
 }
