@@ -7,6 +7,12 @@ import {
   isValidPilotSessionId,
   readPilotSession,
 } from "@/lib/security/api";
+import {
+  assertIntakeAnswersWithinLimits,
+  limitErrorResponse,
+  readJsonWithLimit,
+} from "@/lib/security/requestLimits";
+import { logServerError } from "@/lib/security/safeLog";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import type { IntakeAnswers } from "@/lib/types";
 
@@ -40,9 +46,12 @@ export async function POST(request: Request) {
 
   let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    body = await readJsonWithLimit(request);
+  } catch (err) {
+    return (
+      limitErrorResponse(err) ??
+      NextResponse.json({ error: "Invalid JSON body" }, { status: 400 })
+    );
   }
 
   const answers = (body as { answers?: unknown })?.answers;
@@ -51,6 +60,13 @@ export async function POST(request: Request) {
       { error: "Invalid or incomplete intake answers" },
       { status: 422 },
     );
+  }
+
+  try {
+    assertIntakeAnswersWithinLimits(answers);
+  } catch (err) {
+    const limitedRes = limitErrorResponse(err);
+    if (limitedRes) return limitedRes;
   }
 
   const validationErrors = validateForGeneration(answers);
@@ -66,13 +82,15 @@ export async function POST(request: Request) {
       try {
         const profile = await generateProfileAI(answers);
         return NextResponse.json({ profile });
-      } catch {
+      } catch (err) {
+        logServerError("generate.ai_fallback", err, { route: "generate" });
         // Fall back to the rule-based generator if the AI call fails.
       }
     }
 
     return NextResponse.json({ profile: generateProfile(answers) });
-  } catch {
+  } catch (err) {
+    logServerError("generate", err, { route: "generate" });
     return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
   }
 }

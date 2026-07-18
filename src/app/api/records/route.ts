@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { createRecord } from "@/lib/db/records";
 import { validateForGeneration } from "@/lib/intakeValidation";
+import {
+  GENERIC_SERVER_ERROR,
+  isValidPilotSessionId,
+  readPilotSession,
+} from "@/lib/security/api";
+import {
+  assertIntakeAnswersWithinLimits,
+  limitErrorResponse,
+  readJsonWithLimit,
+} from "@/lib/security/requestLimits";
+import { logServerError } from "@/lib/security/safeLog";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 import type { IntakeAnswers, ReadinessProfile } from "@/lib/types";
 
@@ -13,13 +24,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const pilotSession = request.headers.get("x-pilot-session");
-  if (!pilotSession) {
+  const pilotSession = readPilotSession(request);
+  if (!isValidPilotSessionId(pilotSession)) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
 
   try {
-    const body = (await request.json()) as {
+    const body = (await readJsonWithLimit(request)) as {
       answers: IntakeAnswers;
       profile: ReadinessProfile;
       preClarity: number;
@@ -31,6 +42,15 @@ export async function POST(request: Request) {
         campaign?: string;
       } | null;
     };
+
+    if (!body?.answers || !body?.profile) {
+      return NextResponse.json(
+        { error: "Invalid or incomplete intake answers" },
+        { status: 422 },
+      );
+    }
+
+    assertIntakeAnswersWithinLimits(body.answers);
 
     const validationErrors = validateForGeneration(body.answers);
     if (validationErrors.length > 0) {
@@ -70,7 +90,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ record });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to save record";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const limited = limitErrorResponse(err);
+    if (limited) return limited;
+    logServerError("records.create", err, { route: "records" });
+    return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
   }
 }

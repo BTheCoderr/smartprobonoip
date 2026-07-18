@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 
 type Bucket = { count: number; resetAt: number };
 
+/**
+ * Process-local sliding window. On Netlify serverless, each isolate has its own
+ * Map, so these limits are NOT globally effective across concurrent instances.
+ * Prefer a durable shared store (existing Supabase) before claiming global RL.
+ */
 const buckets = new Map<string, Bucket>();
 const MAX_BUCKETS = 10_000;
 

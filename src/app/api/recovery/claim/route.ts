@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { claimRecoveryToken } from "@/lib/db/recovery";
-import { readPilotSession } from "@/lib/security/api";
+import {
+  isValidPilotSessionId,
+  readPilotSession,
+} from "@/lib/security/api";
+import {
+  limitErrorResponse,
+  readJsonWithLimit,
+} from "@/lib/security/requestLimits";
+import { logServerError } from "@/lib/security/safeLog";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
@@ -11,7 +19,7 @@ export async function POST(request: Request) {
   }
 
   const pilotSession = readPilotSession(request);
-  if (!pilotSession) {
+  if (!isValidPilotSessionId(pilotSession)) {
     return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
   }
 
@@ -23,7 +31,7 @@ export async function POST(request: Request) {
   if (limited) return limited;
 
   try {
-    const body = (await request.json()) as { token?: string };
+    const body = (await readJsonWithLimit(request)) as { token?: string };
     const token = body.token?.trim();
     if (!token) {
       return NextResponse.json({ error: "Missing recovery token" }, { status: 400 });
@@ -45,7 +53,11 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ record });
-  } catch {
+  } catch (err) {
+    const oversized = limitErrorResponse(err);
+    if (oversized) return oversized;
+
+    logServerError("recovery.claim", err, { route: "recovery/claim" });
     await trackServerEvent("recovery_claim_failed", {
       pilotSessionId: pilotSession,
       anonymousId: request.headers.get("x-anonymous-id"),

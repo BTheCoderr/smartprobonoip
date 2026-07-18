@@ -1,20 +1,19 @@
 import "server-only";
-import { createHash, randomBytes } from "crypto";
+import { randomBytes } from "crypto";
 import { appPath } from "@/lib/appUrl";
 import { getRecordById } from "@/lib/db/records";
 import { ROUTES } from "@/lib/routes";
+import { hashRecoveryToken } from "@/lib/security/recoveryHash";
 import { getSupabaseService } from "@/lib/supabaseServer";
 import type { ProjectRecord } from "@/lib/types";
+
+export { hashRecoveryToken };
 
 const TOKEN_BYTES = 32;
 const DEFAULT_EXPIRY_DAYS = 90;
 
 export function generateRecoveryToken(): string {
   return randomBytes(TOKEN_BYTES).toString("base64url");
-}
-
-export function hashRecoveryToken(token: string): string {
-  return createHash("sha256").update(token.trim()).digest("hex");
 }
 
 export function buildRecoveryUrl(token: string): string {
