@@ -124,7 +124,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key   # server-only — never NEXT_PUBLIC_
 PARTNER_DASHBOARD_SECRET=your-partner-secret
-NEXT_PUBLIC_APP_URL=https://smartprobonoip.netlify.app
+NEXT_PUBLIC_APP_URL=https://smartprobono.org
 ```
 
 5. Deploy/restart the app.
