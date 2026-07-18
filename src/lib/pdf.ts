@@ -260,16 +260,21 @@ function drawCalloutBanner(
       ? ([255, 248, 240] as [number, number, number])
       : ([232, 244, 245] as [number, number, number]);
   const border = tone === "warning" ? TEAL_DARK : TEAL;
-  const height = lines.length * 12 + 14;
+  // Font must be set before splitTextToSize so wrap width matches painted text.
+  doc.setFont("helvetica", tone === "warning" ? "bold" : "normal");
+  doc.setFontSize(9);
+  const textWidth = width - 16;
+  const wrappedLines = lines.flatMap(
+    (line) => doc.splitTextToSize(line, textWidth) as string[],
+  );
+  const height = wrappedLines.length * 12 + 14;
   doc.setFillColor(fill[0], fill[1], fill[2]);
   doc.setDrawColor(border[0], border[1], border[2]);
   doc.setLineWidth(1);
   doc.roundedRect(x, y, width, height, 4, 4, "FD");
-  doc.setFont("helvetica", tone === "warning" ? "bold" : "normal");
-  doc.setFontSize(9);
   doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
   let lineY = y + 12;
-  for (const line of lines) {
+  for (const line of wrappedLines) {
     doc.text(line, x + 8, lineY);
     lineY += 12;
   }
