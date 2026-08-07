@@ -1,4 +1,5 @@
 import {
+  AI_ASSISTANCE_LABELS,
   CONTRIBUTOR_INVOLVEMENT_LABELS,
   RESOURCE_LABELS,
   SHARING_LABELS,
@@ -14,6 +15,7 @@ import {
   getTimelineFieldValue,
 } from "./packet";
 import { buildPatentSearchPrep } from "./patentSearchPrep";
+import { buildAiPreparationToolRecord } from "./paths/patent/preparationRecord";
 import { resolveBrandName } from "./brandName";
 import type { SavedReference } from "./research/types";
 import type {
@@ -39,7 +41,13 @@ export interface AttorneyExportPacket {
   disclaimer: AttorneyExportDisclaimer;
   packet_id: string;
   created_at: string;
+  /**
+   * Legacy numeric field — Formula B (packet organization), unchanged for
+   * consumers. See readiness_score_type.
+   */
   readiness_score: number;
+  /** Clarifies that readiness_score is Formula B, not the inventor UI score. */
+  readiness_score_type: typeof PACKET_ORGANIZATION_SCORE_TYPE;
   inventor: {
     name: string;
     email: string;
@@ -49,11 +57,17 @@ export interface AttorneyExportPacket {
   invention: {
     title: string;
     summary: string;
+    solution: string;
     problem_solved: string;
     how_it_works: string;
     key_components: string[];
     differences: string[];
     brand_name?: string;
+    preferred_embodiment?: string;
+    alternative_versions?: string;
+    known_similar_work?: string;
+    ai_assistance?: string;
+    ai_assistance_notes?: string;
   };
   timeline: {
     conception_date: string | null;
@@ -74,6 +88,10 @@ export interface AttorneyExportPacket {
   export_metadata: {
     exported_for: string;
     exported_at: string;
+  };
+  preparation_tool: {
+    ai_assisted_packet: boolean;
+    record: string | null;
   };
   search_readiness?: {
     key_features: string;
@@ -116,16 +134,25 @@ function splitList(text: string): string[] {
     .filter(Boolean);
 }
 
-export interface ReadinessScoreBreakdownEntry {
+/**
+ * Export-only organization score (Formula B).
+ * Not the platform’s canonical inventor-facing readiness score.
+ */
+export const PACKET_ORGANIZATION_SCORE_TYPE = "packet_organization_v1" as const;
+
+export interface PacketOrganizationScoreBreakdownEntry {
   label: string;
   points: number;
   max: number;
 }
 
-export function computeReadinessScoreBreakdown(
+/** @deprecated Use PacketOrganizationScoreBreakdownEntry */
+export type ReadinessScoreBreakdownEntry = PacketOrganizationScoreBreakdownEntry;
+
+export function computePacketOrganizationScoreBreakdown(
   record: ProjectRecord,
   savedReferenceCount = 0,
-): ReadinessScoreBreakdownEntry[] {
+): PacketOrganizationScoreBreakdownEntry[] {
   const prep = buildPatentPrepChecklist(record);
   const materials = buildMaterialsChecklist(record);
   const prepComplete = prep.filter((row) => row.complete).length;
@@ -156,11 +183,11 @@ export function computeReadinessScoreBreakdown(
   ];
 }
 
-export function computeReadinessScore(
+export function computePacketOrganizationScore(
   record: ProjectRecord,
   savedReferenceCount = 0,
 ): number {
-  const breakdown = computeReadinessScoreBreakdown(
+  const breakdown = computePacketOrganizationScoreBreakdown(
     record,
     savedReferenceCount,
   );
@@ -337,7 +364,11 @@ export function buildAttorneyExportPacket(
     disclaimer: buildAttorneyExportDisclaimer(),
     packet_id: record.id,
     created_at: record.createdAt,
-    readiness_score: computeReadinessScore(record, savedReferences.length),
+    readiness_score: computePacketOrganizationScore(
+      record,
+      savedReferences.length,
+    ),
+    readiness_score_type: PACKET_ORGANIZATION_SCORE_TYPE,
     inventor: {
       name: inventor?.name?.trim() ?? "",
       email: inventor?.email?.trim() ?? "",
@@ -345,13 +376,27 @@ export function buildAttorneyExportPacket(
       inventorship_split: buildInventorshipSplit(record),
     },
     invention: {
-      title: getIdeaLabel(handoffAnswers),
+      title:
+        handoffAnswers.inventionTitle?.trim() ||
+        getIdeaLabel(handoffAnswers),
       summary: record.profile.ideaSummary,
+      solution: handoffAnswers.whatCreated.trim(),
       problem_solved: handoffAnswers.problemSolved.trim(),
       how_it_works: handoffAnswers.howItWorks.trim(),
       key_components: components.length > 0 ? components : [handoffAnswers.mainParts.trim()].filter(Boolean),
       differences,
       brand_name: resolveBrandName(handoffAnswers) ?? undefined,
+      preferred_embodiment:
+        handoffAnswers.preferredEmbodiment?.trim() || undefined,
+      alternative_versions:
+        handoffAnswers.alternativeVersions?.trim() || undefined,
+      known_similar_work:
+        handoffAnswers.knownSimilarWork?.trim() || undefined,
+      ai_assistance: handoffAnswers.aiAssistance
+        ? AI_ASSISTANCE_LABELS[handoffAnswers.aiAssistance]
+        : undefined,
+      ai_assistance_notes:
+        handoffAnswers.aiAssistanceNotes?.trim() || undefined,
     },
     timeline: {
       conception_date:
@@ -390,6 +435,10 @@ export function buildAttorneyExportPacket(
       exported_for: exportedFor.trim(),
       exported_at: new Date().toISOString(),
     },
+    preparation_tool: {
+      ai_assisted_packet: record.profile.generator === "ai",
+      record: buildAiPreparationToolRecord(record),
+    },
     search_readiness: hasSearchReadinessContent(
       record.answers.searchReadiness,
     )
@@ -399,7 +448,7 @@ export function buildAttorneyExportPacket(
       (record.answers.disclosureEvents ?? []).length > 0
         ? buildDisclosureEventsExport(record)
         : undefined,
-    readiness_score_breakdown: computeReadinessScoreBreakdown(
+    readiness_score_breakdown: computePacketOrganizationScoreBreakdown(
       record,
       savedReferences.length,
     ).map((entry) => ({ ...entry, points: Math.round(entry.points) })),
@@ -421,6 +470,7 @@ export function buildAttorneyExportCsv(packet: AttorneyExportPacket): string {
     ["packet_id", packet.packet_id],
     ["created_at", packet.created_at],
     ["readiness_score", String(packet.readiness_score)],
+    ["readiness_score_type", packet.readiness_score_type],
     ["inventor_name", packet.inventor.name],
     ["inventor_email", packet.inventor.email],
     ["inventor_entity", packet.inventor.entity],

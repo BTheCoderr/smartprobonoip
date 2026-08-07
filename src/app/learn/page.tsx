@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PageEvent } from "@/components/analytics/PageEvent";
 import { LearnJourney } from "@/components/learn/LearnJourney";
+import { PatentEducationTopics } from "@/components/learn/PatentEducationTopics";
 import { ConnectResourcesSection } from "@/components/connect/ConnectResourcesSection";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import { COMMERCIALIZATION_COPY, LEARN_COPY } from "@/lib/copy";
@@ -16,9 +17,9 @@ import {
 } from "@/components/ui/design";
 
 export const metadata = {
-  title: "Learn IP basics — SmartProBonoIP",
+  title: "Learn IP readiness basics — SmartProBonoIP",
   description:
-    "Interactive IP preparation for inventors. Phase 1 of the SmartProBonoIP journey. Preparation only — not legal advice.",
+    "Patent-focused IP preparation for inventors: privacy, public disclosure, AI inventorship, and invention disclosure basics. Preparation only — not legal advice.",
 };
 
 export default function LearnPage() {
@@ -29,7 +30,7 @@ export default function LearnPage() {
       <DossierPageHeader
         stamps={
           <>
-            <StampLabel tone="teal">PHASE 1 · LEARN</StampLabel>
+            <StampLabel tone="teal">PHASE 1 · PATENT LEARN</StampLabel>
             <StampLabel tone="aqua">PREPARATION ONLY</StampLabel>
           </>
         }
@@ -39,7 +40,7 @@ export default function LearnPage() {
         aside={
           <div className="flex flex-col gap-3">
             <Link href={ROUTES.disclaimer} className="btn-primary">
-              Start your readiness packet
+              Start patent readiness
             </Link>
             <Link href={ROUTES.sample} className="btn-secondary">
               View sample packet
@@ -50,6 +51,12 @@ export default function LearnPage() {
           </div>
         }
       />
+
+      <Section soft>
+        <PaperShell>
+          <PatentEducationTopics />
+        </PaperShell>
+      </Section>
 
       <Section>
         <PaperShell>

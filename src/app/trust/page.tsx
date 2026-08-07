@@ -82,6 +82,17 @@ export default function TrustPage() {
       <Section soft>
         <PaperShell>
           <SectionHeader
+            kicker={TRUST_COPY.whoCanSeeWhat.title}
+            title="Plain facts about packet access"
+            lead={TRUST_COPY.whoCanSeeWhat.lead}
+          />
+          <BulletList items={TRUST_COPY.whoCanSeeWhat.points} />
+        </PaperShell>
+      </Section>
+
+      <Section>
+        <PaperShell>
+          <SectionHeader
             kicker={TRUST_COPY.aiScope.title}
             title="AI-assisted drafts with human review expected"
           />
@@ -89,7 +100,7 @@ export default function TrustPage() {
         </PaperShell>
       </Section>
 
-      <Section>
+      <Section soft>
         <PaperShell>
           <SectionHeader
             kicker={TRUST_COPY.privacy.title}
@@ -99,7 +110,7 @@ export default function TrustPage() {
         </PaperShell>
       </Section>
 
-      <Section soft>
+      <Section>
         <PaperShell>
           <SectionHeader
             kicker={TRUST_COPY.exportPrivacy.title}
@@ -109,7 +120,7 @@ export default function TrustPage() {
         </PaperShell>
       </Section>
 
-      <Section>
+      <Section soft>
         <PaperShell>
           <SectionHeader
             kicker={TRUST_COPY.pilotAnalytics.title}
@@ -125,31 +136,6 @@ export default function TrustPage() {
             </Link>
             <Link href={ROUTES.forUniversities} className="btn-ghost">
               For universities
-            </Link>
-          </div>
-        </PaperShell>
-      </Section>
-
-      <Section>
-        <PaperShell>
-          <SectionHeader
-            kicker={TRUST_COPY.contact.title}
-            title="Questions, privacy, and pilot support"
-          />
-          <ul className="mt-6 space-y-2 text-sm leading-relaxed text-navy-700">
-            {TRUST_COPY.contact.points.map((point) => (
-              <li key={point} className="flex gap-2">
-                <span className="text-navy-500">•</span>
-                <span>{point}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href={ROUTES.contact} className="btn-primary">
-              Contact
-            </Link>
-            <Link href={ROUTES.privacy} className="btn-secondary">
-              Privacy summary
             </Link>
           </div>
         </PaperShell>

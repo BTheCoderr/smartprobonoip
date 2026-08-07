@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
+import { recordProjectEvent } from "@/lib/db/events";
 import { createRecord } from "@/lib/db/records";
 import { validateForGeneration } from "@/lib/intakeValidation";
 import {
@@ -68,6 +69,32 @@ export async function POST(request: Request) {
       isDemo: body.isDemo ?? false,
       tracking: body.tracking ?? null,
     });
+
+    await Promise.all([
+      recordProjectEvent({
+        projectId: record.id,
+        pilotSessionId: pilotSession,
+        type: "idea_created",
+        occurredAt: record.createdAt,
+        dedupeKey: "idea_created",
+      }),
+      recordProjectEvent({
+        projectId: record.id,
+        pilotSessionId: pilotSession,
+        type: "packet_generated",
+        occurredAt: record.createdAt,
+        dedupeKey: "packet_generated",
+      }),
+      record.answers.hasPrototype || record.answers.assets.length > 0
+        ? recordProjectEvent({
+            projectId: record.id,
+            pilotSessionId: pilotSession,
+            type: "materials_recorded",
+            occurredAt: record.createdAt,
+            dedupeKey: "materials_recorded",
+          })
+        : Promise.resolve(),
+    ]);
 
     const tracking = body.tracking ?? null;
     const analyticsContext = {

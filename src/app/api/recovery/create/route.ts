@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
-import { createRecoveryLink } from "@/lib/db/recovery";
+import { createRecoveryLink, isRecoveryScope } from "@/lib/db/recovery";
 import {
   GENERIC_SERVER_ERROR,
   isValidPilotSessionId,
@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     const body = (await readJsonWithLimit(request)) as {
       projectId?: string;
       email?: string;
+      scope?: unknown;
     };
     assertTextWithinLimit(body.email, MAX_TEXT.email);
 
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
       projectId: body.projectId.trim(),
       pilotSessionId: pilotSession,
       email: body.email,
+      scope: isRecoveryScope(body.scope) ? body.scope : "project",
     });
 
     await trackServerEvent("recovery_link_created", {

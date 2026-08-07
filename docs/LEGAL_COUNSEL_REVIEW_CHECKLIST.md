@@ -117,4 +117,10 @@ Flag for ops/counsel discussion (not a code task):
 | Limitation of liability / indemnity | | | |
 | Breach/incident language | | | |
 
+## G. Pending product copy (reviewer triage — July 2026)
+
+- [ ] **Trust Center — "Who can see what"** (`TRUST_COPY.whoCanSeeWhat`, `src/app/trust/page.tsx`) — factual access only; no public-disclosure legal conclusions
+- [ ] **Trust Center — AI usage and OpenAI training/retention wording** (`TRUST_COPY.aiScope`, `PRIVACY_NOTICE` subprocessors)
+- [ ] **Pending USPTO education cards** (`src/lib/content/educationCards.pendingReview.ts`) — do not wire to Learn until reviewed; flag `provisional_vs_nonprovisional` and `ai_uspto_guidance` first
+
 **Reminder:** Engineering must not present any drafted clause as guaranteed enforceable. Product may continue **fictional testing** under current draft notices; **real inventor pilots** and **public launch** should wait for counsel feedback on sections A–G as prioritized by SmartProBono.

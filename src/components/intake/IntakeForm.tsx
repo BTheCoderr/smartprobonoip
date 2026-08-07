@@ -14,6 +14,7 @@ import { IntakePacketPreview } from "@/components/intake/IntakePacketPreview";
 import { suggestIdeaIncludes } from "@/lib/signals";
 import { ownershipInfoCompleted } from "@/lib/ownership";
 import { getStore } from "@/lib/store";
+import { markPortfolioPresent } from "@/lib/portfolio/marker";
 import { getStoredTracking } from "@/lib/partnerTracking";
 import { pilotSessionHeaders } from "@/lib/pilotSession";
 import { trackEvent } from "@/lib/analytics/client";
@@ -29,6 +30,7 @@ import {
   WIZARD_STEPS,
 } from "@/lib/intake/wizardConfig";
 import { validateForGeneration } from "@/lib/intakeValidation";
+import { isWizardStepId, wizardStepIndex } from "@/lib/readiness";
 import type {
   IntakeAnswers,
   ReadinessProfile,
@@ -60,6 +62,13 @@ const INITIAL: IntakeAnswers = {
   brandName: "",
   searchReadiness: undefined,
   disclosureEvents: [],
+  inventionTitle: "",
+  preferredEmbodiment: "",
+  alternativeVersions: "",
+  knownSimilarWork: "",
+  aiAssistance: undefined,
+  aiAssistanceNotes: "",
+  protectionPath: "patent",
 };
 
 function toggle<T>(list: T[], value: T): T[] {
@@ -86,6 +95,12 @@ function applySmartDefaults(answers: IntakeAnswers, step: number): IntakeAnswers
     if (!next.institutionRelationship) {
       next.institutionRelationship = "no";
     }
+    if (!next.aiAssistance) {
+      next.aiAssistance = "none";
+    }
+    if (!next.protectionPath) {
+      next.protectionPath = "patent";
+    }
   }
   return next;
 }
@@ -94,10 +109,13 @@ export function IntakeForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const demoFromUrl = searchParams.get("demo") === "1";
+  const resumeRecordParam = searchParams.get("record");
+  const resumeStepParam = searchParams.get("step");
   const last = WIZARD_STEPS.length - 1;
 
   const [step, setStep] = useState(() => {
     if (typeof window === "undefined") return 0;
+    if (resumeRecordParam) return 0;
     if (demoFromUrl || isDemoMode()) return 0;
     const draft = loadIntakeDraft();
     if (draft?.answers.whatCreated.trim()) {
@@ -108,6 +126,7 @@ export function IntakeForm() {
 
   const [answers, setAnswers] = useState<IntakeAnswers>(() => {
     if (typeof window !== "undefined") {
+      if (resumeRecordParam) return INITIAL;
       const active =
         activateDemoFromQuery(`?${searchParams.toString()}`) || isDemoMode();
       if (active) return DEMO_INVENTION;
@@ -118,13 +137,17 @@ export function IntakeForm() {
     return demoFromUrl ? DEMO_INVENTION : INITIAL;
   });
 
+  const [resumeRecordId, setResumeRecordId] = useState<string | null>(null);
+  const [resumeLoading, setResumeLoading] = useState(() =>
+    Boolean(resumeRecordParam),
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [draftRestored, setDraftRestored] = useState(() => {
     if (typeof window === "undefined") return false;
-    if (demoFromUrl || isDemoMode()) return false;
+    if (resumeRecordParam || demoFromUrl || isDemoMode()) return false;
     const draft = loadIntakeDraft();
     return Boolean(draft?.answers.whatCreated.trim());
   });
@@ -163,7 +186,41 @@ export function IntakeForm() {
   }, [step, demoActive]);
 
   useEffect(() => {
-    if (demoActive || submitting) return;
+    if (!resumeRecordParam) return;
+    let active = true;
+    getStore()
+      .getRecord(resumeRecordParam)
+      .then((record) => {
+        if (!active) return;
+        if (!record) {
+          setError(
+            "Could not load that invention. Open it from your workspace and try again.",
+          );
+          setResumeLoading(false);
+          return;
+        }
+        setAnswers(record.answers);
+        setResumeRecordId(record.id);
+        if (resumeStepParam && isWizardStepId(resumeStepParam)) {
+          setStep(wizardStepIndex(resumeStepParam));
+        }
+        setDraftRestored(false);
+        setSaveStatus("Editing saved invention");
+        setResumeLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setError("Could not load that invention. Please try again.");
+        setResumeLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [resumeRecordParam, resumeStepParam]);
+
+  useEffect(() => {
+    // Resume mode uses the existing record as source of truth — do not fork a draft.
+    if (demoActive || submitting || resumeRecordId || resumeRecordParam) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       if (!answers.whatCreated.trim() && step === 0) return;
@@ -177,7 +234,14 @@ export function IntakeForm() {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [answers, step, demoActive, submitting]);
+  }, [
+    answers,
+    step,
+    demoActive,
+    submitting,
+    resumeRecordId,
+    resumeRecordParam,
+  ]);
 
   useEffect(() => {
     if (step !== 0 || intakeStarted.current) return;
@@ -264,6 +328,13 @@ export function IntakeForm() {
   }
 
   function saveAndExit() {
+    if (resumeRecordId) {
+      setSavedExitMessage("Returning to your packet. Changes save when you regenerate.");
+      window.setTimeout(() => {
+        router.push(`/smartprobonoip/profile/${resumeRecordId}`);
+      }, 600);
+      return;
+    }
     saveIntakeDraft({
       answers,
       step,
@@ -306,19 +377,32 @@ export function IntakeForm() {
         throw new Error(err.error ?? "Generation failed");
       }
       const data = (await res.json()) as { profile: ReadinessProfile };
-      const record = await getStore().saveRecord({
-        answers,
-        profile: data.profile,
-        preClarity: answers.preClarity,
-        isDemo: demoActive,
-        tracking: demoActive ? null : getStoredTracking(),
-      });
+      const store = getStore();
+      const record = resumeRecordId
+        ? await store.updateRecord(resumeRecordId, {
+            answers,
+            profile: data.profile,
+            preClarity: answers.preClarity,
+            isDemo: demoActive,
+            tracking: demoActive ? null : getStoredTracking(),
+          })
+        : await store.saveRecord({
+            answers,
+            profile: data.profile,
+            preClarity: answers.preClarity,
+            isDemo: demoActive,
+            tracking: demoActive ? null : getStoredTracking(),
+          });
+      if (!demoActive) {
+        markPortfolioPresent();
+      }
       trackEvent("intake_completed", {
         route: "/smartprobonoip/start",
         projectId: record.id,
         metadata: {
           totalSteps: WIZARD_STEPS.length,
           demo: demoActive,
+          resumed: Boolean(resumeRecordId),
         },
       });
       clearIntakeDraft();
@@ -328,7 +412,7 @@ export function IntakeForm() {
           metadata: { demo: demoActive },
         });
       }
-      router.push(`/smartprobonoip/profile/${record.id}`);
+      router.push(`/smartprobonoip/profile/${record.id}#readiness-dashboard`);
     } catch (err) {
       setError(
         err instanceof Error
@@ -339,8 +423,24 @@ export function IntakeForm() {
     }
   }
 
+  if (resumeLoading) {
+    return (
+      <div className="rounded-md border border-mist-200 bg-white px-4 py-6 text-sm text-navy-600">
+        Loading your invention to continue editing…
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {resumeRecordId ? (
+        <div className="rounded-md border border-teal-200 bg-teal-50/80 px-4 py-3 text-sm text-teal-900">
+          <strong>Updating a saved invention:</strong> you are editing an
+          existing packet. Regenerating replaces its preparation content — it
+          does not create a duplicate invention.
+        </div>
+      ) : null}
+
       {demoActive ? (
         <div className="rounded-md border border-teal-200 bg-teal-50/80 px-4 py-3 text-sm text-teal-900">
           <strong>Demo mode:</strong> Sample invention loaded — walk through the

@@ -8,6 +8,7 @@ import {
 import { ProductDemoVideo } from "@/components/pages/ProductDemoVideo";
 import { ProductWalkthrough } from "@/components/pages/ProductWalkthrough";
 import { SocialProofSlot } from "@/components/pages/SocialProofSlot";
+import { ProtectionPathChooser } from "@/components/platform/ProtectionPathChooser";
 import { BRAND } from "@/lib/brand";
 import { LANDING_COPY, RESEARCH_PREP_COPY } from "@/lib/copy";
 import { ROUTES } from "@/lib/routes";
@@ -30,7 +31,9 @@ export default function ProductLandingPage() {
         stamp={LANDING_COPY.heroStamp}
         title={BRAND.tagline}
         lead={BRAND.positioning}
+        mission={BRAND.coreMessage}
         safetyLine={LANDING_COPY.heroSafety}
+        subcta={LANDING_COPY.heroSubcta}
       >
         <div className="flex flex-wrap gap-3">
           <TrackedNavLink
@@ -38,7 +41,7 @@ export default function ProductLandingPage() {
             event="start_clicked"
             className="btn-primary"
           >
-            {LANDING_COPY.ctaPrimary}
+            Start patent readiness
           </TrackedNavLink>
           <TrackedNavLink
             href={ROUTES.sample}
@@ -47,17 +50,20 @@ export default function ProductLandingPage() {
           >
             {LANDING_COPY.ctaSample}
           </TrackedNavLink>
-          <Link href={ROUTES.learn} className="btn-secondary">
-            Learn IP basics
-          </Link>
-          <Link href={ROUTES.trust} className="btn-ghost">
-            Trust Center
-          </Link>
-          <Link href="#how-it-works" className="btn-ghost">
-            {LANDING_COPY.ctaHowItWorks}
+          <Link href="#protection-paths" className="btn-ghost">
+            See all paths
           </Link>
         </div>
       </CreativeHeroSection>
+
+      <Section id="protection-paths" soft>
+        <PaperShell>
+          <ProtectionPathChooser
+            heading="Choose a protection path to get started"
+            lead="Phase 1 ships patent readiness for inventors. Other paths are registered on the platform and will reuse shared auth, dashboard, documents, AI, handoff, and portfolio services when they open — without fake placeholder workflows."
+          />
+        </PaperShell>
+      </Section>
 
       <ProductSamplePreviewBand />
 
@@ -118,7 +124,7 @@ export default function ProductLandingPage() {
       <Section id="how-it-works">
         <PaperShell>
           <SectionHeader
-            kicker="How it works"
+            kicker="How patent readiness works"
             title="From messy idea to organized handoff"
             lead="Four steps to prepare for expert review — not a legal conclusion."
           />

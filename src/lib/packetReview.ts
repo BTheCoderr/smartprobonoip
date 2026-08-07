@@ -3,15 +3,20 @@ import {
   buildMaterialsChecklist,
   buildMissingInfoStatus,
   countFilledTimelineFields,
-  getTimelineFieldValue,
 } from "@/lib/packet";
+import {
+  buildReadinessEvaluation,
+  computeOverallReadinessScore,
+  computeReadinessCategoryBreakdown,
+  type ReadinessCategoryScore,
+} from "@/lib/readiness";
 import type { ProjectRecord } from "@/lib/types";
 
-export interface ReadinessBreakdownItem {
-  label: string;
-  score: number;
-  max: number;
-}
+/** @deprecated Prefer ReadinessCategoryScore from @/lib/readiness */
+export type ReadinessBreakdownItem = Pick<
+  ReadinessCategoryScore,
+  "label" | "score" | "max"
+>;
 
 export interface PacketReviewSummary {
   readinessScore: number;
@@ -25,77 +30,14 @@ export interface PacketReviewSummary {
   strengthenMessage: string;
 }
 
-function hasText(value: string | undefined): boolean {
-  return Boolean(value?.trim());
-}
-
+/** Compatibility adapter — delegates to canonical Formula A. */
 export function computeReadinessBreakdown(
   record: ProjectRecord,
   savedReferenceCount = 0,
 ): ReadinessBreakdownItem[] {
-  const { answers, profile } = record;
-
-  const coreScore = [
-    answers.whatCreated,
-    answers.mainParts,
-    answers.howItWorks,
-    answers.whatDifferent,
-  ].reduce((sum, field) => sum + (hasText(field) ? 5 : 0), 0);
-
-  const problemScore =
-    (hasText(answers.problemSolved) ? 8 : 0) + (hasText(answers.whoFor) ? 7 : 0);
-
-  let prototypeMaterialsScore = answers.hasPrototype ? 8 : 0;
-  prototypeMaterialsScore += Math.min(12, answers.assets.length * 4);
-
-  const timelineFilled = countFilledTimelineFields(record.developmentTimeline);
-  const timelineScore = Math.round((timelineFilled / 6) * 15);
-
-  let disclosureScore = 15;
-  if (profile.publicDisclosure) {
-    disclosureScore = 5;
-    if (
-      hasText(
-        getTimelineFieldValue(
-          record.developmentTimeline,
-          "Date first shared publicly",
-        ),
-      )
-    ) {
-      disclosureScore += 5;
-    }
-    if (answers.sharedChannels.some((channel) => channel !== "none")) {
-      disclosureScore += 5;
-    }
-  }
-
-  const handoffFields = [
-    answers.whatCreated,
-    answers.problemSolved,
-    answers.howItWorks,
-    answers.mainParts,
-    answers.whatDifferent,
-  ].filter(hasText).length;
-  let expertScore = Math.round((handoffFields / 5) * 10);
-  if (savedReferenceCount > 0) expertScore += 5;
-  expertScore = Math.min(15, expertScore);
-
-  return [
-    { label: "Core idea clarity", score: coreScore, max: 20 },
-    { label: "Problem and audience clarity", score: problemScore, max: 15 },
-    {
-      label: "Prototype/materials readiness",
-      score: prototypeMaterialsScore,
-      max: 20,
-    },
-    { label: "Timeline readiness", score: timelineScore, max: 15 },
-    {
-      label: "Public disclosure clarity",
-      score: disclosureScore,
-      max: 15,
-    },
-    { label: "Expert handoff readiness", score: expertScore, max: 15 },
-  ];
+  return computeReadinessCategoryBreakdown(record, savedReferenceCount).map(
+    ({ label, score, max }) => ({ label, score, max }),
+  );
 }
 
 export function buildImproveScoreNote(
@@ -130,12 +72,12 @@ export function buildImproveScoreNote(
   return `Add ${joined}.`;
 }
 
+/** Compatibility adapter — same integer as computeOverallReadinessScore. */
 export function computeReadinessScore(
   record: ProjectRecord,
   savedReferenceCount = 0,
 ): number {
-  const breakdown = computeReadinessBreakdown(record, savedReferenceCount);
-  return breakdown.reduce((sum, item) => sum + item.score, 0);
+  return computeOverallReadinessScore(record, savedReferenceCount);
 }
 
 export function buildPacketReviewSummary(
@@ -144,8 +86,13 @@ export function buildPacketReviewSummary(
 ): PacketReviewSummary {
   const { profile } = record;
   const missing = buildMissingInfoStatus(record, savedReferenceCount);
-  const scoreBreakdown = computeReadinessBreakdown(record, savedReferenceCount);
-  const readinessScore = scoreBreakdown.reduce((sum, item) => sum + item.score, 0);
+  const evaluation = buildReadinessEvaluation(record, savedReferenceCount);
+  const readinessScore = evaluation.overallScore;
+  const scoreBreakdown = evaluation.categories.map(({ label, score, max }) => ({
+    label,
+    score,
+    max,
+  }));
   const improveScoreNote = buildImproveScoreNote(record, savedReferenceCount);
 
   const completeSections = profile.completeInfo.slice(0, 8);

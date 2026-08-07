@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { CONNECT_V1_COPY } from "@/lib/copy";
+import { CONNECT_V1_COPY, PARTNER_DIRECTORY_COPY } from "@/lib/copy";
 import { ROUTES } from "@/lib/routes";
 
 export function ConnectResourcesSection({ compact = false }: { compact?: boolean }) {
@@ -26,6 +26,9 @@ export function ConnectResourcesSection({ compact = false }: { compact?: boolean
       </ul>
       {!compact ? (
         <div className="mt-6 flex flex-wrap gap-3">
+          <Link href={ROUTES.partners} className="btn-secondary text-sm">
+            {PARTNER_DIRECTORY_COPY.browseCta}
+          </Link>
           <Link href={ROUTES.learn} className="btn-ghost text-sm">
             Learn IP basics
           </Link>

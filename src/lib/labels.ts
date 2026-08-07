@@ -1,6 +1,7 @@
 import type {
   AgreementStatus,
   AgreementType,
+  AiAssistance,
   AssetType,
   ContributorHelpType,
   ContributorInvolvement,
@@ -272,3 +273,25 @@ export const RESOURCE_DESCRIPTIONS: Record<ResourceCategory, string> = {
   business_accelerator:
     "Programs offering mentorship, funding readiness, and business support.",
 };
+
+export const AI_ASSISTANCE_OPTIONS: Option<AiAssistance>[] = [
+  {
+    value: "none",
+    label: "No generative AI tools were used for this invention",
+  },
+  {
+    value: "assisted",
+    label: "AI helped draft, sketch, or explore — humans directed the idea",
+  },
+  {
+    value: "generated_portions",
+    label: "AI generated substantial portions that we then selected or refined",
+  },
+  { value: "not_sure", label: "Not sure / need to discuss with a professional" },
+];
+
+export const AI_ASSISTANCE_LABELS: Record<AiAssistance, string> =
+  Object.fromEntries(
+    AI_ASSISTANCE_OPTIONS.map((o) => [o.value, o.label]),
+  ) as Record<AiAssistance, string>;
+

@@ -32,7 +32,9 @@ export function PacketReviewPanel({
 
         <div>
           <div className="flex items-center justify-between gap-3 text-sm">
-            <span className="font-semibold text-navy-900">Readiness score</span>
+            <span className="font-semibold text-navy-900">
+              Packet preparation score
+            </span>
             <span className="font-mono font-semibold text-navy-700">
               {review.readinessScore}/100
             </span>

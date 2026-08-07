@@ -10,8 +10,14 @@ export function SiteNav() {
         <BrandMark variant="compact" href={ROUTES.home} />
         <div className="flex shrink-0 items-center gap-0.5 text-sm sm:gap-1">
           <Link
-            href={ROUTES.sample}
+            href={ROUTES.workspace}
             className="link-brand hidden rounded-md px-2 py-2 font-medium sm:inline-block"
+          >
+            Workspace
+          </Link>
+          <Link
+            href={ROUTES.sample}
+            className="link-brand hidden rounded-md px-2 py-2 font-medium md:inline-block"
           >
             Sample
           </Link>
@@ -45,7 +51,7 @@ export function SiteNav() {
             metadata={{ ctaName: "nav_start_packet", pageSection: "site_nav" }}
             className="btn-primary px-3 py-2 text-xs sm:px-4 sm:text-sm"
           >
-            Start your packet
+            Start patent readiness
           </TrackedNavLink>
         </div>
       </nav>

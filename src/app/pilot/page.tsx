@@ -71,6 +71,21 @@ const pilotMeasures = [
   "Repeat referrals from pilot partners",
 ] as const;
 
+const partnerIs = [
+  "A pre-intake preparation layer that helps inventors organize invention disclosures before they reach you",
+  "A way to receive more consistent handoff packets (summary, timeline, disclosures, inventorship notes, materials)",
+  "A feedback loop so founding partners can shape what professionals need in the brief",
+  "Optional aggregated pilot metrics — not a dump of raw invention text into marketing analytics",
+] as const;
+
+const partnerIsNot = [
+  "Not a law firm, filing service, or patentability opinion engine",
+  "Not a marketplace that assigns clients or guarantees paid work",
+  "Not legal advice, representation, or an attorney-client relationship with inventors",
+  "Not a replacement for your professional judgment, conflicts checks, or engagement letters",
+  "Not a multi-path IP suite yet — Phase 1 is patent readiness only; other paths are coming later",
+] as const;
+
 export default function PilotPartnerPage() {
   return (
     <div>
@@ -78,9 +93,9 @@ export default function PilotPartnerPage() {
 
       <DossierPageHeader
         stamps={<StampLabel tone="teal">FOUNDING PARTNER PILOT</StampLabel>}
-        kicker="A focused 30-day SmartProBonoIP pilot"
+        kicker="Patent readiness pilot — inventor preparedness, not legal advice"
         title="Spend less time rebuilding intake from zero"
-        lead="SmartProBonoIP turns unstructured inventor stories into organized, review-ready IP Readiness Packets before they reach your desk. We are selecting five IP professionals and organizations to help test and shape the professional workflow."
+        lead="SmartProBonoIP is an IP Readiness Platform. Phase 1 helps inventors prepare clearer invention disclosures and professional handoff packets before patent conversations. We are selecting five IP professionals and organizations to test and shape that handoff — not to outsource legal judgment."
         aside={
           <a href="#pilot-application" className="btn-primary w-full text-center">
             Become a SmartProBonoIP pilot partner
@@ -89,6 +104,48 @@ export default function PilotPartnerPage() {
       />
 
       <Section soft>
+        <PaperShell>
+          <SectionHeader
+            kicker="Pilot partner clarification"
+            title="What a pilot partner is — and is not"
+            lead="A pilot partner is an organization or professional that (a) shares a tracked link with inventors they already support, (b) may review selected packets, and (c) gives feedback — with no referral fee, no legal relationship created by the platform, and no obligation to take on any inventor."
+          />
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-700">
+                A pilot partner is
+              </h3>
+              <ul className="mt-4 space-y-3">
+                {partnerIs.map((item) => (
+                  <li
+                    key={item}
+                    className="rounded-xl border border-teal-100 bg-teal-50/40 px-4 py-3 text-sm leading-relaxed text-navy-800"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-warm-700">
+                A pilot partner is not signing up for
+              </h3>
+              <ul className="mt-4 space-y-3">
+                {partnerIsNot.map((item) => (
+                  <li
+                    key={item}
+                    className="rounded-xl border border-warm-200/80 bg-warm-50/40 px-4 py-3 text-sm leading-relaxed text-navy-800"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </PaperShell>
+      </Section>
+
+      <Section>
         <PaperShell>
           <SectionHeader
             kicker="The intake problem"

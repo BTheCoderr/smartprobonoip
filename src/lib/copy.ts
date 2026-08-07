@@ -49,12 +49,12 @@ export const COACH_COPY = {
 } as const;
 
 export const INTAKE_COPY = {
-  builderTitle: "Packet Builder",
-  builderProgress: "Building your packet",
+  builderTitle: "Invention Disclosure Builder",
+  builderProgress: "Building your invention disclosure packet",
   intro:
     "You do not need perfect answers yet. Start with what you know.",
   introDetail:
-    "Each step adds another page to your IP Readiness Packet — not a form, but a dossier you can bring to your next conversation.",
+    "Each step adds another page to your IP Readiness Packet — an invention-disclosure-style dossier you can bring to a patent agent, attorney, clinic, or mentor.",
   reviewTitle: "Review before we build your packet",
   reviewSubcopy:
     "Make sure the basics look right. You can edit anything before generating your IP Readiness Packet.",
@@ -67,14 +67,16 @@ export const INTAKE_COPY = {
   draftRestored: "We restored your last draft from this browser.",
   saveAndExit: "Progress saved. Return anytime from Start free packet.",
   wizard: {
+    idfFramingTitle:
+      "Invention disclosure basics — organize facts a professional may want to review",
     ideaCoreNote:
-      "Three answers to continue — what you created, who it is for, and how it works. Everything else is optional and can wait.",
+      "Three answers to continue — what you created, who it is for, and how it works. Optional disclosure details (preferred version, alternatives, similar work) strengthen your handoff packet.",
     ideaOptionalNote:
-      "Optional — helps experts later. Skip if you are unsure; you can add these anytime before export.",
+      "Optional IDF-style details — preferred version, alternatives, differences, and known similar work. Skip if unsure; you can add these anytime before export.",
     ideaItemTypeHint:
       "Optional category for packet sections — defaults are fine to leave as-is.",
     timelineNote:
-      "Public sharing and collaborator details help professionals ask better questions. A full development timeline editor unlocks in your packet after generation.",
+      "Public sharing and collaborator details help professionals ask better questions. Keeping invention details private until expert review is a common preparation practice — this tool does not decide legal consequences.",
     searchPrepLead:
       "Start with Google Patents when you explore possible similar references. You can skip this preview — the full workspace is in your packet.",
     searchReadinessTitle: "In your words: search prep (optional)",
@@ -83,6 +85,9 @@ export const INTAKE_COPY = {
     disclosureEventsTitle: "Have you shown it to anyone? (optional)",
     disclosureEventsHint:
       "Add anyone you have shown the idea to — demos, pitches, friends, posts. Approximate dates are fine. This helps a professional understand your sharing history.",
+    aiInventorshipTitle: "AI tools and inventorship notes",
+    aiInventorshipHint:
+      "If generative AI helped draft, sketch, code, or explore the idea, note it here. This organizes facts for a registered patent practitioner — it does not decide inventorship.",
   },
   fieldExamples: {
     whatCreated:
@@ -116,13 +121,14 @@ export const PRODUCT_COPY = {
 
 export const RECOVERY_COPY = {
   title: "Want to come back later?",
-  body: "Save a private recovery link so you can return to this packet from another browser. Keep the link private — anyone with it can open your packet.",
+  body: "Save a private recovery link so you can return to this packet from another browser. Keep the link private — anyone with it can open your packet, and new links work only once.",
   create: "Create recovery link",
   copy: "Copy link",
   email: "Email me the link",
   emailUnavailable:
     "Email delivery is not configured yet. Copy your link and store it somewhere safe.",
-  created: "Recovery link created. Copy it now — we cannot show it again.",
+  created:
+    "Recovery link created. Copy it now — we cannot show it again, and it works only once.",
   demoDisabled: "Recovery links are not created for demo packets.",
   localDisabled:
     "Recovery links require cloud storage. Complete intake when Supabase is configured.",
@@ -175,10 +181,10 @@ export const RESEARCH_PREP_COPY = {
 } as const;
 
 export const LANDING_COPY = {
-  heroStamp: "IP READINESS",
+  heroStamp: "IP READINESS PLATFORM",
   heroSafety: "Preparation only — not legal advice.",
-  heroSubcta: "Free to start · No account required · ~14 minutes · 5 steps · save anytime",
-  ctaPrimary: "Start your free readiness packet",
+  heroSubcta: "Patent readiness available now · Free to start · No account required · ~14 minutes",
+  ctaPrimary: "Start patent readiness",
   ctaSample: "View sample packet",
   ctaHowItWorks: "See how it works",
   whyExists:
@@ -507,7 +513,7 @@ export const PILOT_KIT_COPY = {
   ],
   outreach: [
     {
-      audience: "Nathan",
+      audience: "Patent professional (warm intro)",
       message:
         "I built a working SmartProBonoIP pilot and I'm looking for feedback and 10–25 test users. It helps people turn messy ideas into IP Readiness Packets before they meet a professional or clinic — preparation only, not legal advice. Can I show you the pilot kit and sample packet?",
     },
@@ -846,22 +852,22 @@ export const PROFESSIONALS_COPY = {
 } as const;
 
 export const LEARN_COPY = {
-  title: "Learn IP basics",
-  subtitle: "Phase 1 — educational prep for inventors",
-  lead: "Interactive preparation before you build your readiness packet or talk to an expert. Preparation only — not legal advice.",
+  title: "Learn IP readiness basics",
+  subtitle: "Patent-focused education for inventor preparedness",
+  lead: "Interactive preparation before you build your invention disclosure packet or talk to an expert. Preparation only — not legal advice.",
   journeyTitle: "Start here before you build your packet",
   journeyLead:
-    "SmartProBonoIP is designed as a journey: Learn → Prepare → Organize → Research → Review → Export → Connect. This module is Phase 1.",
+    "SmartProBonoIP is an IP Readiness Platform. Phase 1 focuses on patent readiness: Learn → Disclose → Organize → Research → Review → Export → Connect.",
   journeySteps: [
     {
       phase: "Phase 1",
       label: "Learn",
-      hint: "Understand IP basics and common prep topics.",
+      hint: "Privacy, inventorship, and patent prep topics.",
     },
     {
       phase: "Phase 2",
-      label: "Prepare",
-      hint: "Answer guided intake questions with context.",
+      label: "Disclose",
+      hint: "Complete an invention-disclosure-style intake.",
     },
     {
       phase: "Phase 3",
@@ -871,30 +877,50 @@ export const LEARN_COPY = {
     {
       phase: "Phase 4+",
       label: "Research & handoff",
-      hint: "Similar-reference prep, review, and export.",
+      hint: "Similar-reference prep, review, and professional export.",
     },
   ],
   modules: [
     {
       id: "ip-types",
       title: "Patents, trademarks, copyrights, and trade secrets",
-      body: "These are different topics people may discuss with an expert. A patent often relates to how something works. A trademark may relate to names or brands. Copyright may relate to creative expression. Trade secrets may relate to information kept confidential. SmartProBonoIP does not tell you which applies to your idea.",
+      body: "These are different topics people may discuss with an expert. A patent often relates to how something works. A trademark may relate to names or brands. Copyright may relate to creative expression. Trade secrets may relate to information kept confidential. SmartProBonoIP does not tell you which applies to your idea — Phase 1 prepares you for patent conversations.",
       example:
         "Example: a reusable filter bottle might involve how it works (patent conversation), a product name (trademark conversation), and marketing photos (copyright conversation).",
       keyPoints: [
         "Different IP topics may apply to different parts of one idea.",
         "You do not need to decide which applies before talking to an expert.",
+        "Other protection paths are coming soon on the platform chooser.",
       ],
-      ctaLabel: "Start packet with idea basics →",
+      ctaLabel: "Start patent readiness packet →",
       ctaHref: "/disclaimer",
     },
     {
       id: "public-disclosure",
-      title: "Public disclosure and sharing history",
-      body: "If you shared your idea publicly — online, at a pitch, in a video, or at an event — an expert may want to know when and where. SmartProBonoIP helps you note what you shared; it does not decide legal consequences.",
+      title: "Privacy and public disclosure",
+      body: "What you share — and when — can matter in later professional conversations. Public posts, pitches, demos, sales, and conference talks are common examples professionals may want to review. SmartProBonoIP helps you record sharing history; it does not decide legal consequences or deadlines.",
       example:
         "Example: posting a demo video six months ago is worth writing down so you can discuss timing with a professional.",
+      keyPoints: [
+        "Note when, where, who saw it, and what details were shown.",
+        "Private conversations under confidentiality may differ from public sharing — record both.",
+        "Keeping detailed invention information private until expert review is a common preparation practice.",
+      ],
       ctaLabel: "Continue to sharing questions in intake →",
+      ctaHref: "/disclaimer",
+    },
+    {
+      id: "ai-inventorship",
+      title: "AI tools and inventorship",
+      body: "Generative AI may help write, sketch, or explore ideas — but inventorship questions are about human contribution. Note whether AI assisted your work and describe what humans decided, designed, or improved. This organizes facts for a registered patent practitioner; it does not decide inventorship.",
+      example:
+        "Example: ChatGPT drafted three mechanism options; you selected one, redesigned the seal, and built the prototype — capture both the AI help and your human contributions.",
+      keyPoints: [
+        "Describe what AI produced and what humans contributed.",
+        "List people who helped invent separately from funders or manufacturers when you can.",
+        "Offices have published AI-assisted invention guidance — ask a professional what it means for your facts.",
+      ],
+      ctaLabel: "Open inventorship notes in intake →",
       ctaHref: "/disclaimer",
     },
     {
@@ -908,6 +934,20 @@ export const LEARN_COPY = {
         "Note whether written agreements exist — even if you are not sure.",
       ],
       ctaLabel: "Open ownership section in intake →",
+      ctaHref: "/disclaimer",
+    },
+    {
+      id: "idf-basics",
+      title: "Invention disclosure form basics",
+      body: "An invention disclosure (IDF-style) packet gathers what professionals often need: title, problem, how it works, preferred version, alternatives, similar work you know, sharing history, contributors, AI notes, and materials. Completing it prepares you for review — it is not a patent application.",
+      example:
+        "Example: a one-page preferred-version description plus three disclosure events and a prototype photo is stronger preparation than a long pitch deck alone.",
+      keyPoints: [
+        "Plain language is enough — perfection is not required.",
+        "Preferred version and alternatives help professionals understand the design space.",
+        "Your packet becomes a professional handoff brief, not a filing.",
+      ],
+      ctaLabel: "Start invention disclosure builder →",
       ctaHref: "/disclaimer",
     },
     {
@@ -942,23 +982,23 @@ export const LEARN_COPY = {
     {
       id: "mistakes",
       title: "Common mistakes before expert review",
-      body: "Waiting until everything is perfect, skipping ownership questions, or sharing publicly without notes are common. Preparation helps you avoid starting from scratch at your first conversation.",
+      body: "Waiting until everything is perfect, skipping ownership or AI-assistance notes, or sharing publicly without recording dates are common. Preparation helps you avoid starting from scratch at your first conversation.",
       example:
-        "Example: spending weeks on a pitch deck but not writing down when you first built a prototype.",
+        "Example: spending weeks on a pitch deck but not writing down when you first built a prototype or posted a demo.",
     },
     {
       id: "when-professional",
       title: "When to talk to a professional",
       body: "You may want to talk to a patent agent, attorney, clinic, PTRC librarian, or mentor when you need expert review — not because this tool says you must. SmartProBonoIP organizes your story; humans provide legal judgment.",
       example:
-        "Example: after organizing your packet, schedule a review to discuss similar references, ownership, and next steps.",
+        "Example: after organizing your packet, schedule a review to discuss similar references, ownership, disclosure timing, and next steps.",
       ctaLabel: "Build your packet first →",
       ctaHref: "/disclaimer",
     },
     {
       id: "tool-limits",
       title: "What SmartProBonoIP can and cannot do",
-      body: "SmartProBonoIP organizes your idea into a readiness packet, suggests prep topics, and helps with similar-reference worksheets. It does not provide legal advice, determine protectability, or replace experts.",
+      body: "SmartProBonoIP organizes your idea into a readiness packet, suggests prep topics, and helps with similar-reference worksheets. It does not provide legal advice, determine protectability, inventorship, or replace experts.",
       example:
         "Example: the tool flags that public sharing may be worth discussing — it does not tell you what to file.",
       ctaLabel: "Visit Trust Center →",
@@ -966,7 +1006,7 @@ export const LEARN_COPY = {
     },
   ],
   futureNote:
-    "Commercialization topics (licensing, manufacturing, investors, maintenance fees, international filing, technology transfer) are documented as future education modules — not part of the current readiness workflow.",
+    "Trademark, copyright, trade-secret, and commercialization modules are registered on the platform architecture as coming-soon paths — not part of the current patent readiness workflow.",
 } as const;
 
 export const TRUST_COPY = {
@@ -988,28 +1028,51 @@ export const TRUST_COPY = {
     "Guarantee access to any specific program, attorney, or outcome",
   ],
   aiScope: {
-    title: "AI scope and limitations",
+    title: "AI usage and limitations",
     points: [
-      "Some packets use AI-assisted drafting; all outputs are editable drafts",
-      "AI does not review your legal rights or make protectability conclusions",
+      "SmartProBonoIP uses optional OpenAI for packet generation and the Packet Coach when an API key is configured; otherwise rule-based prep responses are used",
+      "When OpenAI is enabled, API submissions are not used to train OpenAI models by default under OpenAI's published API data policy; abuse-monitoring logs may be retained up to 30 days unless your deployment uses Zero Data Retention",
+      "All AI-assisted outputs are editable drafts — not legal conclusions about patentability, inventorship, or disclosure duties",
       "Suggested CPC areas and search terms are conversation starters only",
       "Human expert review is still expected before any filing or legal decision",
+    ],
+  },
+  whoCanSeeWhat: {
+    title: "Who can see what",
+    lead: "Plain-language facts about access to your packet. SmartProBonoIP does not decide whether use of this tool is or is not a public disclosure under patent law — that is a question for a licensed professional reviewing your facts.",
+    points: [
+      "There is no public directory, feed, or search index of inventor packets. Live packets are not published on the website.",
+      "Your packet is reachable from the browser session that created it, or through a private recovery link you choose to create. Recovery links work like capability URLs — anyone who has the link can open that packet.",
+      "Newly created recovery links are single-use: the first successful claim consumes the link. Links created before this change remain usable until they expire or you create a replacement of the same type. Creating a portfolio link does not revoke an existing packet link.",
+      "Your workspace shows every invention created from the same browser session. There are no accounts yet, so clearing your browser data ends access from that device unless you saved a recovery link first.",
+      "A portfolio recovery link restores every invention from that session, not just one packet. A single-packet link still restores only the packet it was made for. Treat portfolio links as the more sensitive of the two.",
+      "Each invention keeps a short activity history — milestones such as when it was created, when a packet was generated, and when you generated an export. These entries record what happened and when, not your invention text.",
+      "Your workspace also lists documents you generated (packet PDF, attorney export, intake summary). Those rows are labels and timestamps only; the files themselves download to your device and are not stored by SmartProBonoIP today.",
+      "SmartProBonoIP is not a secure vault for trade secrets. The disclaimer gate asks you not to submit highly confidential details unless you understand the risks.",
+      "When Supabase pilot mode is enabled, records are stored in our database. Anonymous direct database access is blocked by default; server-side operations use a restricted service role.",
+      "Authorized pilot partners with the dashboard secret can view aggregated pilot metrics. Dashboard API responses exclude raw invention narratives (descriptions, notes, and search text). CSV exports also omit invention descriptions.",
+      "First-party analytics and marketing tags do not receive invention text, packet content, emails, or recovery tokens.",
+      "PDF and attorney exports download to your device only — nothing is sent automatically to a firm or third party.",
     ],
   },
   privacy: {
     title: "Privacy and data handling",
     points: [
-      "Invention descriptions stay in your project until you export or share them",
-      "Recovery links use private tokens — treat them like passwords",
-      "Partner dashboards and CSV exports exclude raw invention text where configured",
+      "Invention descriptions stay in your project until you export or share them yourself",
+      "Recovery links use private tokens — treat them like passwords. New links work once",
+      "Partner dashboard metrics and CSV exports omit raw invention descriptions",
       "Public marketing analytics do not receive emails, recovery tokens, or packet content",
-      "Demo records are labeled and excluded from live pilot reporting",
+      "Demo records are labeled and excluded from live pilot reporting and from your workspace",
+      "Invention activity history stores milestone names and timestamps — not invention descriptions",
+      "Document records store the title, type, format, and time of each export you generate — not a copy of the file",
+      "Deletion requests are handled by email during the pilot — there is no automated self-serve delete button yet",
     ],
   },
   exportPrivacy: {
     title: "PDF and export privacy",
     points: [
-      "PDF and attorney exports download to your device — no automatic delivery to firms",
+      "PDF, JSON, CSV, and intake-summary exports download to your device — no automatic delivery to firms",
+      "SmartProBonoIP does not keep a copy of generated files today; downloading again rebuilds them from your invention",
       "Export metadata records who you said the export was for (your entry only)",
       "You choose when to email or share files with a professional",
     ],
@@ -1017,8 +1080,8 @@ export const TRUST_COPY = {
   pilotAnalytics: {
     title: "Pilot analytics and partner tracking",
     points: [
-      "Tracked pilot links help partners measure completions and clarity lift",
-      "Partner filters use source/campaign tags — not invention content",
+      "Tracked pilot links help partners measure completions and clarity lift using source/campaign tags — not invention narratives",
+      "Partner dashboard API responses and CSV exports omit raw invention descriptions",
       "Feedback forms collect support needs without replacing professional review",
     ],
   },
@@ -1215,14 +1278,15 @@ export const INTAKE_FIELD_WHY = {
 } as const;
 
 export const EXPORT_HANDOFF_COPY = {
-  title: "Export and handoff",
-  lead: "Download or share your packet when you are ready. Nothing is sent automatically. Preparation only — not legal advice.",
-  bringTitle: "What to bring to your expert conversation",
+  title: "Export and professional handoff",
+  lead: "Download or share your invention disclosure packet when you are ready. Nothing is sent automatically. Preparation only — not legal advice.",
+  bringTitle: "What to bring to your patent professional conversation",
   bringItems: [
-    "IP Readiness Packet PDF",
+    "IP Readiness Packet PDF (professional handoff brief)",
+    "Invention title, preferred version, and alternatives notes",
     "Prototype, drawings, or photos",
-    "Development timeline",
-    "Contributor and ownership notes",
+    "Development timeline and disclosure events",
+    "Contributor, ownership, and AI-assistance notes",
     "Similar references and gap-map notes",
     "Questions prepared in your packet",
     "Meeting notes from prior conversations",
@@ -1290,6 +1354,39 @@ export const CONNECT_V1_COPY = {
       note: "Programs vary by location.",
     },
   ],
+} as const;
+
+export const PARTNER_DIRECTORY_COPY = {
+  title: "Verified IP support partners",
+  subtitle:
+    "External destinations checked for identity and information — not endorsements or referrals.",
+  lead:
+    "Browse verified partners that may help with IP preparation next steps. SmartProBonoIP does not send your invention details automatically. Availability and eligibility vary by partner.",
+  verificationNote:
+    "Verified means we checked the official destination and partner information — not an endorsement of legal quality or outcomes.",
+  boundaryNote:
+    "SmartProBonoIP helps you prepare organized materials. Partners provide their own services under their policies. Nothing here is legal advice from SmartProBonoIP.",
+  searchLabel: "Search partners",
+  searchPlaceholder: "Search by name, location, or service…",
+  emptyResults: "No partners match your filters. Try clearing a filter or browsing all verified partners.",
+  prepareBeforeContact: "Prepare before contacting",
+  prepareBeforeContactNote:
+    "You may want to organize your idea and timeline before reaching out — SmartProBonoIP can help you prepare materials to share if you choose.",
+  externalLinkConfirm:
+    "I understand I am leaving SmartProBonoIP to visit an external resource. No invention details will be sent automatically.",
+  sharedInfoNote:
+    "SmartProBonoIP does not automatically send your invention details, intake answers, or contact information to external partners.",
+  backToDirectory: "Back to partner directory",
+  officialDestination: "Official destination",
+  lastVerified: "Last verified",
+  eligibility: "Eligibility",
+  jurisdictions: "Geography & jurisdiction",
+  audiences: "Who they may help",
+  services: "What they may help with",
+  doesNotDo: "What they do not do",
+  whyMayHelp: "Why this may help",
+  availability: "Availability",
+  browseCta: "Browse verified IP support partners",
 } as const;
 
 export const COMMERCIALIZATION_COPY = {

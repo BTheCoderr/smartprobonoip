@@ -20,7 +20,6 @@ import {
 import { SIGNAL_CATALOG } from "./signals";
 import {
   buildDifferenceMap,
-  buildExpertHandoff,
   buildFollowUpPlan,
   buildIdeaSummaryFields,
   buildMaterialsChecklist,
@@ -39,6 +38,7 @@ import {
   PATENT_PREP_INTRO,
   TIMELINE_NOTE,
 } from "./packet";
+import { buildPatentProfessionalBrief } from "./paths/patent/handoff";
 import {
   buildPatentSearchPrep,
   buildSearchFirmQuestions,
@@ -658,13 +658,17 @@ export function buildPacketPdf(
   sectionHeading("Summary for reviewer");
   text(truncateForSummary(profile.ideaSummary, 2), { gap: 6 });
 
-  text("Readiness score (preparation only)", { size: 10, bold: true, gap: 4 });
+  text("Packet preparation score (not legal evaluation)", {
+    size: 10,
+    bold: true,
+    gap: 4,
+  });
   ensureSpace(20);
   drawReadinessGauge(doc, MARGIN, y, maxWidth - 48, review.readinessScore);
   y += 22;
   text(review.strengthenMessage, { size: 9, color: GRAY, gap: 6 });
 
-  text("Readiness score breakdown:", { size: 10, bold: true, gap: 2 });
+  text("Packet preparation breakdown:", { size: 10, bold: true, gap: 2 });
   for (const item of review.scoreBreakdown) {
     text(`${item.label}: ${item.score}/${item.max}`, { size: 9, gap: 1 });
   }
@@ -973,23 +977,40 @@ export function buildPacketPdf(
     checklistItem(item.available, item.label);
   }
 
-  // Expert handoff summary
-  const handoff = buildExpertHandoff(record);
-  heading("Expert handoff summary");
+  // Professional handoff brief (patent IDF-style)
+  const handoff = buildPatentProfessionalBrief(record);
+  heading("Professional handoff brief");
   text(
-    "For review by a patent agent, patent attorney, clinic, mentor, or innovation partner.",
-    { size: 9, color: GRAY, gap: 6 },
+    "IDF-style summary for a patent agent, patent attorney, clinic, mentor, or innovation partner. Preparation only — not a filing or legal opinion.",
+    { size: 9, color: GRAY, gap: 4 },
   );
-  labeledBlock("Idea", handoff.idea);
-  labeledBlock("Problem", handoff.problem);
-  labeledBlock("How it works", handoff.howItWorks);
-  labeledBlock("Main components", handoff.mainComponents);
-  labeledBlock("User-described differences", handoff.differences);
-  labeledBlock("Prototype status", handoff.prototypeStatus);
-  labeledBlock("Public sharing timeline", handoff.publicSharingTimeline);
-  labeledBlock("Materials available", handoff.materialsAvailable);
+  text(`Disclosure prep: ${handoff.disclosurePrepNote}`, {
+    size: 9,
+    color: TEAL_DARK,
+    gap: 2,
+  });
+  text(`Inventorship prep: ${handoff.inventorshipPrepNote}`, {
+    size: 9,
+    color: TEAL_DARK,
+    gap: 6,
+  });
+  if (handoff.preparationToolRecord) {
+    text("SmartProBonoIP preparation tool record", {
+      size: 10,
+      bold: true,
+      gap: 2,
+    });
+    text(handoff.preparationToolRecord, { size: 9, color: GRAY, gap: 2 });
+    text(
+      "This records how the preparation tool helped organize descriptions — not an inventorship or USPTO disclosure determination.",
+      { size: 8, color: TEAL_DARK, gap: 6 },
+    );
+  }
+  for (const section of handoff.idfSections) {
+    labeledBlock(section.heading, section.body);
+  }
   text("Questions for expert review", { size: 10, bold: true, gap: 2 });
-  bullets(handoff.expertQuestions.slice(0, 5), "?");
+  bullets(handoff.expertQuestions.slice(0, 6), "?");
 
   // Similar reference detail (worksheet, links, saved refs)
   startBodyPage(true);

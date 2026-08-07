@@ -29,6 +29,17 @@ export const DEMO_INVENTION: IntakeAnswers = {
   agreementStatus: "not_applicable",
   institutionRelationship: "no",
   brandName: "HydroSeal",
+  inventionTitle: "HydroSeal portable inline filter bottle",
+  preferredEmbodiment:
+    "Hiking bottle with twist-lock compostable dual-layer cartridge and silicone mouthpiece for inline sipping.",
+  alternativeVersions:
+    "Earlier screw-cap prototype; possible press-style cartridge variant for basecamp use.",
+  knownSimilarWork:
+    "LifeStraw bottles, Grayl press bottles, Sawyer squeeze filters — none with twist-lock compostable inline sipping cartridge.",
+  aiAssistance: "assisted",
+  aiAssistanceNotes:
+    "Used a generative writing tool to draft early marketing copy; filter mechanism, seal design, and prototype were human-designed and built.",
+  protectionPath: "patent",
   searchReadiness: {
     keyFeatures:
       "Inline dual-layer filtration while drinking, twist-lock replaceable cartridge, compostable cartridge material, no pumps or batteries.",

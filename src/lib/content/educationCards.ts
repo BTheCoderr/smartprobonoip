@@ -14,6 +14,30 @@ export const EDUCATION_CARDS: EducationCardContent[] = [
       "Professionals compare an idea against prior art to understand how it fits into what already exists. Finding something similar does not decide anything by itself; a professional reviews what it means.",
   },
   {
+    id: "public_disclosure_privacy",
+    title: "Why privacy and public disclosure notes matter",
+    shortAnswer:
+      "What you share publicly — and when — is information a patent professional often wants to review before broader disclosure or filing decisions.",
+    detail:
+      "SmartProBonoIP helps you record posts, pitches, demos, sales, and private showings with approximate dates. It does not decide whether a disclosure affects rights or starts a deadline. Keeping detailed invention information private until expert review is a common preparation practice.",
+  },
+  {
+    id: "ai_inventorship",
+    title: "AI tools and inventorship — what to capture",
+    shortAnswer:
+      "If generative AI helped draft, sketch, code, or explore an invention, note what the AI produced and what humans contributed. Inventorship questions are decided with a professional, not by this tool.",
+    detail:
+      "Offices have published guidance on AI-assisted inventions. Your packet should organize facts: who defined the problem, who chose the approach, who improved the result, and how AI was used. A registered patent agent or attorney can explain what those facts may mean.",
+  },
+  {
+    id: "idf_basics",
+    title: "What is an invention disclosure form?",
+    shortAnswer:
+      "An invention disclosure (IDF-style) packet organizes the story professionals often need: what was created, how it works, alternatives, sharing history, contributors, and materials.",
+    detail:
+      "Completing these fields prepares you for expert review. It is not a patent application and does not create legal protection by itself.",
+  },
+  {
     id: "pre_file_search",
     title: "What is a pre-filing search?",
     shortAnswer:

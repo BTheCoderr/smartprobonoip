@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordProjectEvent } from "@/lib/db/events";
 import {
   deleteResearchReference,
   getResearchWorkspace,
@@ -84,6 +85,13 @@ export async function POST(
         session,
         body.reference,
       );
+      await recordProjectEvent({
+        projectId,
+        pilotSessionId: session,
+        type: "research_reference_added",
+        source: "user",
+        dedupeKey: `reference:${saved.id}`,
+      });
       return NextResponse.json({ reference: saved });
     }
 

@@ -24,7 +24,7 @@ This sprint adds in-memory rate limiting, timing-safe partner secret comparison,
 | `GET/POST /api/research/[projectId]` | Owner session | CRUD saved references | `getResearchWorkspace` checks session | Yes | No | **80 / hour** per session | 404 if not owner |
 | `POST /api/compare-reference` | Owner session (via research flow) | Rule-based comparison | Session on parent project | No DB | No | **40 / 15 min** per IP | Comparison text only |
 | `POST /api/analytics/track` | Any client | Inserts sanitized event | Optional `projectId` (not cryptographically bound) | Yes | Metadata allowlist only | **150 / 15 min** per IP | Safe metadata only |
-| `GET /api/partner/metrics` | `x-partner-secret` header | Aggregated live metrics | Secret gate | Yes | No | **40 / 15 min** per IP | Aggregates only; no raw invention text |
+| `GET /api/partner/metrics` | `x-partner-secret` header | Aggregated live metrics | Secret gate | Yes | No | **40 / 15 min** per IP | Metrics + redacted record summaries; invention narratives omitted |
 | `GET /api/partner/export.csv` | `x-partner-secret` header | Live record summaries | Secret gate; demo excluded | Yes | No | **40 / 15 min** per IP | Signals/clarity/ownership flags; no raw descriptions |
 | `GET /api/partner/analytics` | `x-partner-secret` header | Event aggregates | Secret gate | Yes | No | **40 / 15 min** per IP | Aggregates only |
 | `GET /api/partner/feedback` | `x-partner-secret` header | Pilot feedback rows | Secret gate | Yes | Notes visible to secret holder by design | **40 / 15 min** per IP | Intended pilot reporting |

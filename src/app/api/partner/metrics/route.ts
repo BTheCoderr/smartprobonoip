@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { listLiveRecords, verifyPartnerSecret } from "@/lib/db/records";
 import { getResearchMetricsForLiveRecords } from "@/lib/db/research";
 import { computeMetrics } from "@/lib/metrics";
+import { redactRecordsForPartnerMetrics } from "@/lib/security/partnerRecordRedaction";
 import {
   GENERIC_UNAUTHORIZED,
   readPartnerSecretHeader,
@@ -25,5 +26,9 @@ export async function GET(request: Request) {
   const records = await listLiveRecords();
   const metrics = computeMetrics(records);
   const researchMetrics = await getResearchMetricsForLiveRecords();
-  return NextResponse.json({ records, metrics, researchMetrics });
+  return NextResponse.json({
+    records: redactRecordsForPartnerMetrics(records),
+    metrics,
+    researchMetrics,
+  });
 }

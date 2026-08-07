@@ -18,7 +18,7 @@ Copy this into Notion, Google Sheets, or Airtable. Same columns as the web track
 
 **Type:** `inventor` · `founder` · `attorney` · `IP analyst` · `org`
 
-**Source:** `Reddit` · `Nicole` · `Nathan` · `email` · `local`
+**Source:** `Reddit` · `warm_intro` · `referral` · `email` · `local`
 
 **Status:** `contacted` · `replied` · `testing` · `completed` · `feedback received`
 
@@ -37,7 +37,7 @@ Copy this into Notion, Google Sheets, or Airtable. Same columns as the web track
 | Name | Type | Source | Status | Packet completed | PDF downloaded | Main feedback | Follow-up needed | Permission to quote |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Example Inventor | inventor | local | testing | yes | yes | Wizard felt clear; wanted more sketch tips | Ask for quote after week 1 | no |
-| Example Clinic Lead | org | Nicole | replied | no | no | Wants handout for office hours | Send playbook + QR | no |
+| Example Clinic Lead | org | referral | replied | no | no | Wants handoff for office hours | Send playbook + QR | no |
 
 ## Related links
 
