@@ -27,11 +27,10 @@ export function formatCopyrightNotice() {
 export const BRAND = {
   umbrella: "SmartProBono",
   product: "SmartProBonoIP",
-  feature: "IP Readiness Checker",
-  tagline:
-    "Turn a messy invention idea into an organized IP Readiness Packet",
+  feature: "IP Readiness Platform",
+  tagline: "What are you trying to protect?",
   positioning:
-    "SmartProBonoIP helps inventors, founders, clinics, and innovation programs prepare clearer invention summaries, development timelines, similar-reference notes, and questions before expert review.",
+    "SmartProBonoIP is an IP Readiness Platform that helps inventors prepare clearer invention disclosures, sharing timelines, and professional handoff packets before expert review — starting with patents.",
   coreMessage:
     "A good idea should not die just because the first step is confusing.",
   mission:

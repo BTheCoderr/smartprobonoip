@@ -29,6 +29,23 @@ const ALLOWED_KEYS = new Set([
   "validationField",
   "eventCount",
   "clarityHelped",
+  "scopeName",
+  "restoredCount",
+  "inventionCount",
+  "sortMode",
+  "recommendationId",
+  "category",
+  "partnerId",
+  "projectId",
+  "feedbackValue",
+  "organizationType",
+  "serviceCategory",
+  "filterType",
+  "resultCount",
+  "fieldCount",
+  "referralId",
+  "referralStatus",
+  "memberRole",
 ]);
 
 const BLOCKED_KEY_PATTERN =

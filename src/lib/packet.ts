@@ -9,6 +9,10 @@ import {
 } from "./intakeValidation";
 import { resolveBrandName } from "./brandName";
 import { cleanText, preserveBrandInText } from "./textCleanup";
+import {
+  buildNextBestStepPlanForRecord,
+  planToLegacyStepStrings,
+} from "./routing";
 import type {
   AssetType,
   DevelopmentTimeline,
@@ -508,7 +512,7 @@ export function buildReadinessMetrics(
 
   return [
     { label: "Clarity Score", value: `${clarityBefore}, ${clarityAfter}` },
-    { label: "Packet Completion Score", value: `${packetCompletion}%` },
+    { label: "Packet field completion", value: `${packetCompletion}%` },
     { label: "Missing Info Count", value: missingInfoCount },
     { label: "Timeline Readiness", value: buildTimelineReadiness(record.developmentTimeline) },
     { label: "Materials Readiness", value: materialsReadiness },
@@ -525,54 +529,8 @@ export function buildNextBestSteps(
   record: ProjectRecord,
   savedReferenceCount = 0,
 ): string[] {
-  const { profile } = record;
-  const optionalGaps = deriveOptionalGaps(record, savedReferenceCount);
-  const coreMissing = profile.missingInfo;
-  const steps: string[] = [];
-
-  if (coreMissing.length >= 2) {
-    steps.push(
-      "Fill in core gaps — especially how your idea works and what makes it different.",
-    );
-  } else if (coreMissing.length === 1) {
-    steps.push(`Complete the remaining core item: ${coreMissing[0]}.`);
-  }
-
-  if (
-    optionalGaps.includes("Development timeline") ||
-    countFilledTimelineFields(record.developmentTimeline) < 3
-  ) {
-    steps.push("Fill in the development timeline.");
-  }
-
-  if (optionalGaps.includes("Public sharing details") || profile.publicDisclosure) {
-    steps.push("Clarify public sharing history.");
-  }
-
-  if (record.answers.assets.length === 0) {
-    steps.push(
-      "Attach or organize screenshots, wireframes, prototype notes, and customer feedback.",
-    );
-  } else if (
-    optionalGaps.includes("Testing notes") ||
-    optionalGaps.includes("Customer feedback / pitch notes")
-  ) {
-    steps.push(
-      "Attach or organize screenshots, wireframes, prototype notes, and customer feedback.",
-    );
-  }
-
-  if (savedReferenceCount === 0) {
-    steps.push(
-      "Save 1 to 3 similar references from Google Patents or USPTO search.",
-    );
-  }
-
-  steps.push(
-    "Bring this packet to an IP professional, clinic, PTRC, or mentor.",
-  );
-
-  return steps.map(cleanText);
+  const plan = buildNextBestStepPlanForRecord(record, savedReferenceCount);
+  return planToLegacyStepStrings(plan).map(cleanText);
 }
 
 export function buildNextBestAction(

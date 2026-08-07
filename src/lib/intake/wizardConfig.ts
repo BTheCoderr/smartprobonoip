@@ -8,16 +8,16 @@ import {
 export const WIZARD_STEPS = [
   {
     id: "idea",
-    label: "Your Idea",
+    label: "Invention basics",
     minutes: 4,
-    hint: "Plain language is enough — use examples if helpful. You can refine later.",
+    hint: "Plain-language disclosure of what you created — use examples if helpful. You can refine later.",
     skippable: false,
   },
   {
     id: "timeline",
-    label: "Timeline & Disclosures",
-    minutes: 2,
-    hint: "Rough dates and sharing history help professionals ask better questions — all optional here.",
+    label: "Disclosures & inventorship",
+    minutes: 3,
+    hint: "Sharing history, collaborators, and AI-assistance notes help professionals ask better questions — optional here.",
     skippable: true,
   },
   {
@@ -70,10 +70,12 @@ export function validateWizardStep(
 }
 
 export const READINESS_CHECKLIST = [
-  "Plain-language idea summary",
+  "Plain-language invention disclosure",
+  "Privacy & public disclosure notes",
+  "Inventorship / AI assistance notes",
   "Readiness snapshot & organization score",
   "Development timeline editor",
   "Materials checklist",
   "Similar reference search prep workspace",
-  "PDF download & Export for Attorney",
+  "Professional handoff brief (PDF & attorney export)",
 ] as const;

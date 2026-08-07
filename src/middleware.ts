@@ -1,8 +1,11 @@
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { applySecurityHeaders } from "@/lib/security/headers";
 
-export function middleware(request: NextRequest) {
+type CookieToSet = { name: string; value: string; options: CookieOptions };
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
@@ -12,7 +15,39 @@ export function middleware(request: NextRequest) {
     return new NextResponse(null, { status: 404 });
   }
 
-  const response = NextResponse.next();
+  let response = NextResponse.next({
+    request: { headers: request.headers },
+  });
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (
+    url &&
+    anonKey &&
+    (pathname.startsWith("/organization") || pathname.startsWith("/api/organization"))
+  ) {
+    const supabase = createServerClient(url, anonKey, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet: CookieToSet[]) {
+          for (const { name, value } of cookiesToSet) {
+            request.cookies.set(name, value);
+          }
+          response = NextResponse.next({
+            request: { headers: request.headers },
+          });
+          for (const { name, value, options } of cookiesToSet) {
+            response.cookies.set(name, value, options);
+          }
+        },
+      },
+    });
+    await supabase.auth.getUser();
+  }
+
   const host = request.nextUrl.hostname;
   const isLocal =
     host === "localhost" || host === "127.0.0.1" || host.endsWith(".local");
@@ -22,9 +57,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Apply security headers to app routes; skip Next internals and static files.
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

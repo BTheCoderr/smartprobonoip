@@ -1,3 +1,5 @@
+import type { InventionStatus } from "@/lib/ideas/types";
+
 export type ItemType =
   | "software"
   | "physical_product"
@@ -112,6 +114,13 @@ export interface SearchReadiness {
 
 export type NdaStatus = "yes" | "no" | "not_sure";
 
+/** How generative AI tools related to inventorship prep (educational notes only). */
+export type AiAssistance =
+  | "none"
+  | "assisted"
+  | "generated_portions"
+  | "not_sure";
+
 export interface DisclosureEvent {
   id: string;
   kind?: "private" | "public" | "not_sure";
@@ -156,6 +165,19 @@ export interface IntakeAnswers {
   brandName?: string;
   searchReadiness?: SearchReadiness;
   disclosureEvents?: DisclosureEvent[];
+  /** Optional short title for professional IDF-style handoff */
+  inventionTitle?: string;
+  /** Preferred / best-described version of the invention */
+  preferredEmbodiment?: string;
+  /** Known alternatives, variations, or other ways it could work */
+  alternativeVersions?: string;
+  /** Similar products, patents, or publications the inventor already knows */
+  knownSimilarWork?: string;
+  /** Whether generative AI tools assisted development (prep notes only) */
+  aiAssistance?: AiAssistance;
+  aiAssistanceNotes?: string;
+  /** Which protection path created this record (defaults to patent in Phase 1) */
+  protectionPath?: "patent" | "trademark" | "copyright" | "trade_secret" | "unsure";
 }
 
 export type IpSignal =
@@ -224,6 +246,13 @@ export interface ReadinessProfile {
 export interface ProjectRecord {
   id: string;
   createdAt: string;
+  /** Last write to the invention. Absent on records created before the workspace. */
+  updatedAt?: string;
+  /** Stored invention title. Falls back to a label derived from answers when absent. */
+  title?: string | null;
+  /** Workspace lifecycle status. Absent records are treated as packet_generated. */
+  status?: InventionStatus;
+  archivedAt?: string | null;
   answers: IntakeAnswers;
   profile: ReadinessProfile;
   preClarity: number;

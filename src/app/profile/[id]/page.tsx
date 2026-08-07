@@ -13,6 +13,8 @@ import { Card } from "@/components/ui/Card";
 import { ClarityScale } from "@/components/intake/fields";
 import { getStore } from "@/lib/store";
 import { AttorneyExportModal } from "@/components/profile/AttorneyExportModal";
+import { InventionDocumentsCard } from "@/components/portfolio/InventionDocumentsCard";
+import { InventionTimelineCard } from "@/components/portfolio/InventionTimelineCard";
 import { downloadPacketPdf } from "@/lib/pdf";
 import { ExportGuidance } from "@/components/profile/ExportGuidance";
 import { loadWorkspace } from "@/lib/research/client";
@@ -205,6 +207,12 @@ export default function ProfilePage({
                         savedReferenceCount: refs.length,
                       },
                     });
+                    if (!record.isDemo) {
+                      await getStore().recordDocumentGenerated(record.id, {
+                        kind: "readiness_packet",
+                        format: "pdf",
+                      });
+                    }
                     setShowExportGuidance(true);
                   })();
                 }}
@@ -236,6 +244,20 @@ export default function ProfilePage({
             onTimelineSaved={handleTimelineSaved}
           />
         )}
+
+        {!editing ? (
+          <InventionTimelineCard
+            inventionId={record.id}
+            isDemo={record.isDemo ?? false}
+          />
+        ) : null}
+
+        {!editing ? (
+          <InventionDocumentsCard
+            record={record}
+            savedReferences={savedReferences}
+          />
+        ) : null}
 
         {!editing ? (
           <PaperCard className="p-5 sm:p-6">
@@ -315,7 +337,11 @@ export default function ProfilePage({
         ) : null}
 
         {!editing ? (
-          <ResourceRoutingCards record={record} feedback={feedbackInput} />
+          <ResourceRoutingCards
+            record={record}
+            feedback={feedbackInput}
+            savedReferenceCount={savedReferences.length}
+          />
         ) : null}
       </div>
 

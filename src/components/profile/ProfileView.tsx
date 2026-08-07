@@ -24,18 +24,18 @@ import { SIGNAL_CATALOG } from "@/lib/signals";
 import { SignalCard } from "@/components/ui/design";
 import {
   buildDifferenceMap,
-  buildExpertHandoff,
   buildFollowUpPlan,
   buildIdeaSummaryFields,
   buildMaterialsChecklist,
   buildMissingInfoStatus,
-  buildNextBestSteps,
   buildPatentPrepChecklist,
   buildReadinessMetrics,
   buildReadinessSnapshot,
   DIFFERENCE_MAP_NOTE,
   PATENT_PREP_INTRO,
 } from "@/lib/packet";
+import { buildPatentProfessionalBrief } from "@/lib/paths/patent/handoff";
+import { AI_PREP_TOOL_DISCLAIMER } from "@/lib/paths/patent/preparationRecord";
 import { getTriggeredMiniPrepSections } from "@/lib/miniPrepSections";
 import { MiniPrepSectionCard } from "@/components/profile/MiniPrepSectionCard";
 import { DevelopmentTimelineEditor } from "@/components/profile/DevelopmentTimelineEditor";
@@ -68,10 +68,9 @@ export function ProfileView({
   const patentPrep = buildPatentPrepChecklist(record);
   const missingStatus = buildMissingInfoStatus(record, savedReferenceCount);
   const readinessMetrics = buildReadinessMetrics(record, savedReferenceCount);
-  const nextBestSteps = buildNextBestSteps(record, savedReferenceCount);
   const differenceMap = buildDifferenceMap(record);
   const materials = buildMaterialsChecklist(record);
-  const handoff = buildExpertHandoff(record);
+  const handoff = buildPatentProfessionalBrief(record);
   const searchPrep = buildPatentSearchPrep(record);
   const searchFirmQuestions = buildSearchFirmQuestions(record);
   const miniPrepSections = getTriggeredMiniPrepSections(record);
@@ -209,29 +208,6 @@ export function ProfileView({
         </dl>
         </div>
       </div>
-
-      <Card
-        variant="elevated"
-        className="border-teal-200/80 bg-gradient-to-br from-teal-50/50 via-white to-cream"
-      >
-        <CardHeader
-          title={PACKET_COPY.nextBestStepTitle}
-          subtitle={profile.suggestedNextStep}
-        />
-        <ol className="space-y-2">
-          {nextBestSteps.map((step, idx) => (
-            <li
-              key={step}
-              className="flex gap-3 text-base leading-relaxed text-navy-800"
-            >
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">
-                {idx + 1}
-              </span>
-              {step}
-            </li>
-          ))}
-        </ol>
-      </Card>
 
       <div className="paper-card overflow-hidden p-0">
         <div className="border-b border-dashed border-mist-200 px-6 py-4 sm:px-8">
@@ -581,7 +557,7 @@ export function ProfileView({
             <p className="mt-3 text-xs text-amber-700">{DIFFERENCE_MAP_NOTE}</p>
           </Card>
 
-          <Card>
+          <Card id="materials-checklist">
             <CardHeader
               title="Drawings and materials checklist"
               subtitle={PACKET_COPY.materialsChecklistSubtitle}
@@ -607,34 +583,35 @@ export function ProfileView({
 
           <Card className="border-teal-200">
             <CardHeader
-              title="Expert handoff summary"
-              subtitle="For review by a patent agent, attorney, clinic, mentor, or innovation partner."
+              title="Professional handoff brief"
+              subtitle="IDF-style summary for a patent agent, attorney, clinic, mentor, or innovation partner. Preparation only — not a filing or legal opinion."
             />
+            <div className="mb-4 space-y-2 rounded-lg border border-warm-200/70 bg-warm-50/40 px-3 py-3 text-xs leading-relaxed text-navy-700">
+              <p>
+                <span className="font-semibold text-navy-800">Disclosure prep: </span>
+                {handoff.disclosurePrepNote}
+              </p>
+              <p>
+                <span className="font-semibold text-navy-800">Inventorship prep: </span>
+                {handoff.inventorshipPrepNote}
+              </p>
+            </div>
+            {handoff.preparationToolRecord ? (
+              <div className="mb-4 rounded-lg border border-teal-200/80 bg-teal-50/40 px-3 py-3 text-xs leading-relaxed text-navy-700">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-teal-800">
+                  SmartProBonoIP preparation tool record
+                </p>
+                <p className="mt-1">{handoff.preparationToolRecord}</p>
+                <p className="mt-2 text-navy-500">{AI_PREP_TOOL_DISCLAIMER}</p>
+              </div>
+            ) : null}
             <dl className="space-y-3 text-sm">
-              {[
-                { label: "Idea", value: handoff.idea },
-                { label: "Problem", value: handoff.problem },
-                { label: "How it works", value: handoff.howItWorks },
-                { label: "Main components", value: handoff.mainComponents },
-                {
-                  label: "User-described differences",
-                  value: handoff.differences,
-                },
-                { label: "Prototype status", value: handoff.prototypeStatus },
-                {
-                  label: "Public sharing timeline",
-                  value: handoff.publicSharingTimeline,
-                },
-                {
-                  label: "Materials available",
-                  value: handoff.materialsAvailable,
-                },
-              ].map((item) => (
-                <div key={item.label}>
+              {handoff.idfSections.map((item) => (
+                <div key={item.heading}>
                   <dt className="text-xs font-semibold uppercase tracking-wide text-navy-500">
-                    {item.label}
+                    {item.heading}
                   </dt>
-                  <dd className="mt-0.5 text-navy-700">{item.value}</dd>
+                  <dd className="mt-0.5 text-navy-700">{item.body}</dd>
                 </div>
               ))}
             </dl>

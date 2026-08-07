@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
+import { recordProjectEvent } from "@/lib/db/events";
 import { getRecordById, updateDevelopmentTimeline } from "@/lib/db/records";
-import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
+import {
+  GENERIC_SERVER_ERROR,
+  isValidPilotSessionId,
+  readPilotSession,
+} from "@/lib/security/api";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 import { countFilledTimelineFields } from "@/lib/packet";
@@ -16,8 +21,8 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const pilotSession = request.headers.get("x-pilot-session");
-  if (!pilotSession) {
+  const pilotSession = readPilotSession(request);
+  if (!isValidPilotSessionId(pilotSession)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -64,6 +69,14 @@ export async function PATCH(
         demo: record.isDemo ?? false,
         filledTimelineFields: countFilledTimelineFields(record.developmentTimeline),
       },
+    });
+
+    await recordProjectEvent({
+      projectId: id,
+      pilotSessionId: pilotSession,
+      type: "timeline_updated",
+      source: "user",
+      dedupeKey: "timeline_updated",
     });
 
     return NextResponse.json({ record });

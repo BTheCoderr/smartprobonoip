@@ -66,7 +66,7 @@ export function DevelopmentTimelineEditor({
   }
 
   return (
-    <Card>
+    <Card id="development-timeline">
       <CardHeader title="Development timeline" subtitle={TIMELINE_NOTE} />
       <p className="mb-4 text-xs leading-relaxed text-navy-500">
         Approximate dates are fine. This helps organize your development history for

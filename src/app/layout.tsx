@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SmartProBonoIP — IP Readiness Checker",
+  title: "SmartProBonoIP — IP Readiness Platform",
   description:
-    "Turn a messy invention idea into an organized IP Readiness Packet before expert review. Preparation only — not legal advice.",
+    "What are you trying to protect? Prepare invention disclosures and professional handoff packets before expert review. Patent readiness available now — preparation only, not legal advice.",
 };
 
 export default function RootLayout({

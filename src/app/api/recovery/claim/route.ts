@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
-import { claimRecoveryToken } from "@/lib/db/recovery";
+import {
+  RecoveryClaimError,
+  claimRecoveryToken,
+} from "@/lib/db/recovery";
 import {
   isValidPilotSessionId,
   readPilotSession,
 } from "@/lib/security/api";
+import {
+  RECOVERY_CLAIM_INVALID_MESSAGE,
+} from "@/lib/security/recoveryClaim";
 import {
   limitErrorResponse,
   readJsonWithLimit,
@@ -34,10 +40,13 @@ export async function POST(request: Request) {
     const body = (await readJsonWithLimit(request)) as { token?: string };
     const token = body.token?.trim();
     if (!token) {
-      return NextResponse.json({ error: "Missing recovery token" }, { status: 400 });
+      return NextResponse.json(
+        { error: RECOVERY_CLAIM_INVALID_MESSAGE },
+        { status: 400 },
+      );
     }
 
-    const record = await claimRecoveryToken({
+    const { record, scope, restoredCount } = await claimRecoveryToken({
       token,
       pilotSessionId: pilotSession,
     });
@@ -50,12 +59,25 @@ export async function POST(request: Request) {
       partnerName: record.partnerName,
       source: record.source,
       campaign: record.campaign,
+      metadata: { scopeName: scope, restoredCount },
     });
 
-    return NextResponse.json({ record });
+    return NextResponse.json({ record, scope, restoredCount });
   } catch (err) {
     const oversized = limitErrorResponse(err);
     if (oversized) return oversized;
+
+    if (err instanceof RecoveryClaimError) {
+      await trackServerEvent("recovery_claim_failed", {
+        pilotSessionId: pilotSession,
+        anonymousId: request.headers.get("x-anonymous-id"),
+        metadata: {
+          errorCode:
+            err.status === "already_used" ? "already_used" : "claim_failed",
+        },
+      });
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
 
     logServerError("recovery.claim", err, { route: "recovery/claim" });
     await trackServerEvent("recovery_claim_failed", {
@@ -64,7 +86,7 @@ export async function POST(request: Request) {
       metadata: { errorCode: "claim_failed" },
     });
     return NextResponse.json(
-      { error: "Invalid or expired recovery link" },
+      { error: RECOVERY_CLAIM_INVALID_MESSAGE },
       { status: 400 },
     );
   }

@@ -8,8 +8,8 @@ export const PILOT_OUTREACH_TYPES = [
 
 export const PILOT_OUTREACH_SOURCES = [
   "Reddit",
-  "Nicole",
-  "Nathan",
+  "warm_intro",
+  "referral",
   "email",
   "local",
 ] as const;

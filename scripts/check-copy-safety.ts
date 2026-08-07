@@ -15,6 +15,12 @@ import {
 import { PACKET_COPY, INTAKE_COPY } from "../src/lib/copy";
 import { buildSearchFirmQuestions } from "../src/lib/patentSearchPrep";
 import { assertPacketContentSafe } from "../src/lib/packet";
+import {
+  buildNextBestStepPlanForRecord,
+  planToLegacyStepStrings,
+  PARTNER_REGISTRY,
+  PUBLIC_DIRECTORY_PARTNER_IDS,
+} from "../src/lib/routing";
 import { generateProfile } from "../src/lib/generateProfile";
 import type { IntakeAnswers, ProjectRecord } from "../src/lib/types";
 
@@ -95,6 +101,33 @@ for (const question of buildSearchFirmQuestions(sampleRecord)) {
 
 // Existing built-in safety assertions (throws on failure).
 assertPacketContentSafe();
+
+const routingPlan = buildNextBestStepPlanForRecord(sampleRecord, 0);
+check(
+  "routing plan copy",
+  [...routingPlan.primary, ...routingPlan.secondary]
+    .map((rec) => `${rec.title} ${rec.body}`)
+    .join(" \n "),
+);
+for (const step of planToLegacyStepStrings(routingPlan)) {
+  check("routing legacy step", step);
+}
+
+for (const partnerId of PUBLIC_DIRECTORY_PARTNER_IDS) {
+  const partner = PARTNER_REGISTRY[partnerId];
+  if (!partner) continue;
+  check(`partner ${partnerId} description`, partner.description);
+  check(`partner ${partnerId} disclaimer`, partner.disclaimer);
+  if (partner.eligibilityNotes) {
+    check(`partner ${partnerId} eligibility`, partner.eligibilityNotes);
+  }
+}
+
+check("partner directory copy", [
+  "Verified IP support partners",
+  "not endorsements or referrals",
+  "Verified means we checked the official destination",
+].join(" \n "));
 
 if (failures.length > 0) {
   console.error("Forbidden language detected in:");

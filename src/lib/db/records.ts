@@ -1,9 +1,11 @@
 import "server-only";
+import { isInventionStatus } from "@/lib/ideas/status";
+import { normalizeInventionTitle, resolveInventionTitle } from "@/lib/ideas/title";
+import type { InventionStatus, InventionUpdate } from "@/lib/ideas/types";
 import { RESOURCE_LABELS } from "@/lib/labels";
 import { shouldTriggerOwnershipSignal } from "@/lib/ownership";
 import {
   DEVELOPMENT_TIMELINE_FIELDS,
-  getIdeaLabel,
   sanitizeTimelineValue,
 } from "@/lib/packet";
 import { DEFAULT_FOLLOW_UP } from "@/lib/records";
@@ -30,6 +32,9 @@ interface ProjectRow {
   location: string | null;
   generator: string;
   created_at: string;
+  updated_at: string | null;
+  status: string | null;
+  archived_at: string | null;
   pilot_session_id: string;
   is_demo: boolean;
   partner_slug: string | null;
@@ -50,7 +55,8 @@ interface ProjectRow {
 }
 
 const NESTED_SELECT =
-  "id, title, item_type, public_disclosure, location, generator, created_at, pilot_session_id, is_demo, " +
+  "id, title, item_type, public_disclosure, location, generator, created_at, updated_at, " +
+  "status, archived_at, pilot_session_id, is_demo, " +
   "partner_slug, partner_name, source, campaign, development_timeline, " +
   "smartprobonoip_answers(payload, pre_clarity_score), smartprobonoip_profiles(payload), " +
   "smartprobonoip_impact_metrics(pre_clarity_score, post_clarity_score), " +
@@ -165,6 +171,10 @@ export function rowToRecord(row: ProjectRow): ProjectRecord | null {
   return {
     id: row.id,
     createdAt: row.created_at,
+    updatedAt: row.updated_at ?? row.created_at,
+    title: row.title,
+    status: isInventionStatus(row.status) ? row.status : "packet_generated",
+    archivedAt: row.archived_at,
     answers,
     profile: {
       ...profile,
@@ -203,7 +213,7 @@ export async function createRecord(input: {
   const projectInsert: Record<string, unknown> = {
     venture_id: ventureId,
     pilot_session_id: pilotSessionId,
-    title: getIdeaLabel(answers),
+    title: resolveInventionTitle(answers),
     item_type: answers.itemType,
     public_disclosure: profile.publicDisclosure,
     location: answers.location || null,
@@ -276,9 +286,15 @@ export async function createRecord(input: {
     }),
   );
 
+  const createdAt = (project.created_at as string) ?? new Date().toISOString();
+
   return {
     id: projectId,
-    createdAt: (project.created_at as string) ?? new Date().toISOString(),
+    createdAt,
+    updatedAt: createdAt,
+    title: resolveInventionTitle(answers),
+    status: "packet_generated",
+    archivedAt: null,
     answers,
     profile,
     preClarity,
@@ -305,6 +321,83 @@ export async function getRecordById(
   const { data, error } = await query.maybeSingle();
   if (error || !data) return null;
   return rowToRecord(data as unknown as ProjectRow);
+}
+
+/** Every invention belonging to one pilot session, newest first. */
+export async function listRecordsForSession(
+  pilotSessionId: string,
+): Promise<ProjectRecord[]> {
+  const sb = getSupabaseService();
+  const { data, error } = await sb
+    .from("smartprobonoip_projects")
+    .select(NESTED_SELECT)
+    .eq("pilot_session_id", pilotSessionId)
+    .order("created_at", { ascending: false });
+  if (error || !data) return [];
+  return (data as unknown as ProjectRow[])
+    .map(rowToRecord)
+    .filter((r): r is ProjectRecord => r !== null);
+}
+
+/** Project ids owned by a session. Cheaper than loading full records. */
+export async function listProjectIdsForSession(
+  pilotSessionId: string,
+): Promise<string[]> {
+  const sb = getSupabaseService();
+  const { data, error } = await sb
+    .from("smartprobonoip_projects")
+    .select("id")
+    .eq("pilot_session_id", pilotSessionId);
+  if (error || !data) return [];
+  return (data as { id: string }[]).map((row) => row.id);
+}
+
+export interface InventionUpdateResult {
+  record: ProjectRecord;
+  titleChanged: boolean;
+  statusChanged: boolean;
+  previousStatus: InventionStatus;
+}
+
+export async function updateInvention(
+  id: string,
+  pilotSessionId: string,
+  update: InventionUpdate,
+): Promise<InventionUpdateResult> {
+  const owned = await getRecordById(id, pilotSessionId);
+  if (!owned) throw new Error("Record not found");
+
+  const previousStatus: InventionStatus = owned.status ?? "packet_generated";
+  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+  const nextTitle =
+    update.title === undefined ? null : normalizeInventionTitle(update.title);
+  const titleChanged =
+    nextTitle !== null && nextTitle !== resolveInventionTitle(owned.answers, owned.title);
+  if (titleChanged) {
+    patch.title = nextTitle;
+  }
+
+  const statusChanged =
+    update.status !== undefined && update.status !== previousStatus;
+  if (statusChanged) {
+    patch.status = update.status;
+    patch.archived_at =
+      update.status === "archived" ? new Date().toISOString() : null;
+  }
+
+  const sb = getSupabaseService();
+  const { error } = await sb
+    .from("smartprobonoip_projects")
+    .update(patch)
+    .eq("id", id)
+    .eq("pilot_session_id", pilotSessionId);
+  if (error) throw new Error(error.message);
+
+  const record = await getRecordById(id, pilotSessionId);
+  if (!record) throw new Error("Record not found");
+
+  return { record, titleChanged, statusChanged, previousStatus };
 }
 
 export async function listLiveRecords(): Promise<ProjectRecord[]> {
@@ -359,7 +452,7 @@ export async function updateProfile(
     sb
       .from("smartprobonoip_projects")
       .update({
-        title: getIdeaLabel(owned.answers),
+        title: resolveInventionTitle(owned.answers, owned.title),
         public_disclosure: profile.publicDisclosure,
         generator: profile.generator,
         updated_at: new Date().toISOString(),
@@ -370,6 +463,73 @@ export async function updateProfile(
 
   if (profileRes.error) throw new Error(profileRes.error.message);
   if (projectRes.error) throw new Error(projectRes.error.message);
+}
+
+/**
+ * Replace intake answers + regenerated profile on an existing invention.
+ * Used by /start?record= resume — same store path as create, not a parallel draft.
+ */
+export async function updateAnswersAndProfile(
+  id: string,
+  pilotSessionId: string,
+  input: {
+    answers: IntakeAnswers;
+    profile: ReadinessProfile;
+    preClarity: number;
+  },
+): Promise<ProjectRecord> {
+  const owned = await getRecordById(id, pilotSessionId);
+  if (!owned) throw new Error("Record not found");
+
+  const sb = getSupabaseService();
+  const { answers, profile, preClarity } = input;
+  const now = new Date().toISOString();
+
+  const [answersRes, profileRes, projectRes, metricsRes] = await Promise.all([
+    sb
+      .from("smartprobonoip_answers")
+      .update({
+        ...answersToColumns(answers),
+        pre_clarity_score: preClarity,
+        updated_at: now,
+      })
+      .eq("project_id", id),
+    sb
+      .from("smartprobonoip_profiles")
+      .update({
+        ...profileToColumns(profile),
+        updated_at: now,
+      })
+      .eq("project_id", id),
+    sb
+      .from("smartprobonoip_projects")
+      .update({
+        title: resolveInventionTitle(answers, owned.title),
+        item_type: answers.itemType,
+        public_disclosure: profile.publicDisclosure,
+        generator: profile.generator,
+        location: answers.location || null,
+        updated_at: now,
+      })
+      .eq("id", id)
+      .eq("pilot_session_id", pilotSessionId),
+    sb
+      .from("smartprobonoip_impact_metrics")
+      .update({
+        pre_clarity_score: preClarity,
+        updated_at: now,
+      })
+      .eq("project_id", id),
+  ]);
+
+  if (answersRes.error) throw new Error(answersRes.error.message);
+  if (profileRes.error) throw new Error(profileRes.error.message);
+  if (projectRes.error) throw new Error(projectRes.error.message);
+  if (metricsRes.error) throw new Error(metricsRes.error.message);
+
+  const record = await getRecordById(id, pilotSessionId);
+  if (!record) throw new Error("Record not found");
+  return record;
 }
 
 function sanitizeDevelopmentTimeline(

@@ -12,6 +12,8 @@ import {
 } from "@/lib/attorneyExport";
 import { loadWorkspace } from "@/lib/research/client";
 import { trackEvent } from "@/lib/analytics/client";
+import { getStore } from "@/lib/store";
+import type { DocumentGeneration } from "@/lib/ideas/types";
 import type { SavedReference } from "@/lib/research/types";
 import type { ProjectRecord } from "@/lib/types";
 
@@ -130,6 +132,31 @@ export function AttorneyExportModal({
         exported.push("CSV");
       }
 
+      const generated: DocumentGeneration[] = [
+        includePdf ? { kind: "readiness_packet", format: "pdf" } : null,
+        includeCondensedPdf ? { kind: "attorney_brief", format: "pdf" } : null,
+        includeJson ? { kind: "attorney_export", format: "json" } : null,
+        includeCsv ? { kind: "attorney_export", format: "csv" } : null,
+      ].filter((entry): entry is DocumentGeneration => entry !== null);
+
+      if (!record.isDemo && generated.length > 0) {
+        const store = getStore();
+        await Promise.all(
+          generated.map((generation) =>
+            store.recordDocumentGenerated(record.id, generation),
+          ),
+        );
+
+        // Preparing a handoff moves the invention forward, but never overrides a
+        // status the inventor has already set past this point.
+        const status = record.status ?? "packet_generated";
+        if (status === "created" || status === "packet_generated" || status === "researching") {
+          await store
+            .updateInvention(record.id, { status: "professional_review" })
+            .catch(() => undefined);
+        }
+      }
+
       trackEvent("attorney_export_completed", {
         projectId: record.id,
         metadata: {
@@ -202,7 +229,7 @@ export function AttorneyExportModal({
               type="text"
               value={exportedFor}
               onChange={(event) => setExportedFor(event.target.value)}
-              placeholder="name@firm.com or Feeney IP Base"
+              placeholder="name@firm.com or Example IP Firm"
               className="mt-1 w-full rounded-lg border border-mist-300 px-3 py-2"
             />
           </label>

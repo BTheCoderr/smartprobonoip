@@ -2,6 +2,7 @@ import { INTAKE_COPY } from "@/lib/copy";
 import {
   AGREEMENT_STATUS_OPTIONS,
   AGREEMENT_TYPE_OPTIONS,
+  AI_ASSISTANCE_OPTIONS,
   CONTRIBUTOR_HELP_OPTIONS,
   CONTRIBUTOR_INVOLVEMENT_OPTIONS,
   INSTITUTION_RELATIONSHIP_OPTIONS,
@@ -10,6 +11,7 @@ import {
 import type {
   AgreementStatus,
   AgreementType,
+  AiAssistance,
   ContributorHelpType,
   ContributorInvolvement,
   InstitutionRelationship,
@@ -17,6 +19,7 @@ import type {
   SharingChannel,
 } from "@/lib/types";
 import { getEducationCards } from "@/lib/content/educationCards";
+import { getPatentEducationTopic } from "@/lib/paths/patent/education";
 import { EducationCardList } from "@/components/ui/EducationCard";
 import { DisclosureEventsEditor } from "../DisclosureEventsEditor";
 import { CheckboxGroup, RadioGroup, TextField } from "../fields";
@@ -36,11 +39,36 @@ export function StepTimelineDisclosures({
   onUpdate: <K extends keyof IntakeAnswers>(key: K, value: IntakeAnswers[K]) => void;
   onToggleSharing: (value: SharingChannel) => void;
 }) {
+  const disclosureTopic = getPatentEducationTopic("privacy_public_disclosure");
+  const aiTopic = getPatentEducationTopic("ai_inventorship");
+
   return (
     <div className="space-y-6 sm:space-y-7">
       <div className="rounded-md border border-warm-200/80 bg-warm-50/40 px-4 py-3 text-sm leading-relaxed text-navy-700">
         {INTAKE_COPY.wizard.timelineNote}
       </div>
+
+      {disclosureTopic ? (
+        <details className="rounded-md border border-warm-200/70 bg-white px-4 py-3" open>
+          <summary className="cursor-pointer text-sm font-semibold text-navy-900">
+            {disclosureTopic.title}
+          </summary>
+          <p className="mt-2 text-sm leading-relaxed text-navy-600">
+            {disclosureTopic.summary}
+          </p>
+          <ul className="mt-3 space-y-1.5 text-sm text-navy-700">
+            {disclosureTopic.points.map((point) => (
+              <li key={point} className="flex gap-2">
+                <span className="text-warm-500">•</span>
+                {point}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs leading-relaxed text-navy-500">
+            {disclosureTopic.safetyNote}
+          </p>
+        </details>
+      ) : null}
 
       <CheckboxGroup<SharingChannel>
         label="Have you shared your idea publicly?"
@@ -136,9 +164,61 @@ export function StepTimelineDisclosures({
         </div>
       </div>
 
+      <div className="rounded-md border border-dashed border-teal-200/80 bg-teal-50/30 p-4 sm:p-5">
+        <p className="section-kicker text-teal-700">
+          {INTAKE_COPY.wizard.aiInventorshipTitle}
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-navy-600">
+          {INTAKE_COPY.wizard.aiInventorshipHint}
+        </p>
+        {aiTopic ? (
+          <details className="mt-3 rounded-md border border-teal-100 bg-white/80 px-3 py-2">
+            <summary className="cursor-pointer text-sm font-medium text-navy-800">
+              Learn more about AI tools and inventorship
+            </summary>
+            <p className="mt-2 text-sm leading-relaxed text-navy-600">
+              {aiTopic.summary}
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-navy-700">
+              {aiTopic.points.map((point) => (
+                <li key={point} className="flex gap-2">
+                  <span className="text-teal-500">•</span>
+                  {point}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs leading-relaxed text-navy-500">
+              {aiTopic.safetyNote}
+            </p>
+          </details>
+        ) : null}
+        <div className="mt-5 space-y-5">
+          <RadioGroup<AiAssistance>
+            label="Did generative AI tools help with this invention?"
+            options={AI_ASSISTANCE_OPTIONS}
+            value={answers.aiAssistance ?? "none"}
+            onChange={(v) => onUpdate("aiAssistance", v)}
+          />
+          {answers.aiAssistance &&
+          answers.aiAssistance !== "none" ? (
+            <TextField
+              label="AI assistance notes (optional)"
+              hint="What the AI produced, what humans decided or changed, and who directed the work — facts only."
+              value={answers.aiAssistanceNotes ?? ""}
+              onChange={(v) => onUpdate("aiAssistanceNotes", v)}
+              rows={3}
+            />
+          ) : null}
+        </div>
+      </div>
+
       <EducationCardList
         title="Quick explainer"
-        cards={getEducationCards(["patent_attorney_role"])}
+        cards={getEducationCards([
+          "public_disclosure_privacy",
+          "ai_inventorship",
+          "patent_attorney_role",
+        ])}
       />
     </div>
   );

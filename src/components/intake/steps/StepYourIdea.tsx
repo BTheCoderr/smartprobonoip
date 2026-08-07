@@ -4,6 +4,7 @@ import { useState } from "react";
 import { INTAKE_COPY } from "@/lib/copy";
 import { ITEM_TYPE_OPTIONS } from "@/lib/labels";
 import type { IntakeAnswers, ItemType } from "@/lib/types";
+import { getPatentEducationTopic } from "@/lib/paths/patent/education";
 import { SelectField, TextField } from "../fields";
 
 export function StepYourIdea({
@@ -18,16 +19,55 @@ export function StepYourIdea({
       Boolean(
         answers.problemSolved.trim() ||
           answers.mainParts.trim() ||
-          answers.whatDifferent.trim(),
+          answers.whatDifferent.trim() ||
+          answers.preferredEmbodiment?.trim() ||
+          answers.alternativeVersions?.trim() ||
+          answers.knownSimilarWork?.trim() ||
+          answers.inventionTitle?.trim(),
       ),
   );
 
+  const idfTopic = getPatentEducationTopic("idf_basics");
+
   return (
     <div className="space-y-6 sm:space-y-7">
-      <p className="rounded-md border border-teal-200/80 bg-teal-50/40 px-4 py-3 text-sm leading-relaxed text-navy-700">
-        {INTAKE_COPY.wizard.ideaCoreNote}
-      </p>
+      <div className="rounded-md border border-teal-200/80 bg-teal-50/40 px-4 py-3 text-sm leading-relaxed text-navy-700">
+        <p className="font-medium text-navy-900">
+          {INTAKE_COPY.wizard.idfFramingTitle}
+        </p>
+        <p className="mt-1">{INTAKE_COPY.wizard.ideaCoreNote}</p>
+      </div>
 
+      {idfTopic ? (
+        <details className="rounded-md border border-dashed border-mist-200 bg-cream/50 px-4 py-3">
+          <summary className="cursor-pointer text-sm font-medium text-navy-800">
+            Why this looks like an invention disclosure form
+          </summary>
+          <p className="mt-2 text-sm leading-relaxed text-navy-600">
+            {idfTopic.summary}
+          </p>
+          <ul className="mt-3 space-y-1 text-sm text-navy-700">
+            {idfTopic.points.slice(0, 5).map((point) => (
+              <li key={point} className="flex gap-2">
+                <span className="text-navy-400">•</span>
+                {point}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs leading-relaxed text-navy-500">
+            {idfTopic.safetyNote}
+          </p>
+        </details>
+      ) : null}
+
+      <TextField
+        label="Invention title (optional)"
+        hint="A short working title for your packet — you can change it later."
+        value={answers.inventionTitle ?? ""}
+        onChange={(v) => onUpdate("inventionTitle", v)}
+        example="HydroSeal portable inline filter bottle"
+        rows={1}
+      />
       <TextField
         label="What did you create?"
         hint="One or two sentences in plain language."
@@ -72,7 +112,9 @@ export function StepYourIdea({
         >
           <span>
             <span className="font-medium text-navy-700">
-              {showOptional ? "Hide optional details" : "Add optional details"}
+              {showOptional
+                ? "Hide optional disclosure details"
+                : "Add optional disclosure details"}
             </span>
             <span className="mt-0.5 block text-xs font-normal text-navy-500">
               {INTAKE_COPY.wizard.ideaOptionalNote}
@@ -99,11 +141,35 @@ export function StepYourIdea({
               rows={2}
             />
             <TextField
+              label="Preferred or best-described version"
+              hint="If you have a favorite design or working prototype, describe that version."
+              value={answers.preferredEmbodiment ?? ""}
+              onChange={(v) => onUpdate("preferredEmbodiment", v)}
+              example="The hiking bottle with the twist-lock compostable cartridge and silicone mouthpiece."
+              rows={2}
+            />
+            <TextField
+              label="Alternatives and variations"
+              hint="Other ways it could work, materials you considered, or earlier designs."
+              value={answers.alternativeVersions ?? ""}
+              onChange={(v) => onUpdate("alternativeVersions", v)}
+              example="Could also use a press-style cartridge; earlier sketch used a screw cap instead of twist-lock."
+              rows={2}
+            />
+            <TextField
               label="What makes it different?"
               hint="User-described differences only — not a legal conclusion."
               value={answers.whatDifferent}
               onChange={(v) => onUpdate("whatDifferent", v)}
               example={INTAKE_COPY.fieldExamples.whatDifferent}
+              rows={2}
+            />
+            <TextField
+              label="Similar work you already know"
+              hint="Products, patents, articles, or videos that seem related — in your own words."
+              value={answers.knownSimilarWork ?? ""}
+              onChange={(v) => onUpdate("knownSimilarWork", v)}
+              example="LifeStraw bottles and Grayl press bottles — none with a twist-lock compostable cartridge."
               rows={2}
             />
           </div>

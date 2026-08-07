@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/Card";
 import { trackEvent } from "@/lib/analytics/client";
 import { pilotSessionHeaders } from "@/lib/pilotSession";
 import { isApiStoreAvailable } from "@/lib/store/api";
+import { markPortfolioPresent } from "@/lib/portfolio/marker";
+import { ROUTES } from "@/lib/routes";
 import { BRAND } from "@/lib/brand";
 
 function RecoverForm() {
@@ -37,12 +39,22 @@ function RecoverForm() {
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
         record?: { id: string };
+        restoredCount?: number;
       };
       if (!res.ok) {
         throw new Error(data.error ?? "Recovery failed");
       }
       if (!data.record?.id) throw new Error("Recovery failed");
-      router.push(`/profile/${data.record.id}`);
+
+      markPortfolioPresent();
+
+      // A portfolio link restores several inventions, so land in the workspace
+      // rather than an arbitrary one of them.
+      router.push(
+        (data.restoredCount ?? 1) > 1
+          ? ROUTES.workspace
+          : ROUTES.profile(data.record.id),
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Recovery failed");
       setLoading(false);
@@ -63,8 +75,9 @@ function RecoverForm() {
   return (
     <RecoveryCard title="Recover your packet">
       <p className="text-sm leading-relaxed text-navy-600">
-        Paste your private recovery link or token. We will attach this packet to
-        your current browser session. Keep recovery links private.
+        Paste your private recovery link or token. We will attach the matching
+        packet — or your whole portfolio, for a portfolio link — to this browser
+        session. New links work once; keep them private.
       </p>
       <form onSubmit={handleSubmit} className="mt-5 space-y-4">
         <label className="block">
@@ -102,7 +115,8 @@ export default function RecoverPage() {
       <p className="section-kicker">{BRAND.product}</p>
       <h1 className="mt-2 text-3xl font-bold text-navy-900">Recover a packet</h1>
       <p className="mt-3 text-sm leading-relaxed text-navy-600">
-        Use the private link you saved when you created your packet.
+        Use the private link you saved from your packet or workspace. Newly
+        created links can only be used once.
       </p>
       <div className="mt-8">
         <Suspense fallback={<Card><p className="text-sm text-navy-500">Loading…</p></Card>}>

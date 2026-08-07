@@ -145,7 +145,11 @@ export function buildCondensedAttorneyPdf(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-  doc.text(`Readiness: ${review.readinessScore}/100 (preparation only)`, MARGIN, y);
+  doc.text(
+    `Packet preparation: ${review.readinessScore}/100 (not legal evaluation)`,
+    MARGIN,
+    y,
+  );
   y += 12;
   const barW = maxWidth - 48;
   doc.setFillColor(MIST[0], MIST[1], MIST[2]);

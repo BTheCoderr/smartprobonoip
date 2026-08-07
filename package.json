@@ -7,10 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/security/security.regression.test.ts",
+    "test": "tsx --test \"src/**/*.test.ts\"",
     "test:copy-safety": "tsx scripts/check-copy-safety.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.108.2",
     "jspdf": "^4.2.1",
     "next": "16.2.9",
