@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test \"src/**/*.test.ts\"",
-    "test:copy-safety": "tsx scripts/check-copy-safety.ts"
+    "test:copy-safety": "tsx scripts/check-copy-safety.ts",
+    "verify:production-schema": "tsx scripts/verify-production-schema.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
