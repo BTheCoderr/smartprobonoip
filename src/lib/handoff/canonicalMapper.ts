@@ -394,14 +394,18 @@ export async function prepareProfessionalHandoff(input: {
     const hasValue = present(resolved);
     const composite = questionMappings.some((mapping) => mapping.mapping_type !== "direct");
 
+    const nextValue = hasValue ? resolved : null;
+    const valueUnchanged =
+      JSON.stringify(prior?.answer_value ?? null) === JSON.stringify(nextValue);
+
     return {
       session_id: session!.id,
       question_id: question.id,
       source_canonical_keys: keys,
-      answer_value: hasValue ? resolved : null,
+      answer_value: nextValue,
       resolution_method: hasValue ? (composite ? "composite_map" : "direct_map") : "unresolved",
       confidence: hasValue ? (composite ? "review_required" : "exact") : "unresolved",
-      user_approved_at: prior?.user_approved_at ?? null,
+      user_approved_at: valueUnchanged ? (prior?.user_approved_at ?? null) : null,
       updated_at: new Date().toISOString(),
     };
   });
