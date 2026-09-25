@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { OrganizationClarificationPanel } from "@/components/organization/OrganizationClarificationPanel";
+import { OrganizationSharedIntakePanel } from "@/components/organization/OrganizationSharedIntakePanel";
 import { ROUTES } from "@/lib/routes";
 import {
   ORGANIZATION_REFERRAL_STATUSES,
@@ -168,6 +170,10 @@ export function OrganizationReferralDetail({ referralId }: { referralId: string 
           </p>
         </Card>
       ) : null}
+
+      <OrganizationSharedIntakePanel referralId={referralId} />
+
+      <OrganizationClarificationPanel referralId={referralId} />
 
       <Card>
         <CardHeader title="Update status" subtitle="Operational tracking only — not a legal outcome." />

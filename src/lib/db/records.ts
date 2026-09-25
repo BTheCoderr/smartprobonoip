@@ -1,4 +1,5 @@
 import "server-only";
+import { syncCanonicalRecordFromAnswers, syncCanonicalTimeline } from "@/lib/db/canonicalRecord";
 import { isInventionStatus } from "@/lib/ideas/status";
 import { normalizeInventionTitle, resolveInventionTitle } from "@/lib/ideas/title";
 import type { InventionStatus, InventionUpdate } from "@/lib/ideas/types";
@@ -21,6 +22,7 @@ import type {
 import type { PilotTracking } from "@/lib/partnerTracking";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { verifyPartnerSecretTimingSafe } from "@/lib/security/api";
+import { logServerError } from "@/lib/security/safeLog";
 
 const SMARTPROBONOIP_VENTURE_SLUG = "smartprobonoip";
 
@@ -52,6 +54,15 @@ interface ProjectRow {
     post_clarity_score: number | null;
   }[];
   followups: { followup_type: string; status: string }[];
+  smartprobonoip_review_flags: {
+    id: string;
+    trigger_code: string;
+    flag_type: "missing_information" | "needs_user_clarification" | "professional_review_recommended" | "date_sensitive_professional_review" | "firm_question";
+    canonical_key: string | null;
+    user_message: string | null;
+    status: "open" | "resolved" | "dismissed";
+    created_at: string;
+  }[];
 }
 
 const NESTED_SELECT =
@@ -60,7 +71,8 @@ const NESTED_SELECT =
   "partner_slug, partner_name, source, campaign, development_timeline, " +
   "smartprobonoip_answers(payload, pre_clarity_score), smartprobonoip_profiles(payload), " +
   "smartprobonoip_impact_metrics(pre_clarity_score, post_clarity_score), " +
-  "followups(followup_type, status)";
+  "followups(followup_type, status), " +
+  "smartprobonoip_review_flags(id, trigger_code, flag_type, canonical_key, user_message, status, created_at)";
 
 let cachedVentureId: string | null = null;
 
@@ -193,6 +205,15 @@ export function rowToRecord(row: ProjectRow): ProjectRecord | null {
     source: row.source,
     campaign: row.campaign,
     developmentTimeline: (row.development_timeline as DevelopmentTimeline) ?? {},
+    canonicalReviewFlags: (row.smartprobonoip_review_flags ?? []).map((flag) => ({
+      id: flag.id,
+      triggerCode: flag.trigger_code,
+      flagType: flag.flag_type,
+      canonicalKey: flag.canonical_key,
+      userMessage: flag.user_message,
+      status: flag.status,
+      createdAt: flag.created_at,
+    })),
   };
 }
 
@@ -259,6 +280,18 @@ export async function createRecord(input: {
 
   const writeError = answersRes.error || profileRes.error || metricsRes.error;
   if (writeError) throw new Error(writeError.message);
+
+  // Keep the normalized factual record in sync without breaking the existing
+  // packet flow if the additive canonical layer has a temporary write issue.
+  try {
+    await syncCanonicalRecordFromAnswers({
+      projectId,
+      pilotSessionId,
+      answers,
+    });
+  } catch (err) {
+    logServerError("canonical.create_sync", err, { projectId });
+  }
 
   if (profile.recommendedResources.length > 0) {
     await sb.from("smartprobonoip_referrals").insert(
@@ -527,6 +560,16 @@ export async function updateAnswersAndProfile(
   if (projectRes.error) throw new Error(projectRes.error.message);
   if (metricsRes.error) throw new Error(metricsRes.error.message);
 
+  try {
+    await syncCanonicalRecordFromAnswers({
+      projectId: id,
+      pilotSessionId,
+      answers,
+    });
+  } catch (err) {
+    logServerError("canonical.update_sync", err, { projectId: id });
+  }
+
   const record = await getRecordById(id, pilotSessionId);
   if (!record) throw new Error("Record not found");
   return record;
@@ -568,6 +611,16 @@ export async function updateDevelopmentTimeline(
 
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Record not found");
+
+  try {
+    await syncCanonicalTimeline({
+      projectId: id,
+      pilotSessionId,
+      timeline: sanitized,
+    });
+  } catch (err) {
+    logServerError("canonical.timeline_sync", err, { projectId: id });
+  }
 
   const record = await getRecordById(id, pilotSessionId);
   if (!record) throw new Error("Record not found");

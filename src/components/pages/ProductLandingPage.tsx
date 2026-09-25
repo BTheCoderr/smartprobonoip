@@ -59,8 +59,8 @@ export default function ProductLandingPage() {
       <Section id="protection-paths" soft>
         <PaperShell>
           <ProtectionPathChooser
-            heading="Choose a protection path to get started"
-            lead="Phase 1 ships patent readiness for inventors. Other paths are registered on the platform and will reuse shared auth, dashboard, documents, AI, handoff, and portfolio services when they open — without fake placeholder workflows."
+            heading="Start with what you are preparing"
+            lead="Patent readiness is available now. Build a reusable factual record of the invention, contributors, disclosure history, supporting evidence, and professional intake details. If your path changes later, the underlying record stays useful."
           />
         </PaperShell>
       </Section>
