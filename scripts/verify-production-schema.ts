@@ -1,5 +1,5 @@
 /**
- * Read-only production schema verification for migrations 017–026.
+ * Read-only production schema verification for migrations 017–029.
  *
  * Usage (pick one auth method):
  *
@@ -39,6 +39,9 @@ export const MIGRATION_ORDER = [
   "024",
   "025",
   "026",
+  "027",
+  "028",
+  "029",
 ] as const;
 
 export type MigrationVersion = (typeof MIGRATION_ORDER)[number];
@@ -55,6 +58,9 @@ export const EXPECTED_PASS_AFTER: Record<MigrationVersion, number> = {
   "024": 8,
   "025": 9,
   "026": 10,
+  "027": 14,
+  "028": 16,
+  "029": 17,
 };
 
 interface CheckDef {
@@ -163,6 +169,73 @@ export const CHECKS: CheckDef[] = [
     ) AS pass`,
   },
   {
+    id: "canonical_schema_version",
+    label: "smartprobonoip_projects.canonical_schema_version column exists",
+    introducedBy: "027",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'smartprobonoip_projects'
+        AND column_name = 'canonical_schema_version'
+    ) AS pass`,
+  },
+  {
+    id: "canonical_technical_disclosures",
+    label: "smartprobonoip_technical_disclosures table exists",
+    introducedBy: "027",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'smartprobonoip_technical_disclosures'
+    ) AS pass`,
+  },
+  {
+    id: "evidence_bucket_private",
+    label: "smartprobonoip-evidence storage bucket exists and is private",
+    introducedBy: "027",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM storage.buckets
+      WHERE id = 'smartprobonoip-evidence'
+        AND public = false
+    ) AS pass`,
+  },
+  {
+    id: "canonical_backfill",
+    label: "canonical technical-disclosure backfill count > 0",
+    introducedBy: "027",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'smartprobonoip_technical_disclosures'
+    ) AND (SELECT count(*)::int FROM public.smartprobonoip_technical_disclosures) > 0 AS pass`,
+  },
+  {
+    id: "intake_templates",
+    label: "smartprobonoip_intake_templates table exists",
+    introducedBy: "028",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'smartprobonoip_intake_templates'
+    ) AS pass`,
+  },
+  {
+    id: "handoff_sessions",
+    label: "smartprobonoip_handoff_sessions table exists",
+    introducedBy: "028",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'smartprobonoip_handoff_sessions'
+    ) AS pass`,
+  },
+  {
+    id: "canonical_fk_indexes",
+    label: "canonical handoff foreign-key index exists",
+    introducedBy: "029",
+    sql: `SELECT to_regclass('public.idx_spbip_handoff_answers_question') IS NOT NULL AS pass`,
+  },
+  {
     id: "project_events_backfill",
     label: "smartprobonoip_project_events backfill count > 0",
     introducedBy: "018",
@@ -251,10 +324,10 @@ export function evaluateResults(
       : `${passCount}/${CHECKS.length} PASS (expected ${expected}/${CHECKS.length} after migration ${options.atMigration}) — STOP. Do not continue.`;
     exitCode = ok ? 0 : 1;
   } else if (passCount === CHECKS.length) {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–026 verified.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–029 verified.`;
     exitCode = 0;
   } else {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–026 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–029 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
     exitCode = 1;
   }
 
