@@ -203,6 +203,23 @@ export async function answerProfessionalHandoffQuestion(
   return data.handoff;
 }
 
+export async function shareProfessionalHandoff(
+  projectId: string,
+  sessionId: string,
+): Promise<ProfessionalHandoffSession> {
+  const res = await fetch(`/api/records/${projectId}/professional-handoff`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...pilotSessionHeaders(),
+    },
+    body: JSON.stringify({ action: "share", sessionId }),
+  });
+  if (!res.ok) throw new Error(await readError(res));
+  const data = (await res.json()) as { handoff: ProfessionalHandoffSession };
+  return data.handoff;
+}
+
 export async function approveMappedProfessionalHandoff(
   projectId: string,
   sessionId: string,
