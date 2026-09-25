@@ -431,6 +431,77 @@ export async function prepareProfessionalHandoff(input: {
   return loaded;
 }
 
+export async function answerProfessionalHandoffQuestion(input: {
+  projectId: string;
+  sessionId: string;
+  questionId: string;
+  value: string;
+}): Promise<ProfessionalHandoffSession> {
+  const sb = getSupabaseService();
+  const value = input.value.trim();
+  if (!value) throw new Error("Answer cannot be blank");
+
+  const { data: session, error: sessionError } = await sb
+    .from("smartprobonoip_handoff_sessions")
+    .select("id")
+    .eq("id", input.sessionId)
+    .eq("project_id", input.projectId)
+    .maybeSingle();
+  if (sessionError || !session) throw new Error("Professional handoff not found");
+
+  const now = new Date().toISOString();
+  const { data: updated, error: answerError } = await sb
+    .from("smartprobonoip_handoff_answers")
+    .update({
+      answer_value: value,
+      resolution_method: "user_answered",
+      confidence: "exact",
+      user_approved_at: now,
+      updated_at: now,
+    })
+    .eq("session_id", input.sessionId)
+    .eq("question_id", input.questionId)
+    .select("id")
+    .maybeSingle();
+  if (answerError || !updated) throw new Error("Professional intake question not found");
+
+  const { data: answerRows, error: countError } = await sb
+    .from("smartprobonoip_handoff_answers")
+    .select("resolution_method, user_approved_at")
+    .eq("session_id", input.sessionId);
+  if (countError) throw new Error(countError.message);
+
+  const rows = answerRows ?? [];
+  const unresolvedQuestionCount = rows.filter(
+    (row) => row.resolution_method === "unresolved",
+  ).length;
+  const mappedQuestionCount = rows.length - unresolvedQuestionCount;
+  const allResolvedApproved =
+    unresolvedQuestionCount === 0 &&
+    rows.length > 0 &&
+    rows.every((row) => Boolean(row.user_approved_at));
+
+  const { error: updateError } = await sb
+    .from("smartprobonoip_handoff_sessions")
+    .update({
+      unresolved_question_count: unresolvedQuestionCount,
+      mapped_question_count: mappedQuestionCount,
+      status: allResolvedApproved
+        ? "approved"
+        : unresolvedQuestionCount > 0
+          ? "needs_user_input"
+          : "ready_for_review",
+      approved_at: allResolvedApproved ? now : null,
+      updated_at: now,
+    })
+    .eq("id", input.sessionId);
+  if (updateError) throw new Error(updateError.message);
+
+  const loaded = await loadSession(input.sessionId);
+  if (!loaded) throw new Error("Could not load professional handoff");
+  return loaded;
+}
+
 export async function approveMappedProfessionalHandoff(
   projectId: string,
   sessionId: string,
