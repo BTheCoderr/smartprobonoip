@@ -294,7 +294,7 @@ async function loadSession(sessionId: string): Promise<ProfessionalHandoffSessio
   const { data: session, error } = await sb
     .from("smartprobonoip_handoff_sessions")
     .select(
-      "id, template_id, status, unresolved_question_count, mapped_question_count, created_at, updated_at, smartprobonoip_intake_templates(template_name, organization_name)",
+      "id, template_id, status, unresolved_question_count, mapped_question_count, shared_referral_id, shared_at, created_at, updated_at, smartprobonoip_intake_templates(template_name, organization_name)",
     )
     .eq("id", sessionId)
     .maybeSingle();
@@ -356,6 +356,8 @@ async function loadSession(sessionId: string): Promise<ProfessionalHandoffSessio
     status: session.status as ProfessionalHandoffSession["status"],
     unresolvedQuestionCount: Number(session.unresolved_question_count ?? 0),
     mappedQuestionCount: Number(session.mapped_question_count ?? 0),
+    sharedAt: (session.shared_at as string | null) ?? null,
+    sharedReferralId: (session.shared_referral_id as string | null) ?? null,
     answers: mappedAnswers,
     createdAt: session.created_at as string,
     updatedAt: session.updated_at as string,
@@ -635,6 +637,94 @@ export async function answerProfessionalHandoffQuestion(input: {
   const loaded = await loadSession(input.sessionId);
   if (!loaded) throw new Error("Could not load professional handoff");
   return loaded;
+}
+
+export async function shareProfessionalHandoffToOrganization(input: {
+  projectId: string;
+  sessionId: string;
+}): Promise<ProfessionalHandoffSession> {
+  const sb = getSupabaseService();
+
+  const { data: session, error: sessionError } = await sb
+    .from("smartprobonoip_handoff_sessions")
+    .select(
+      "id, project_id, partner_organization_id, status, unresolved_question_count",
+    )
+    .eq("id", input.sessionId)
+    .eq("project_id", input.projectId)
+    .maybeSingle();
+  if (sessionError || !session) throw new Error("Professional handoff not found");
+  if (!session.partner_organization_id) {
+    throw new Error("This handoff is not tied to an organization intake");
+  }
+  if (
+    session.status !== "approved" ||
+    Number(session.unresolved_question_count ?? 0) !== 0
+  ) {
+    throw new Error("Complete and approve the intake before sharing it");
+  }
+
+  const { data: answers, error: answersError } = await sb
+    .from("smartprobonoip_handoff_answers")
+    .select("id, user_approved_at, resolution_method")
+    .eq("session_id", input.sessionId);
+  if (answersError) throw new Error(answersError.message);
+  if (
+    !answers?.length ||
+    answers.some(
+      (answer) =>
+        answer.resolution_method === "unresolved" || !answer.user_approved_at,
+    )
+  ) {
+    throw new Error("Every intake answer must be reviewed before sharing");
+  }
+
+  const { data: referral, error: referralError } = await sb
+    .from("organization_referrals")
+    .select("id")
+    .eq("project_id", input.projectId)
+    .eq("organization_id", session.partner_organization_id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (referralError) throw new Error(referralError.message);
+  if (!referral) {
+    throw new Error("No inventor-initiated referral exists for this organization");
+  }
+
+  const sharedAt = new Date().toISOString();
+  const { error: updateError } = await sb
+    .from("smartprobonoip_handoff_sessions")
+    .update({
+      shared_referral_id: referral.id,
+      shared_at: sharedAt,
+      updated_at: sharedAt,
+    })
+    .eq("id", input.sessionId)
+    .eq("project_id", input.projectId);
+  if (updateError) throw new Error(updateError.message);
+
+  const loaded = await loadSession(input.sessionId);
+  if (!loaded) throw new Error("Could not load shared professional handoff");
+  return loaded;
+}
+
+export async function getSharedProfessionalHandoffForReferral(input: {
+  organizationId: string;
+  referralId: string;
+}): Promise<ProfessionalHandoffSession | null> {
+  const sb = getSupabaseService();
+  const { data, error } = await sb
+    .from("smartprobonoip_handoff_sessions")
+    .select("id")
+    .eq("shared_referral_id", input.referralId)
+    .eq("partner_organization_id", input.organizationId)
+    .not("shared_at", "is", null)
+    .order("shared_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error || !data?.id) return null;
+  return loadSession(data.id as string);
 }
 
 export async function approveMappedProfessionalHandoff(
