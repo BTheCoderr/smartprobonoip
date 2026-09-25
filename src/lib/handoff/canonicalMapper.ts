@@ -350,6 +350,7 @@ async function loadSession(sessionId: string): Promise<ProfessionalHandoffSessio
 
   return {
     id: session.id as string,
+    templateId: session.template_id as string,
     templateName: (template?.template_name as string | undefined) ?? "Professional intake",
     organizationName: (template?.organization_name as string | null | undefined) ?? null,
     status: session.status as ProfessionalHandoffSession["status"],
