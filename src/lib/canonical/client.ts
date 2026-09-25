@@ -177,6 +177,25 @@ export async function prepareProfessionalHandoff(
   return data.handoff;
 }
 
+export async function answerProfessionalHandoffQuestion(
+  projectId: string,
+  sessionId: string,
+  questionId: string,
+  value: string,
+): Promise<ProfessionalHandoffSession> {
+  const res = await fetch(`/api/records/${projectId}/professional-handoff`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...pilotSessionHeaders(),
+    },
+    body: JSON.stringify({ action: "answer", sessionId, questionId, value }),
+  });
+  if (!res.ok) throw new Error(await readError(res));
+  const data = (await res.json()) as { handoff: ProfessionalHandoffSession };
+  return data.handoff;
+}
+
 export async function approveMappedProfessionalHandoff(
   projectId: string,
   sessionId: string,
