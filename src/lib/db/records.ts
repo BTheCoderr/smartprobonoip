@@ -1,4 +1,5 @@
 import "server-only";
+import { syncCanonicalRecordFromAnswers, syncCanonicalTimeline } from "@/lib/db/canonicalRecord";
 import { isInventionStatus } from "@/lib/ideas/status";
 import { normalizeInventionTitle, resolveInventionTitle } from "@/lib/ideas/title";
 import type { InventionStatus, InventionUpdate } from "@/lib/ideas/types";
@@ -21,6 +22,7 @@ import type {
 import type { PilotTracking } from "@/lib/partnerTracking";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { verifyPartnerSecretTimingSafe } from "@/lib/security/api";
+import { logServerError } from "@/lib/security/safeLog";
 
 const SMARTPROBONOIP_VENTURE_SLUG = "smartprobonoip";
 
@@ -259,6 +261,18 @@ export async function createRecord(input: {
 
   const writeError = answersRes.error || profileRes.error || metricsRes.error;
   if (writeError) throw new Error(writeError.message);
+
+  // Keep the normalized factual record in sync without breaking the existing
+  // packet flow if the additive canonical layer has a temporary write issue.
+  try {
+    await syncCanonicalRecordFromAnswers({
+      projectId,
+      pilotSessionId,
+      answers,
+    });
+  } catch (err) {
+    logServerError("canonical.create_sync", err, { projectId });
+  }
 
   if (profile.recommendedResources.length > 0) {
     await sb.from("smartprobonoip_referrals").insert(
@@ -527,6 +541,16 @@ export async function updateAnswersAndProfile(
   if (projectRes.error) throw new Error(projectRes.error.message);
   if (metricsRes.error) throw new Error(metricsRes.error.message);
 
+  try {
+    await syncCanonicalRecordFromAnswers({
+      projectId: id,
+      pilotSessionId,
+      answers,
+    });
+  } catch (err) {
+    logServerError("canonical.update_sync", err, { projectId: id });
+  }
+
   const record = await getRecordById(id, pilotSessionId);
   if (!record) throw new Error("Record not found");
   return record;
@@ -568,6 +592,16 @@ export async function updateDevelopmentTimeline(
 
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Record not found");
+
+  try {
+    await syncCanonicalTimeline({
+      projectId: id,
+      pilotSessionId,
+      timeline: sanitized,
+    });
+  } catch (err) {
+    logServerError("canonical.timeline_sync", err, { projectId: id });
+  }
 
   const record = await getRecordById(id, pilotSessionId);
   if (!record) throw new Error("Record not found");
