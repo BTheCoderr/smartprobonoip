@@ -229,6 +229,23 @@ export type DevelopmentTimeline = Partial<
   Record<DevelopmentTimelineField, string>
 >;
 
+export type CanonicalReviewFlagType =
+  | "missing_information"
+  | "needs_user_clarification"
+  | "professional_review_recommended"
+  | "date_sensitive_professional_review"
+  | "firm_question";
+
+export interface CanonicalReviewFlag {
+  id: string;
+  triggerCode: string;
+  flagType: CanonicalReviewFlagType;
+  canonicalKey?: string | null;
+  userMessage?: string | null;
+  status: "open" | "resolved" | "dismissed";
+  createdAt: string;
+}
+
 export interface ReadinessProfile {
   ideaSummary: string;
   signals: IpSignal[];
@@ -264,6 +281,8 @@ export interface ProjectRecord {
   source?: string | null;
   campaign?: string | null;
   developmentTimeline?: DevelopmentTimeline;
+  /** Canonical factual-record flags. These are prep/review states, never legal conclusions. */
+  canonicalReviewFlags?: CanonicalReviewFlag[];
 }
 
 export interface DashboardMetrics {
