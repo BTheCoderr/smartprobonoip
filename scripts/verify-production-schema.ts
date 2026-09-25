@@ -1,5 +1,5 @@
 /**
- * Read-only production schema verification for migrations 017–029.
+ * Read-only production schema verification for migrations 017–030.
  *
  * Usage (pick one auth method):
  *
@@ -42,6 +42,7 @@ export const MIGRATION_ORDER = [
   "027",
   "028",
   "029",
+  "030",
 ] as const;
 
 export type MigrationVersion = (typeof MIGRATION_ORDER)[number];
@@ -61,6 +62,7 @@ export const EXPECTED_PASS_AFTER: Record<MigrationVersion, number> = {
   "027": 14,
   "028": 16,
   "029": 17,
+  "030": 18,
 };
 
 interface CheckDef {
@@ -236,6 +238,16 @@ export const CHECKS: CheckDef[] = [
     sql: `SELECT to_regclass('public.idx_spbip_handoff_answers_question') IS NOT NULL AS pass`,
   },
   {
+    id: "canonical_review_flags_backfill",
+    label: "canonical review-flag backfill count > 0",
+    introducedBy: "030",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'smartprobonoip_review_flags'
+    ) AND (SELECT count(*)::int FROM public.smartprobonoip_review_flags) > 0 AS pass`,
+  },
+  {
     id: "project_events_backfill",
     label: "smartprobonoip_project_events backfill count > 0",
     introducedBy: "018",
@@ -324,10 +336,10 @@ export function evaluateResults(
       : `${passCount}/${CHECKS.length} PASS (expected ${expected}/${CHECKS.length} after migration ${options.atMigration}) — STOP. Do not continue.`;
     exitCode = ok ? 0 : 1;
   } else if (passCount === CHECKS.length) {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–029 verified.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–030 verified.`;
     exitCode = 0;
   } else {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–029 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–030 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
     exitCode = 1;
   }
 
