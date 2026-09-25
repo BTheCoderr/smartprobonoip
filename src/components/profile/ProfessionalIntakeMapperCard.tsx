@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
+import { canonicalFieldLabel } from "@/lib/handoff/canonicalFields";
 import {
   answerProfessionalHandoffQuestion,
   approveMappedProfessionalHandoff,
@@ -236,9 +237,19 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
                     </span>
                   </div>
                   {value ? (
-                    <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-navy-700">
-                      {value}
-                    </p>
+                    <div className="mt-3">
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-navy-700">
+                        {value}
+                      </p>
+                      {answer.sourceCanonicalKeys.length > 0 ? (
+                        <p className="mt-2 text-[11px] text-navy-500">
+                          Reused from:{" "}
+                          {answer.sourceCanonicalKeys
+                            .map((key) => canonicalFieldLabel(key))
+                            .join(", ")}
+                        </p>
+                      ) : null}
+                    </div>
                   ) : (
                     <div className="mt-3 space-y-2">
                       <p className="text-sm text-amber-800">
