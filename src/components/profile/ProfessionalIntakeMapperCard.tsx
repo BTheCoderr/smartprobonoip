@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import {
+  answerProfessionalHandoffQuestion,
   approveMappedProfessionalHandoff,
   loadProfessionalHandoff,
   prepareProfessionalHandoff,
@@ -33,6 +34,7 @@ function answerTone(answer: ProfessionalHandoffAnswer): string {
 export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string }) {
   const [handoff, setHandoff] = useState<ProfessionalHandoffSession | null>(null);
   const [working, setWorking] = useState(false);
+  const [draftAnswers, setDraftAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,6 +56,36 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
       setHandoff(await prepareProfessionalHandoff(projectId));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not prepare professional intake.");
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  async function saveUnresolvedAnswer(questionId: string) {
+    if (!handoff) return;
+    const value = draftAnswers[questionId]?.trim();
+    if (!value) {
+      setError("Enter an answer before saving.");
+      return;
+    }
+    setWorking(true);
+    setError(null);
+    try {
+      setHandoff(
+        await answerProfessionalHandoffQuestion(
+          projectId,
+          handoff.id,
+          questionId,
+          value,
+        ),
+      );
+      setDraftAnswers((current) => {
+        const next = { ...current };
+        delete next[questionId];
+        return next;
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save this answer.");
     } finally {
       setWorking(false);
     }
@@ -144,9 +176,31 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
                       {value}
                     </p>
                   ) : (
-                    <p className="mt-3 text-sm text-amber-800">
-                      SmartProBonoIP does not have enough factual information to answer this yet.
-                    </p>
+                    <div className="mt-3 space-y-2">
+                      <p className="text-sm text-amber-800">
+                        SmartProBonoIP does not have enough factual information to answer this yet.
+                      </p>
+                      <textarea
+                        rows={3}
+                        className="input-surface"
+                        placeholder="Add the factual answer here. This becomes part of the handoff record."
+                        value={draftAnswers[answer.questionId] ?? ""}
+                        onChange={(e) =>
+                          setDraftAnswers((current) => ({
+                            ...current,
+                            [answer.questionId]: e.target.value,
+                          }))
+                        }
+                      />
+                      <button
+                        type="button"
+                        className="btn-secondary text-xs"
+                        disabled={working}
+                        onClick={() => void saveUnresolvedAnswer(answer.questionId)}
+                      >
+                        Save answer
+                      </button>
+                    </div>
                   )}
                 </div>
               );
