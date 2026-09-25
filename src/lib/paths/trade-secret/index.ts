@@ -9,7 +9,7 @@ export const TRADE_SECRET_PATH: ProtectionPathModule = {
     id: "trade_secret",
     label: "Trade Secret & NDA",
     description:
-      "Organize confidentiality practices and NDA notes before a trade-secret conversation. Coming in a future phase.",
+      "Organize confidential information, access controls, sharing history, and agreement records before a trade-secret or NDA conversation.",
     status: "coming_soon",
     entryHref: ROUTES.protectTradeSecret,
     interestHref: ROUTES.protectTradeSecret,
