@@ -8,6 +8,7 @@ import { ContributorEditor } from "@/components/profile/ContributorEditor";
 import { DisclosureTimelineEditor } from "@/components/profile/DisclosureTimelineEditor";
 import { EvidenceVaultCard } from "@/components/profile/EvidenceVaultCard";
 import { ProfessionalIntakeMapperCard } from "@/components/profile/ProfessionalIntakeMapperCard";
+import { ClarificationRequestsCard } from "@/components/profile/ClarificationRequestsCard";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import {
   DISCLOSURE_KIND_LABELS,
@@ -322,6 +323,7 @@ export function ProfileView({
           <ContributorEditor projectId={record.id} />
           <DisclosureTimelineEditor projectId={record.id} />
           <EvidenceVaultCard projectId={record.id} />
+          <ClarificationRequestsCard projectId={record.id} />
           <ProfessionalIntakeMapperCard projectId={record.id} />
         </div>
       ) : null}
