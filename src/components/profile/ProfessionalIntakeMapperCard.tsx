@@ -7,6 +7,7 @@ import {
   approveMappedProfessionalHandoff,
   loadProfessionalHandoff,
   prepareProfessionalHandoff,
+  shareProfessionalHandoff,
 } from "@/lib/canonical/client";
 import type {
   ProfessionalHandoffAnswer,
@@ -104,6 +105,19 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
     }
   }
 
+  async function shareWithOrganization() {
+    if (!handoff) return;
+    setWorking(true);
+    setError(null);
+    try {
+      setHandoff(await shareProfessionalHandoff(projectId, handoff.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not share this intake.");
+    } finally {
+      setWorking(false);
+    }
+  }
+
   async function approveMapped() {
     if (!handoff) return;
     setWorking(true);
@@ -182,6 +196,11 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
               <span>{handoff.mappedQuestionCount} mapped</span>
               <span>{handoff.unresolvedQuestionCount} need input</span>
               <span>Status: {handoff.status.replaceAll("_", " ")}</span>
+              {handoff.sharedAt ? (
+                <span>
+                  Shared {new Date(handoff.sharedAt).toLocaleString()}
+                </span>
+              ) : null}
             </div>
           </div>
 
@@ -274,6 +293,18 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
                 onClick={() => void approveMapped()}
               >
                 Approve mapped answers
+              </button>
+            ) : null}
+            {handoff.organizationName &&
+            handoff.status === "approved" &&
+            !handoff.sharedAt ? (
+              <button
+                type="button"
+                className="btn-primary"
+                disabled={working}
+                onClick={() => void shareWithOrganization()}
+              >
+                Share approved intake with {handoff.organizationName}
               </button>
             ) : null}
           </div>
