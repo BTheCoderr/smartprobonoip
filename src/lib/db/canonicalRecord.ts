@@ -237,7 +237,10 @@ export async function syncCanonicalRecordFromAnswers(input: {
   if (flags.length > 0) {
     const { error } = await sb
       .from("smartprobonoip_review_flags")
-      .upsert(flags, { onConflict: "project_id,trigger_code" });
+      .upsert(flags, {
+        onConflict: "project_id,trigger_code",
+        ignoreDuplicates: true,
+      });
     if (error) throw new Error(error.message);
   }
 }
