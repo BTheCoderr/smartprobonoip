@@ -117,9 +117,7 @@ export async function POST(
 
     await recordProjectEvent({
       projectId: referral.projectId,
-      pilotSessionId: referral.consentRecord.projectId
-        ? (referral.consentRecord as { pilotSessionId?: string }).pilotSessionId ?? "organization"
-        : "organization",
+      pilotSessionId: null,
       type: "professional_clarification_requested",
       source: "system",
       detail: "A professional organization requested additional factual clarification.",
