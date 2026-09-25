@@ -355,6 +355,7 @@ export interface ProfessionalHandoffTemplateOption {
 
 export interface ProfessionalHandoffSession {
   id: string;
+  templateId: string;
   templateName: string;
   organizationName?: string | null;
   status:
