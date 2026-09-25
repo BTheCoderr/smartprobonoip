@@ -4,6 +4,10 @@ import { Badge } from "@/components/ui/Badge";
 import { ReadinessScoreCard } from "@/components/profile/ReadinessScoreCard";
 import { PacketReviewPanel } from "@/components/profile/PacketReviewPanel";
 import { ProfessionalReviewPanel } from "@/components/profile/ProfessionalReviewPanel";
+import { ContributorEditor } from "@/components/profile/ContributorEditor";
+import { DisclosureTimelineEditor } from "@/components/profile/DisclosureTimelineEditor";
+import { EvidenceVaultCard } from "@/components/profile/EvidenceVaultCard";
+import { ProfessionalIntakeMapperCard } from "@/components/profile/ProfessionalIntakeMapperCard";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import {
   DISCLOSURE_KIND_LABELS,
@@ -299,6 +303,28 @@ export function ProfileView({
           ) : null}
         </Card>
       </div>
+
+      {!record.isDemo ? (
+        <div className="space-y-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-600">
+              Canonical preparation workspace
+            </p>
+            <h2 className="mt-1 text-xl font-bold text-navy-900">
+              Build the factual record once
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-navy-600">
+              Add detailed people, disclosure, and supporting-file facts here. These
+              records can be reused in professional handoffs without turning
+              SmartProBonoIP into the legal decision-maker.
+            </p>
+          </div>
+          <ContributorEditor projectId={record.id} />
+          <DisclosureTimelineEditor projectId={record.id} />
+          <EvidenceVaultCard projectId={record.id} />
+          <ProfessionalIntakeMapperCard projectId={record.id} />
+        </div>
+      ) : null}
 
       <Card
         variant={profile.publicDisclosure ? "default" : "soft"}
