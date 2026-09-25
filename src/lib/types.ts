@@ -367,6 +367,8 @@ export interface ProfessionalHandoffSession {
     | "cancelled";
   unresolvedQuestionCount: number;
   mappedQuestionCount: number;
+  sharedAt?: string | null;
+  sharedReferralId?: string | null;
   answers: ProfessionalHandoffAnswer[];
   createdAt: string;
   updatedAt: string;
