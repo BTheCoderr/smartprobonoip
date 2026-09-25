@@ -1,5 +1,5 @@
 /**
- * Read-only production schema verification for migrations 017–031.
+ * Read-only production schema verification for migrations 017–032.
  *
  * Usage (pick one auth method):
  *
@@ -44,6 +44,7 @@ export const MIGRATION_ORDER = [
   "029",
   "030",
   "031",
+  "032",
 ] as const;
 
 export type MigrationVersion = (typeof MIGRATION_ORDER)[number];
@@ -65,6 +66,7 @@ export const EXPECTED_PASS_AFTER: Record<MigrationVersion, number> = {
   "029": 17,
   "030": 18,
   "031": 19,
+  "032": 20,
 };
 
 interface CheckDef {
@@ -256,6 +258,16 @@ export const CHECKS: CheckDef[] = [
     sql: `SELECT to_regclass('public.uq_spbip_review_flag_project_trigger') IS NOT NULL AS pass`,
   },
   {
+    id: "generic_professional_intake",
+    label: "generic professional intake template exists",
+    introducedBy: "032",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM public.smartprobonoip_intake_templates
+      WHERE template_key = 'patent_professional_core_v1'
+        AND mapping_status = 'verified'
+    ) AS pass`,
+  },
+  {
     id: "project_events_backfill",
     label: "smartprobonoip_project_events backfill count > 0",
     introducedBy: "018",
@@ -344,10 +356,10 @@ export function evaluateResults(
       : `${passCount}/${CHECKS.length} PASS (expected ${expected}/${CHECKS.length} after migration ${options.atMigration}) — STOP. Do not continue.`;
     exitCode = ok ? 0 : 1;
   } else if (passCount === CHECKS.length) {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–031 verified.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–032 verified.`;
     exitCode = 0;
   } else {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–031 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–032 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
     exitCode = 1;
   }
 
