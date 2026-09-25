@@ -345,6 +345,14 @@ export interface ProfessionalHandoffAnswer {
   userApprovedAt?: string | null;
 }
 
+export interface ProfessionalHandoffTemplateOption {
+  id: string;
+  templateName: string;
+  organizationName?: string | null;
+  isGeneric: boolean;
+  questionCount: number;
+}
+
 export interface ProfessionalHandoffSession {
   id: string;
   templateName: string;
