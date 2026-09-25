@@ -11,6 +11,7 @@ import {
 import type {
   ProfessionalHandoffAnswer,
   ProfessionalHandoffSession,
+  ProfessionalHandoffTemplateOption,
 } from "@/lib/types";
 
 function displayValue(value: unknown): string {
@@ -33,6 +34,8 @@ function answerTone(answer: ProfessionalHandoffAnswer): string {
 
 export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string }) {
   const [handoff, setHandoff] = useState<ProfessionalHandoffSession | null>(null);
+  const [templates, setTemplates] = useState<ProfessionalHandoffTemplateOption[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [working, setWorking] = useState(false);
   const [draftAnswers, setDraftAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +44,12 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
     let active = true;
     loadProfessionalHandoff(projectId)
       .then((next) => {
-        if (active) setHandoff(next);
+        if (!active) return;
+        setHandoff(next.handoff);
+        setTemplates(next.templates);
+        setSelectedTemplateId(
+          next.handoff?.templateId ?? next.templates[0]?.id ?? "",
+        );
       })
       .catch(() => undefined);
     return () => {
@@ -53,7 +61,12 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
     setWorking(true);
     setError(null);
     try {
-      setHandoff(await prepareProfessionalHandoff(projectId));
+      setHandoff(
+        await prepareProfessionalHandoff(
+          projectId,
+          selectedTemplateId || null,
+        ),
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not prepare professional intake.");
     } finally {
@@ -111,6 +124,34 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
         subtitle="Maps reusable facts from your SmartProBonoIP record into a professional-style intake draft. The receiving professional's own intake remains authoritative."
       />
 
+      {templates.length > 0 ? (
+        <div className="mb-5 rounded-xl border border-mist-200 bg-mist-50/50 p-4">
+          <label className="block text-sm font-medium text-navy-800">
+            Intake to prepare
+            <select
+              className="input-surface mt-1"
+              value={selectedTemplateId}
+              onChange={(e) => setSelectedTemplateId(e.target.value)}
+            >
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.isGeneric
+                    ? "SmartProBono core intake"
+                    : (template.organizationName ?? "Professional organization") +
+                      " — " +
+                      template.templateName}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="mt-2 text-xs leading-relaxed text-navy-500">
+            Organization-specific forms appear only after you have chosen to share a
+            referral with that organization and the organization has verified its
+            question mappings.
+          </p>
+        </div>
+      ) : null}
+
       {!handoff ? (
         <div>
           <p className="text-sm leading-relaxed text-navy-600">
@@ -124,7 +165,11 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
             disabled={working}
             className="btn-primary mt-4"
           >
-            {working ? "Mapping…" : "Prepare professional intake"}
+            {working
+              ? "Mapping…"
+              : selectedTemplateId
+                ? "Prepare selected intake"
+                : "Prepare professional intake"}
           </button>
         </div>
       ) : (
@@ -214,7 +259,12 @@ export function ProfessionalIntakeMapperCard({ projectId }: { projectId: string 
               disabled={working}
               onClick={() => void prepare()}
             >
-              {working ? "Refreshing…" : "Refresh mapping"}
+              {working
+                ? "Refreshing…"
+                : selectedTemplateId &&
+                    selectedTemplateId !== handoff.templateId
+                  ? "Prepare selected intake"
+                  : "Refresh mapping"}
             </button>
             {handoff.mappedQuestionCount > 0 ? (
               <button
