@@ -260,29 +260,40 @@ async function loadSession(sessionId: string): Promise<ProfessionalHandoffSessio
     ? session.smartprobonoip_intake_templates[0]
     : session.smartprobonoip_intake_templates;
 
-  const mappedAnswers: ProfessionalHandoffAnswer[] = (answers ?? [])
-    .map((row) => {
-      const question = Array.isArray(row.smartprobonoip_intake_questions)
-        ? row.smartprobonoip_intake_questions[0]
-        : row.smartprobonoip_intake_questions;
-      if (!question) return null;
-      return {
+  const mappedAnswersWithOrder: Array<{
+    answer: ProfessionalHandoffAnswer;
+    displayOrder: number;
+  }> = [];
+
+  for (const row of answers ?? []) {
+    const question = Array.isArray(row.smartprobonoip_intake_questions)
+      ? row.smartprobonoip_intake_questions[0]
+      : row.smartprobonoip_intake_questions;
+    if (!question) continue;
+
+    mappedAnswersWithOrder.push({
+      answer: {
         id: row.id as string,
         questionId: row.question_id as string,
         sectionName: (question.section_name as string | null) ?? null,
         questionText: question.question_text as string,
         requiredByProfessional: Boolean(question.required_by_professional),
-        sourceCanonicalKeys: (row.source_canonical_keys as string[] | null) ?? [],
+        sourceCanonicalKeys:
+          (row.source_canonical_keys as string[] | null) ?? [],
         answerValue: row.answer_value,
-        resolutionMethod: row.resolution_method as ProfessionalHandoffAnswer["resolutionMethod"],
-        confidence: row.confidence as ProfessionalHandoffAnswer["confidence"],
+        resolutionMethod:
+          row.resolution_method as ProfessionalHandoffAnswer["resolutionMethod"],
+        confidence:
+          row.confidence as ProfessionalHandoffAnswer["confidence"],
         userApprovedAt: (row.user_approved_at as string | null) ?? null,
-        displayOrder: (question.display_order as number | null) ?? 0,
-      };
-    })
-    .filter((item): item is ProfessionalHandoffAnswer & { displayOrder: number } => item !== null)
+      },
+      displayOrder: (question.display_order as number | null) ?? 0,
+    });
+  }
+
+  const mappedAnswers = mappedAnswersWithOrder
     .sort((a, b) => a.displayOrder - b.displayOrder)
-    .map(({ displayOrder: _displayOrder, ...answer }) => answer);
+    .map((item) => item.answer);
 
   return {
     id: session.id as string,
