@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { ReadinessScoreCard } from "@/components/profile/ReadinessScoreCard";
 import { PacketReviewPanel } from "@/components/profile/PacketReviewPanel";
+import { ProfessionalReviewPanel } from "@/components/profile/ProfessionalReviewPanel";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import {
   DISCLOSURE_KIND_LABELS,
@@ -170,7 +171,8 @@ export function ProfileView({
           record={record}
           savedReferenceCount={savedReferenceCount}
         />
-      <PacketReviewPanel record={record} savedReferenceCount={savedReferenceCount} />
+        <ProfessionalReviewPanel flags={record.canonicalReviewFlags ?? []} />
+        <PacketReviewPanel record={record} savedReferenceCount={savedReferenceCount} />
         <CardHeader
           title={PACKET_COPY.readinessSnapshotTitle}
           subtitle="A quick view of where your idea stands today."
