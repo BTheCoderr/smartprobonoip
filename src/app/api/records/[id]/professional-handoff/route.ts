@@ -5,6 +5,7 @@ import {
   answerProfessionalHandoffQuestion,
   approveMappedProfessionalHandoff,
   getLatestProfessionalHandoff,
+  listAvailableProfessionalHandoffTemplates,
   prepareProfessionalHandoff,
 } from "@/lib/handoff/canonicalMapper";
 import {
@@ -35,8 +36,11 @@ export async function GET(
   if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   try {
-    const handoff = await getLatestProfessionalHandoff(id);
-    return NextResponse.json({ handoff });
+    const [handoff, templates] = await Promise.all([
+      getLatestProfessionalHandoff(id),
+      listAvailableProfessionalHandoffTemplates(id),
+    ]);
+    return NextResponse.json({ handoff, templates });
   } catch (err) {
     logServerError("professional-handoff.get", err, { projectId: id });
     return NextResponse.json({ error: GENERIC_SERVER_ERROR }, { status: 500 });
@@ -60,6 +64,7 @@ export async function POST(
       sessionId?: string;
       questionId?: string;
       value?: string;
+      templateId?: string | null;
     };
 
     if (body.action === "answer") {
@@ -86,6 +91,7 @@ export async function POST(
     const handoff = await prepareProfessionalHandoff({
       projectId: id,
       pilotSessionId: owned.pilotSession,
+      templateId: body.templateId ?? null,
     });
 
     await recordProjectEvent({
