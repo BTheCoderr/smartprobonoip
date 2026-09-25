@@ -142,10 +142,13 @@ export async function syncCanonicalRecordFromAnswers(input: {
   if (technicalRes.error) throw new Error(technicalRes.error.message);
   if (screeningRes.error) throw new Error(screeningRes.error.message);
 
+  // Remove only still-open generated flags before recalculating them. Resolved or
+  // dismissed flags remain as part of the user's preparation history.
   const { error: deleteFlagError } = await sb
     .from("smartprobonoip_review_flags")
     .delete()
     .eq("project_id", projectId)
+    .eq("status", "open")
     .in("trigger_code", [...GENERATED_FLAG_CODES]);
   if (deleteFlagError) throw new Error(deleteFlagError.message);
 
@@ -232,7 +235,9 @@ export async function syncCanonicalRecordFromAnswers(input: {
   }
 
   if (flags.length > 0) {
-    const { error } = await sb.from("smartprobonoip_review_flags").insert(flags);
+    const { error } = await sb
+      .from("smartprobonoip_review_flags")
+      .upsert(flags, { onConflict: "project_id,trigger_code" });
     if (error) throw new Error(error.message);
   }
 }
