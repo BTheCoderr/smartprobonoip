@@ -6,6 +6,7 @@ import type {
   CanonicalDisclosureRecord,
   CanonicalEvidenceFile,
   ProfessionalHandoffSession,
+  ProfessionalHandoffTemplateOption,
 } from "@/lib/types";
 
 async function readError(res: Response): Promise<string> {
@@ -152,17 +153,23 @@ export async function removeEvidence(projectId: string, evidenceId: string): Pro
 
 export async function loadProfessionalHandoff(
   projectId: string,
-): Promise<ProfessionalHandoffSession | null> {
+): Promise<{
+  handoff: ProfessionalHandoffSession | null;
+  templates: ProfessionalHandoffTemplateOption[];
+}> {
   const res = await fetch(`/api/records/${projectId}/professional-handoff`, {
     headers: pilotSessionHeaders(),
   });
   if (!res.ok) throw new Error(await readError(res));
-  const data = (await res.json()) as { handoff: ProfessionalHandoffSession | null };
-  return data.handoff;
+  return (await res.json()) as {
+    handoff: ProfessionalHandoffSession | null;
+    templates: ProfessionalHandoffTemplateOption[];
+  };
 }
 
 export async function prepareProfessionalHandoff(
   projectId: string,
+  templateId?: string | null,
 ): Promise<ProfessionalHandoffSession> {
   const res = await fetch(`/api/records/${projectId}/professional-handoff`, {
     method: "POST",
@@ -170,7 +177,7 @@ export async function prepareProfessionalHandoff(
       "Content-Type": "application/json",
       ...pilotSessionHeaders(),
     },
-    body: JSON.stringify({ action: "prepare" }),
+    body: JSON.stringify({ action: "prepare", templateId: templateId ?? null }),
   });
   if (!res.ok) throw new Error(await readError(res));
   const data = (await res.json()) as { handoff: ProfessionalHandoffSession };
