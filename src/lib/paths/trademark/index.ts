@@ -9,7 +9,7 @@ export const TRADEMARK_PATH: ProtectionPathModule = {
     id: "trademark",
     label: "Trademark",
     description:
-      "Prepare name, brand, and identity materials before a trademark conversation. Coming in a future phase.",
+      "Organize brand names, logos, goods and services, use history, and supporting materials before a trademark conversation.",
     status: "coming_soon",
     entryHref: ROUTES.protectTrademark,
     interestHref: ROUTES.protectTrademark,
