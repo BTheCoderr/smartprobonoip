@@ -285,6 +285,12 @@ export function OrganizationIntakeTemplates() {
           subtitle="Keep your organization's own questionnaire. SmartProBonoIP extracts the questions, suggests reusable factual mappings, and requires a human to verify each mapping."
         />
 
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-sm leading-relaxed text-amber-900">
+          Import a blank organization questionnaire only. Do not paste a completed
+          client intake or another client's confidential responses into the template
+          importer.
+        </div>
+
         <form onSubmit={importIntake} className="mt-5 space-y-4">
           <label className="block text-sm font-medium text-navy-800">
             Intake name
