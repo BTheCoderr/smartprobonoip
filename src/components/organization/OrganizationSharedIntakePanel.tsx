@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { ROUTES } from "@/lib/routes";
+import { canonicalFieldLabel } from "@/lib/handoff/canonicalFields";
 import type { ProfessionalHandoffSession } from "@/lib/types";
 
 async function readError(res: Response): Promise<string> {
@@ -132,6 +133,14 @@ export function OrganizationSharedIntakePanel({
                   ? "Entered during professional review"
                   : "Mapped from inventor record"}
             </p>
+            {answer.sourceCanonicalKeys.length > 0 ? (
+              <p className="mt-1 text-[11px] text-navy-500">
+                Source field{answer.sourceCanonicalKeys.length > 1 ? "s" : ""}:{" "}
+                {answer.sourceCanonicalKeys
+                  .map((key) => canonicalFieldLabel(key))
+                  .join(", ")}
+              </p>
+            ) : null}
           </div>
         ))}
       </div>
