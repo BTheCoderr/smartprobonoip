@@ -4,12 +4,15 @@ import { getSupabaseService } from "@/lib/supabaseServer";
 import type {
   ProfessionalHandoffAnswer,
   ProfessionalHandoffSession,
+  ProfessionalHandoffTemplateOption,
 } from "@/lib/types";
 
 const TEMPLATE_KEY = "patent_professional_core_v1";
 
 interface TemplateRow {
   id: string;
+  partner_organization_id: string | null;
+  template_key: string | null;
   organization_name: string | null;
   template_name: string;
 }
@@ -52,12 +55,13 @@ async function loadCanonicalValues(projectId: string): Promise<Record<string, un
     ownershipRes,
     priorAppsRes,
     refsRes,
+    evidenceRes,
   ] = await Promise.all([
     sb.from("smartprobonoip_projects").select("title").eq("id", projectId).maybeSingle(),
     sb
       .from("smartprobonoip_technical_disclosures")
       .select(
-        "problem_or_need, detailed_description, key_components_or_steps, how_it_works, best_known_implementation, alternatives_variations",
+        "problem_or_need, detailed_description, key_components_or_steps, how_it_works, how_to_make, how_to_use, advantages_improvements, best_known_implementation, alternatives_variations",
       )
       .eq("project_id", projectId)
       .maybeSingle(),
@@ -100,6 +104,11 @@ async function loadCanonicalValues(projectId: string): Promise<Record<string, un
       )
       .eq("project_id", projectId)
       .order("created_at", { ascending: true }),
+    sb
+      .from("smartprobonoip_evidence_files")
+      .select("original_filename, evidence_type, document_date, description")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: true }),
   ]);
 
   for (const result of [
@@ -111,6 +120,7 @@ async function loadCanonicalValues(projectId: string): Promise<Record<string, un
     ownershipRes,
     priorAppsRes,
     refsRes,
+    evidenceRes,
   ]) {
     if (result.error) throw new Error(result.error.message);
   }
@@ -122,6 +132,7 @@ async function loadCanonicalValues(projectId: string): Promise<Record<string, un
   const ownership = (ownershipRes.data ?? []) as Array<Record<string, unknown>>;
   const priorApps = (priorAppsRes.data ?? []) as Array<Record<string, unknown>>;
   const refs = (refsRes.data ?? []) as Array<Record<string, unknown>>;
+  const evidence = (evidenceRes.data ?? []) as Array<Record<string, unknown>>;
 
   return {
     "project.title": projectRes.data?.title ?? null,
@@ -129,6 +140,9 @@ async function loadCanonicalValues(projectId: string): Promise<Record<string, un
     "technical.detailed_description": technical?.detailed_description ?? null,
     "technical.key_components_or_steps": technical?.key_components_or_steps ?? null,
     "technical.how_it_works": technical?.how_it_works ?? null,
+    "technical.how_to_make": technical?.how_to_make ?? null,
+    "technical.how_to_use": technical?.how_to_use ?? null,
+    "technical.advantages_improvements": technical?.advantages_improvements ?? null,
     "technical.best_known_implementation": technical?.best_known_implementation ?? null,
     "technical.alternatives_variations": technical?.alternatives_variations ?? null,
     "contributors.collection": contributors.map((row) =>
@@ -194,23 +208,62 @@ async function loadCanonicalValues(projectId: string): Promise<Record<string, un
         (row.user_notes ?? row.notes) as string | null,
       ]),
     ).filter(Boolean).join("\n"),
+    "evidence_files.collection": evidence.map((row) =>
+      line([
+        row.original_filename as string | null,
+        row.evidence_type ? String(row.evidence_type).replaceAll("_", " ") : null,
+        row.document_date ? `dated: ${String(row.document_date)}` : null,
+        row.description as string | null,
+      ]),
+    ).filter(Boolean).join("\n"),
   };
 }
 
-async function loadTemplate(): Promise<{
+async function loadTemplate(input?: {
+  templateId?: string | null;
+  projectId?: string | null;
+}): Promise<{
   template: TemplateRow;
   questions: QuestionRow[];
   mappings: MappingRow[];
 }> {
   const sb = getSupabaseService();
-  const { data: template, error: templateError } = await sb
+
+  let query = sb
     .from("smartprobonoip_intake_templates")
-    .select("id, organization_name, template_name")
-    .eq("template_key", TEMPLATE_KEY)
-    .eq("mapping_status", "verified")
-    .maybeSingle();
+    .select("id, partner_organization_id, template_key, organization_name, template_name")
+    .eq("mapping_status", "verified");
+
+  if (input?.templateId) {
+    query = query.eq("id", input.templateId);
+  } else {
+    query = query.eq("template_key", TEMPLATE_KEY);
+  }
+
+  const { data: template, error: templateError } = await query.maybeSingle();
   if (templateError) throw new Error(templateError.message);
   if (!template) throw new Error("Professional intake template is not configured");
+
+  const selectedTemplate = template as TemplateRow;
+
+  if (selectedTemplate.partner_organization_id) {
+    if (!input?.projectId) {
+      throw new Error("Project context is required for an organization intake");
+    }
+    const { data: referral, error: referralError } = await sb
+      .from("organization_referrals")
+      .select("id")
+      .eq("project_id", input.projectId)
+      .eq("organization_id", selectedTemplate.partner_organization_id)
+      .limit(1)
+      .maybeSingle();
+    if (referralError) throw new Error(referralError.message);
+    if (!referral) {
+      throw new Error(
+        "This organization intake is available only after the inventor has shared a referral with that organization.",
+      );
+    }
+  }
 
   const { data: questions, error: questionError } = await sb
     .from("smartprobonoip_intake_questions")
@@ -230,7 +283,7 @@ async function loadTemplate(): Promise<{
   if (mappingError) throw new Error(mappingError.message);
 
   return {
-    template: template as TemplateRow,
+    template: selectedTemplate,
     questions: (questions ?? []) as QuestionRow[],
     mappings: (mappings ?? []) as MappingRow[],
   };
@@ -308,6 +361,67 @@ async function loadSession(sessionId: string): Promise<ProfessionalHandoffSessio
   };
 }
 
+export async function listAvailableProfessionalHandoffTemplates(
+  projectId: string,
+): Promise<ProfessionalHandoffTemplateOption[]> {
+  const sb = getSupabaseService();
+
+  const { data: referralRows, error: referralError } = await sb
+    .from("organization_referrals")
+    .select("organization_id")
+    .eq("project_id", projectId);
+  if (referralError) throw new Error(referralError.message);
+
+  const organizationIds = Array.from(
+    new Set(
+      (referralRows ?? [])
+        .map((row) => row.organization_id as string | null)
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
+
+  const { data: generic, error: genericError } = await sb
+    .from("smartprobonoip_intake_templates")
+    .select("id, template_name, organization_name")
+    .eq("template_key", TEMPLATE_KEY)
+    .eq("mapping_status", "verified")
+    .maybeSingle();
+  if (genericError) throw new Error(genericError.message);
+
+  const { data: firmTemplates, error: firmError } = organizationIds.length
+    ? await sb
+        .from("smartprobonoip_intake_templates")
+        .select("id, template_name, organization_name")
+        .in("partner_organization_id", organizationIds)
+        .eq("mapping_status", "verified")
+        .order("updated_at", { ascending: false })
+    : { data: [], error: null };
+  if (firmError) throw new Error(firmError.message);
+
+  const templates = [
+    ...(generic ? [{ ...generic, isGeneric: true }] : []),
+    ...((firmTemplates ?? []).map((row) => ({ ...row, isGeneric: false }))),
+  ];
+  if (templates.length === 0) return [];
+
+  const templateIds = templates.map((row) => row.id as string);
+  const { data: questionRows, error: questionError } = await sb
+    .from("smartprobonoip_intake_questions")
+    .select("template_id")
+    .in("template_id", templateIds);
+  if (questionError) throw new Error(questionError.message);
+
+  return templates.map((template) => ({
+    id: template.id as string,
+    templateName: template.template_name as string,
+    organizationName: (template.organization_name as string | null) ?? null,
+    isGeneric: Boolean(template.isGeneric),
+    questionCount: (questionRows ?? []).filter(
+      (question) => question.template_id === template.id,
+    ).length,
+  }));
+}
+
 export async function getLatestProfessionalHandoff(
   projectId: string,
 ): Promise<ProfessionalHandoffSession | null> {
@@ -327,10 +441,14 @@ export async function getLatestProfessionalHandoff(
 export async function prepareProfessionalHandoff(input: {
   projectId: string;
   pilotSessionId: string;
+  templateId?: string | null;
 }): Promise<ProfessionalHandoffSession> {
   const sb = getSupabaseService();
   const [{ template, questions, mappings }, values] = await Promise.all([
-    loadTemplate(),
+    loadTemplate({
+      templateId: input.templateId,
+      projectId: input.projectId,
+    }),
     loadCanonicalValues(input.projectId),
   ]);
 
@@ -352,6 +470,7 @@ export async function prepareProfessionalHandoff(input: {
         project_id: input.projectId,
         pilot_session_id: input.pilotSessionId,
         template_id: template.id,
+        partner_organization_id: template.partner_organization_id,
         status: "draft",
       })
       .select("id")
