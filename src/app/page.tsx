@@ -8,7 +8,7 @@ import { ROUTES } from "@/lib/routes";
 export const metadata: Metadata = {
   title: "SmartProBonoIP — IP Readiness Platform",
   description:
-    "What are you trying to protect? Prepare an invention disclosure and professional handoff packet before expert review. Patent readiness available now — preparation only, not legal advice.",
+    "Build a reusable IP readiness record before professional review. Patent readiness organizes invention facts, contributors, disclosures, evidence, and professional intake details — preparation only, not legal advice.",
 };
 
 /**
