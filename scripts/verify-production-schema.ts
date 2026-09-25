@@ -1,5 +1,5 @@
 /**
- * Read-only production schema verification for migrations 017–034.
+ * Read-only production schema verification for migrations 017–035.
  *
  * Usage (pick one auth method):
  *
@@ -47,6 +47,7 @@ export const MIGRATION_ORDER = [
   "032",
   "033",
   "034",
+  "035",
 ] as const;
 
 export type MigrationVersion = (typeof MIGRATION_ORDER)[number];
@@ -71,6 +72,7 @@ export const EXPECTED_PASS_AFTER: Record<MigrationVersion, number> = {
   "032": 20,
   "033": 22,
   "034": 23,
+  "035": 24,
 };
 
 interface CheckDef {
@@ -303,6 +305,17 @@ export const CHECKS: CheckDef[] = [
     ) AS pass`,
   },
   {
+    id: "explicit_firm_handoff_share",
+    label: "professional handoff explicit share timestamp exists",
+    introducedBy: "035",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'smartprobonoip_handoff_sessions'
+        AND column_name = 'shared_at'
+    ) AS pass`,
+  },
+  {
     id: "project_events_backfill",
     label: "smartprobonoip_project_events backfill count > 0",
     introducedBy: "018",
@@ -391,10 +404,10 @@ export function evaluateResults(
       : `${passCount}/${CHECKS.length} PASS (expected ${expected}/${CHECKS.length} after migration ${options.atMigration}) — STOP. Do not continue.`;
     exitCode = ok ? 0 : 1;
   } else if (passCount === CHECKS.length) {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–034 verified.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–035 verified.`;
     exitCode = 0;
   } else {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–034 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–035 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
     exitCode = 1;
   }
 
