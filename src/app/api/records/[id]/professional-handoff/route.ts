@@ -7,6 +7,7 @@ import {
   getLatestProfessionalHandoff,
   listAvailableProfessionalHandoffTemplates,
   prepareProfessionalHandoff,
+  shareProfessionalHandoffToOrganization,
 } from "@/lib/handoff/canonicalMapper";
 import {
   GENERIC_SERVER_ERROR,
@@ -60,7 +61,7 @@ export async function POST(
 
   try {
     const body = (await readJsonWithLimit(request)) as {
-      action?: "prepare" | "approve_mapped" | "answer";
+      action?: "prepare" | "approve_mapped" | "answer" | "share";
       sessionId?: string;
       questionId?: string;
       value?: string;
@@ -76,6 +77,17 @@ export async function POST(
         sessionId: body.sessionId,
         questionId: body.questionId,
         value: body.value,
+      });
+      return NextResponse.json({ handoff });
+    }
+
+    if (body.action === "share") {
+      if (!body.sessionId) {
+        return NextResponse.json({ error: "Missing handoff session" }, { status: 422 });
+      }
+      const handoff = await shareProfessionalHandoffToOrganization({
+        projectId: id,
+        sessionId: body.sessionId,
       });
       return NextResponse.json({ handoff });
     }
