@@ -246,6 +246,123 @@ export interface CanonicalReviewFlag {
   createdAt: string;
 }
 
+export interface CanonicalContributor {
+  id: string;
+  legalFirstName: string;
+  legalMiddleName?: string | null;
+  legalLastName: string;
+  email?: string | null;
+  phone?: string | null;
+  employerAffiliation?: string | null;
+  positionDepartment?: string | null;
+  otherAffiliations?: string | null;
+  contributionDescription?: string | null;
+  contributionStartedOn?: string | null;
+  contributionEndedOn?: string | null;
+  userIdentifiedRole: "contributor" | "possible_inventor" | "unknown";
+  residenceCity?: string | null;
+  residenceRegion?: string | null;
+  residenceCountry?: string | null;
+  isPrimaryContact: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CanonicalDisclosureRecord {
+  id: string;
+  eventType:
+    | "publication"
+    | "website_post"
+    | "oral_presentation"
+    | "poster"
+    | "demo"
+    | "external_discussion"
+    | "sale_offer"
+    | "sale"
+    | "external_use"
+    | "investor_pitch"
+    | "customer_pitch"
+    | "other";
+  eventDate?: string | null;
+  datePrecision?: "exact" | "month" | "year" | "approximate" | "unknown" | null;
+  anticipated: boolean;
+  whatWasShared?: string | null;
+  audienceDescription?: string | null;
+  accessScope?: "named_people" | "limited_group" | "general_public" | "unknown" | null;
+  confidentialityBasis?:
+    | "written_nda"
+    | "other_written_restriction"
+    | "oral_confidentiality"
+    | "none_known"
+    | "unknown"
+    | null;
+  locationOrChannel?: string | null;
+  referenceTitle?: string | null;
+  submissionDate?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CanonicalEvidenceFile {
+  id: string;
+  originalFilename: string;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+  evidenceType:
+    | "drawing"
+    | "photo"
+    | "video"
+    | "email"
+    | "presentation"
+    | "paper"
+    | "notebook"
+    | "agreement"
+    | "prototype_record"
+    | "search_result"
+    | "other";
+  documentDate?: string | null;
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProfessionalHandoffAnswer {
+  id: string;
+  questionId: string;
+  sectionName?: string | null;
+  questionText: string;
+  requiredByProfessional: boolean;
+  sourceCanonicalKeys: string[];
+  answerValue: unknown;
+  resolutionMethod:
+    | "direct_map"
+    | "composite_map"
+    | "user_answered"
+    | "professional_answered"
+    | "unresolved";
+  confidence: "exact" | "review_required" | "unresolved";
+  userApprovedAt?: string | null;
+}
+
+export interface ProfessionalHandoffSession {
+  id: string;
+  templateName: string;
+  organizationName?: string | null;
+  status:
+    | "draft"
+    | "needs_user_input"
+    | "ready_for_review"
+    | "approved"
+    | "exported"
+    | "cancelled";
+  unresolvedQuestionCount: number;
+  mappedQuestionCount: number;
+  answers: ProfessionalHandoffAnswer[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ReadinessProfile {
   ideaSummary: string;
   signals: IpSignal[];
