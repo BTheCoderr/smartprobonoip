@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { recordProjectEvent } from "@/lib/db/events";
 import { getRecordById } from "@/lib/db/records";
 import {
+  answerProfessionalHandoffQuestion,
   approveMappedProfessionalHandoff,
   getLatestProfessionalHandoff,
   prepareProfessionalHandoff,
@@ -55,9 +56,24 @@ export async function POST(
 
   try {
     const body = (await readJsonWithLimit(request)) as {
-      action?: "prepare" | "approve_mapped";
+      action?: "prepare" | "approve_mapped" | "answer";
       sessionId?: string;
+      questionId?: string;
+      value?: string;
     };
+
+    if (body.action === "answer") {
+      if (!body.sessionId || !body.questionId || !body.value?.trim()) {
+        return NextResponse.json({ error: "Missing answer details" }, { status: 422 });
+      }
+      const handoff = await answerProfessionalHandoffQuestion({
+        projectId: id,
+        sessionId: body.sessionId,
+        questionId: body.questionId,
+        value: body.value,
+      });
+      return NextResponse.json({ handoff });
+    }
 
     if (body.action === "approve_mapped") {
       if (!body.sessionId) {
