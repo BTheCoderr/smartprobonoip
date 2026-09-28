@@ -47,7 +47,7 @@ function PathCard({ module }: { module: ProtectionPathModule }) {
           available ? "text-teal-700 group-hover:text-teal-900" : "text-navy-400"
         }`}
       >
-        {available ? "Start patent readiness →" : "Notify me when available →"}
+        {available ? "Build my invention record →" : "Notify me when available →"}
       </p>
     </>
   );
@@ -76,8 +76,8 @@ function PathCard({ module }: { module: ProtectionPathModule }) {
 }
 
 export function ProtectionPathChooser({
-  heading = "What are you trying to protect?",
-  lead = "Choose a protection path. Phase 1 focuses on patent readiness for inventors. Other paths share the same platform foundation and will open in later phases.",
+  heading = "Start with what you are preparing",
+  lead = "Patent readiness is live now. Organize the facts once, keep the record current, and reuse it when a professional asks for the same information in their own intake.",
 }: {
   heading?: string;
   lead?: string;
@@ -103,8 +103,9 @@ export function ProtectionPathChooser({
       </div>
 
       <p className="text-xs leading-relaxed text-navy-500">
-        Preparation only — not legal advice. SmartProBonoIP does not decide which
-        protection fits your situation.{" "}
+        Preparation only — not legal advice. SmartProBonoIP organizes the facts,
+        documents, and questions you bring to a professional; it does not make the
+        legal decision about which protection fits your situation.{" "}
         <Link href={ROUTES.learn} className="font-medium text-teal-700 hover:text-teal-900">
           Learn IP basics
         </Link>{" "}

@@ -48,6 +48,16 @@ const EVENT_META: Record<TimelineEventType, TimelineEventMeta> = {
     defaultDetail: "Handoff packet prepared for a patent professional.",
     tone: "navy",
   },
+  professional_clarification_requested: {
+    label: "Professional clarification requested",
+    defaultDetail: "A reviewing professional asked for additional factual clarification.",
+    tone: "aqua",
+  },
+  professional_clarification_answered: {
+    label: "Clarification answered",
+    defaultDetail: "You answered a professional's factual clarification request.",
+    tone: "teal",
+  },
   clarity_recorded: {
     label: "Clarity rating recorded",
     defaultDetail: "Clarity rating recorded after reviewing the packet.",

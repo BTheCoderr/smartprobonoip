@@ -14,6 +14,8 @@ export type TimelineEventType =
   | "timeline_updated"
   | "document_generated"
   | "professional_handoff_prepared"
+  | "professional_clarification_requested"
+  | "professional_clarification_answered"
   | "clarity_recorded"
   | "status_changed"
   | "title_updated"

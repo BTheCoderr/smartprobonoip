@@ -9,7 +9,7 @@ export const COPYRIGHT_PATH: ProtectionPathModule = {
     id: "copyright",
     label: "Copyright",
     description:
-      "Organize creative works and authorship notes before a copyright conversation. Coming in a future phase.",
+      "Organize creative works, authorship, creation dates, publication details, and supporting files before a copyright conversation.",
     status: "coming_soon",
     entryHref: ROUTES.protectCopyright,
     interestHref: ROUTES.protectCopyright,

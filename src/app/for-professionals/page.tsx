@@ -148,6 +148,46 @@ export default function ForProfessionalsPage() {
       <Section soft>
         <PaperShell>
           <SectionHeader
+            kicker="Your workflow stays yours"
+            title="Import your intake instead of replacing it"
+            lead="SmartProBonoIP can preserve a professional organization's own questions, map overlapping factual fields to the inventor's reusable record, and leave firm-specific questions untouched."
+          />
+          <div className="mt-10 grid gap-4 lg:grid-cols-3">
+            <DossierCard
+              index={0}
+              title="Keep your questionnaire"
+              body="An organization admin can import questionnaire text into the private organization portal. The original questions stay attached to that organization's template."
+            />
+            <DossierCard
+              index={1}
+              title="Verify the mappings"
+              body="SmartProBonoIP can suggest which questions correspond to reusable factual fields, but the organization must confirm each mapping or mark the question firm-only before the template is verified."
+            />
+            <DossierCard
+              index={2}
+              title="Ask for clarification"
+              body="After an inventor chooses to share with the organization, reviewers can request additional factual clarification without editing the inventor's record or turning the request into a legal conclusion."
+            />
+          </div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href={ROUTES.organizationLogin} className="btn-primary">
+              Organization portal
+            </Link>
+            <PartnerInterestLink
+              href={ROUTES.contact}
+              ctaName="Request intake-mapping pilot"
+              pageSection="professionals_intake_mapping"
+              className="btn-secondary"
+            >
+              Request intake-mapping pilot
+            </PartnerInterestLink>
+          </div>
+        </PaperShell>
+      </Section>
+
+      <Section soft>
+        <PaperShell>
+          <SectionHeader
             kicker="Export for Attorney"
             title="Structured handoff from completed packets"
             lead={PROFESSIONALS_COPY.exportIntro}

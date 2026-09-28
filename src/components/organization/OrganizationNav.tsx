@@ -8,6 +8,7 @@ import { ROUTES } from "@/lib/routes";
 const NAV = [
   { href: ROUTES.organization, label: "Inbox" },
   { href: ROUTES.organizationMetrics, label: "Metrics" },
+  { href: ROUTES.organizationIntakes, label: "Intake forms" },
 ];
 
 export function OrganizationNav() {

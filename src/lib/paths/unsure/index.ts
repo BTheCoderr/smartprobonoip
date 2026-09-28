@@ -12,7 +12,7 @@ export const UNSURE_PATH: ProtectionPathModule = {
     id: "unsure",
     label: "Not sure?",
     description:
-      "Learn how patents, trademarks, copyrights, and trade secrets differ — then choose a path. Guided routing is coming soon.",
+      "Compare the main IP protection types, organize the facts you already know, and prepare better questions for a professional.",
     status: "coming_soon",
     entryHref: ROUTES.protectUnsure,
     interestHref: ROUTES.protectUnsure,

@@ -12,7 +12,7 @@ export const PATENT_PATH: ProtectionPathModule = {
     id: "patent",
     label: "Patent",
     description:
-      "Prepare an invention disclosure, note public sharing history, and build a professional handoff packet before expert review.",
+      "Build a reusable invention record with the technical disclosure, contributor history, disclosure timeline, supporting evidence, and professional handoff details in one place.",
     status: "available",
     entryHref: ROUTES.disclaimer,
     interestHref: ROUTES.disclaimer,
