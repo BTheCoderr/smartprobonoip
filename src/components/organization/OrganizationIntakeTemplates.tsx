@@ -287,7 +287,7 @@ export function OrganizationIntakeTemplates() {
 
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-sm leading-relaxed text-amber-900">
           Import a blank organization questionnaire only. Do not paste a completed
-          client intake or another client's confidential responses into the template
+          client intake or another client&apos;s confidential responses into the template
           importer.
         </div>
 
