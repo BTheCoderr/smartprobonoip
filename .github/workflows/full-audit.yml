@@ -1,0 +1,29 @@
+name: Full App Audit
+
+on:
+  push:
+    branches:
+      - audit/full-app-2026-09-28
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Unit and regression tests
+        run: npm test
+      - name: Copy safety
+        run: npm run test:copy-safety
+      - name: Production build
+        run: npm run build
+      - name: Dependency audit
+        if: always()
+        run: npm audit --json || true
