@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ERMI_SYSTEM_PROMPT } from "@/lib/legal/prompts";
 import { runLegalModel, type LegalModelMessage } from "@/lib/legal/model";
+import { buildLegalChatFallback } from "@/lib/legal/fallback";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
 import {
   limitErrorResponse,
@@ -62,15 +63,22 @@ export async function POST(request: Request) {
         ? body.handoff.trim().slice(0, 8000)
         : "";
 
-    const response = await runLegalModel({
-      system: handoff
-        ? `${ERMI_SYSTEM_PROMPT}\n\nPreparation context supplied by the user from another SmartProBono tool:\n${handoff}`
-        : ERMI_SYSTEM_PROMPT,
-      messages,
-      maxTokens: 1700,
-    });
-
-    return NextResponse.json({ message: response });
+    try {
+      const response = await runLegalModel({
+        system: handoff
+          ? `${ERMI_SYSTEM_PROMPT}\n\nPreparation context supplied by the user from another SmartProBono tool:\n${handoff}`
+          : ERMI_SYSTEM_PROMPT,
+        messages,
+        maxTokens: 1700,
+      });
+      return NextResponse.json({ message: response, mode: "ai" });
+    } catch (error) {
+      logServerError("legal.chat.ai_fallback", error, { route: "api/legal/chat" });
+      return NextResponse.json({
+        message: buildLegalChatFallback(messages, handoff),
+        mode: "fallback",
+      });
+    }
   } catch (error) {
     logServerError("legal.chat", error, { route: "api/legal/chat" });
     return NextResponse.json(
