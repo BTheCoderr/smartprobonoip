@@ -7,3 +7,6 @@
 
 [context.production.environment]
   NEXT_PUBLIC_APP_URL = "https://smartprobono.org"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
