@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 type Message = {
   role: "user" | "assistant";
@@ -13,25 +13,26 @@ const initialMessage: Message = {
     "Hi — I’m Ermi. I can help you organize a legal situation, prepare questions, make a checklist, or draft language for review. I’m not your lawyer and I won’t invent rules or deadlines. What are you working on?",
 };
 
+function subscribeToHandoff() {
+  return () => {};
+}
+
+function readHandoff(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    return window.sessionStorage.getItem("spb_legal_handoff") || "";
+  } catch {
+    return "";
+  }
+}
+
 export function LegalAssistant() {
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [input, setInput] = useState("");
-  const [handoff, setHandoff] = useState("");
+  const handoff = useSyncExternalStore(subscribeToHandoff, readHandoff, () => "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    try {
-      const saved = window.sessionStorage.getItem("spb_legal_handoff") || "";
-      if (saved) {
-        setHandoff(saved);
-        window.sessionStorage.removeItem("spb_legal_handoff");
-      }
-    } catch {
-      // Session storage can be unavailable in privacy-restricted contexts.
-    }
-  }, []);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -62,7 +63,13 @@ export function LegalAssistant() {
         throw new Error(data.error || "Ermi could not respond.");
       }
       setMessages((current) => [...current, { role: "assistant", content: data.message! }]);
-      setHandoff("");
+      if (handoff) {
+        try {
+          window.sessionStorage.removeItem("spb_legal_handoff");
+        } catch {
+          // Session storage can be unavailable in privacy-restricted contexts.
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ermi could not respond.");
     } finally {
