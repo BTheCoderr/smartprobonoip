@@ -29,6 +29,7 @@ export const ROUTES = {
   organization: "/organization",
   organizationLogin: "/organization/login",
   organizationMetrics: "/organization/metrics",
+  organizationIntakes: "/organization/intakes",
   organizationReferral: (id: string) => `/organization/referrals/${id}`,
   leads: "/leads",
   recover: "/recover",
