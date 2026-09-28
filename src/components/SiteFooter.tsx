@@ -14,61 +14,28 @@ export function SiteFooter() {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-sm">
             <BrandMark variant="full" size="sm" light />
-            <p className="mt-2 text-xs leading-relaxed text-navy-100">
-              {BRAND.tagline}
-            </p>
+            <p className="mt-2 text-xs leading-relaxed text-navy-100">{BRAND.platformTagline}</p>
           </div>
-          <nav
-            aria-label="Footer"
-            className="flex flex-wrap gap-x-4 gap-y-2.5 text-xs font-medium"
-          >
-            <Link href={ROUTES.home} className={footerLinkClass}>
-              Product
-            </Link>
-            <Link href={ROUTES.sample} className={footerLinkClass}>
-              Sample
-            </Link>
-            <Link href={ROUTES.learn} className={footerLinkClass}>
-              Learn
-            </Link>
-            <Link href={ROUTES.trust} className={footerLinkClass}>
-              Trust
-            </Link>
-            <Link href={ROUTES.forProfessionals} className={footerLinkClass}>
-              For Professionals
-            </Link>
-            <Link href={ROUTES.pilot} className={footerLinkClass}>
-              Pilot kit
-            </Link>
-            <Link href={ROUTES.afterMeeting} className={footerLinkClass}>
-              After Meeting
-            </Link>
-            <Link href={ROUTES.privacy} className={footerLinkClass}>
-              Privacy
-            </Link>
-            <Link href={ROUTES.terms} className={footerLinkClass}>
-              Terms
-            </Link>
-            <Link href={ROUTES.disclaimer} className={footerLinkClass}>
-              Disclaimer
-            </Link>
-            <Link href={ROUTES.contact} className={footerLinkClass}>
-              Contact
-            </Link>
+          <nav aria-label="Footer" className="flex flex-wrap gap-x-4 gap-y-2.5 text-xs font-medium">
+            <Link href={ROUTES.legal} className={footerLinkClass}>Legal help</Link>
+            <Link href={ROUTES.ip} className={footerLinkClass}>SmartProBonoIP</Link>
+            <Link href={ROUTES.workspace} className={footerLinkClass}>IP Workspace</Link>
+            <Link href={ROUTES.learn} className={footerLinkClass}>Learn</Link>
+            <Link href={ROUTES.trust} className={footerLinkClass}>Trust</Link>
+            <Link href={ROUTES.forProfessionals} className={footerLinkClass}>For Professionals</Link>
+            <Link href={ROUTES.privacy} className={footerLinkClass}>Privacy</Link>
+            <Link href={ROUTES.terms} className={footerLinkClass}>Terms</Link>
+            <Link href={ROUTES.disclaimer} className={footerLinkClass}>Disclaimer</Link>
+            <Link href={ROUTES.contact} className={footerLinkClass}>Contact</Link>
           </nav>
         </div>
         <p className="mt-6 max-w-3xl text-[11px] leading-relaxed text-navy-100 sm:text-xs">
-          {DISCLAIMER_SHORT}{" "}
-          <Link
-            href={ROUTES.trust}
-            className="font-medium text-aqua-200 underline-offset-2 transition hover:text-cream hover:underline"
-          >
+          {DISCLAIMER_SHORT} SmartProBono legal tools provide educational and preparation support, not legal representation or legal advice.{" "}
+          <Link href={ROUTES.trust} className="font-medium text-aqua-200 underline-offset-2 transition hover:text-cream hover:underline">
             Trust Center
           </Link>
         </p>
-        <p className="mt-3 text-[11px] text-navy-200 sm:text-xs">
-          {formatCopyrightNotice()}
-        </p>
+        <p className="mt-3 text-[11px] text-navy-200 sm:text-xs">{formatCopyrightNotice()}</p>
       </div>
     </footer>
   );
