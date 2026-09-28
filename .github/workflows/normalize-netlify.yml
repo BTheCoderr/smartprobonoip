@@ -1,0 +1,49 @@
+name: Normalize Netlify Config
+
+on:
+  push:
+    branches:
+      - audit/full-app-2026-09-28
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/full-app-2026-09-28
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Remove explicit Netlify runtime pin
+        run: npm uninstall @netlify/plugin-nextjs
+      - name: Normalize Netlify config and public scan exceptions
+        shell: bash
+        run: |
+          cat > netlify.toml <<'EOF'
+          [build]
+            command = "npm run build"
+
+          [build.environment]
+            NODE_VERSION = "24"
+            NEXT_PUBLIC_APP_URL = "https://smartprobono.org"
+            SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_APP_URL,NEXT_PUBLIC_GTM_ID"
+
+          [context.production.environment]
+            NEXT_PUBLIC_APP_URL = "https://smartprobono.org"
+          EOF
+      - name: Commit normalized config
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json netlify.toml
+          git commit -m "Normalize Netlify config and public secret scan keys"
+          git push origin HEAD:audit/full-app-2026-09-28
