@@ -10,7 +10,7 @@ import {
 } from "../../scripts/verify-production-schema";
 
 describe("verify-production-schema", () => {
-  it("maps cumulative PASS counts through 026", () => {
+  it("maps cumulative PASS counts through 036", () => {
     assert.deepEqual(EXPECTED_PASS_AFTER["017"], 2);
     assert.deepEqual(EXPECTED_PASS_AFTER["018"], 4);
     assert.deepEqual(EXPECTED_PASS_AFTER["019"], 4);
@@ -21,8 +21,18 @@ describe("verify-production-schema", () => {
     assert.deepEqual(EXPECTED_PASS_AFTER["024"], 8);
     assert.deepEqual(EXPECTED_PASS_AFTER["025"], 9);
     assert.deepEqual(EXPECTED_PASS_AFTER["026"], 10);
-    assert.equal(MIGRATION_ORDER.length, 10);
-    assert.equal(CHECKS.length, 10);
+    assert.deepEqual(EXPECTED_PASS_AFTER["027"], 14);
+    assert.deepEqual(EXPECTED_PASS_AFTER["028"], 16);
+    assert.deepEqual(EXPECTED_PASS_AFTER["029"], 17);
+    assert.deepEqual(EXPECTED_PASS_AFTER["030"], 18);
+    assert.deepEqual(EXPECTED_PASS_AFTER["031"], 19);
+    assert.deepEqual(EXPECTED_PASS_AFTER["032"], 20);
+    assert.deepEqual(EXPECTED_PASS_AFTER["033"], 22);
+    assert.deepEqual(EXPECTED_PASS_AFTER["034"], 23);
+    assert.deepEqual(EXPECTED_PASS_AFTER["035"], 24);
+    assert.deepEqual(EXPECTED_PASS_AFTER["036"], 25);
+    assert.equal(MIGRATION_ORDER.length, 20);
+    assert.equal(CHECKS.length, 25);
   });
 
   it("parses --migration and --strict flags", () => {
