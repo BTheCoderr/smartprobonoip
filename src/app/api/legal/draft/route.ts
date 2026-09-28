@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { DRAFT_SYSTEM_PROMPT } from "@/lib/legal/prompts";
 import { runLegalModel } from "@/lib/legal/model";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
+import {
+  limitErrorResponse,
+  readJsonWithLimit,
+} from "@/lib/security/requestLimits";
+import { logServerError } from "@/lib/security/safeLog";
 
 export const runtime = "nodejs";
 
@@ -17,8 +23,23 @@ function text(value: unknown, max: number): string {
 }
 
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "legal-draft", {
+    limit: 12,
+    windowMs: 15 * 60_000,
+  });
+  if (limited) return limited;
+
+  let body: DraftBody;
   try {
-    const body = (await request.json()) as DraftBody;
+    body = (await readJsonWithLimit(request, 96_000)) as DraftBody;
+  } catch (error) {
+    return (
+      limitErrorResponse(error) ??
+      NextResponse.json({ error: "Invalid JSON body." }, { status: 400 })
+    );
+  }
+
+  try {
     const documentType = text(body.documentType, 120);
     const jurisdiction = text(body.jurisdiction, 160);
     const facts = text(body.facts, 12000);
@@ -52,7 +73,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ draft });
   } catch (error) {
-    console.error("legal draft failed", error);
+    logServerError("legal.draft", error, { route: "api/legal/draft" });
     return NextResponse.json(
       { error: "The draft could not be generated right now. Please try again." },
       { status: 500 },
