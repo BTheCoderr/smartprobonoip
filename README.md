@@ -1,18 +1,15 @@
-# SmartProBonoIP — IP Readiness Platform
+# SmartProBono — Legal + IP Preparation Platform
 
-**SmartProBono** is the umbrella platform; **SmartProBonoIP** is its first product — an **IP Readiness Platform** that currently ships **patent readiness** for overlooked inventors.
+**SmartProBono** is the umbrella platform. It now has two primary preparation paths:
 
-> SmartProBonoIP is the digital front door for overlooked inventors.
+- **SmartProBono Legal** — legal-question organization, Ermi, draft preparation, and guided legal workflows.
+- **SmartProBonoIP** — the specialized IP Readiness Platform, with patent readiness live and the canonical IP record / professional handoff system.
 
-SmartProBonoIP helps inventors, creators, students, founders, and small businesses **organize invention disclosures before they reach** a patent agent, attorney, clinic, nonprofit, or innovation partner.
+The platform model is **Learn → Prepare → Connect**: understand the issue, organize facts and documents, then move a clearer record to the right human next step.
 
-**It does not replace experts. It helps more people become ready enough to reach them.**
+**SmartProBono does not replace lawyers, patent professionals, courts, legal-aid organizations, or other qualified experts. It helps people become better prepared to work with them.**
 
-The workflow it proves: **messy idea → guided invention disclosure → organized IP Readiness Packet → professional handoff.**
-
-Landing asks **“What are you trying to protect?”** — Patent is available now; Trademark, Copyright, Trade Secret & NDA, and Not sure? are registered as coming-soon modules. See [`docs/IP_READINESS_PLATFORM.md`](./docs/IP_READINESS_PLATFORM.md).
-
-> ⚠️ This tool is educational only. It never gives legal advice, never says "you need a patent", and never makes legal conclusions. It only uses safe framing ("this may be relevant to…", "consider discussing this with…").
+See [`docs/SMARTPROBONO_UNIFIED_PLATFORM.md`](./docs/SMARTPROBONO_UNIFIED_PLATFORM.md) for the consolidation architecture and migration plan.
 
 ---
 
@@ -41,7 +38,7 @@ npm run start
 
 ## Try the demo (no setup)
 
-Click **Try demo intake** on the product landing or go to `/smartprobonoip/disclaimer?demo=1`.
+Open `/ip` for SmartProBonoIP, then click **Try demo intake** on the IP product landing or go to `/disclaimer?demo=1`.
 
 The demo loads a sample invention (HydroSeal), walks through disclaimer → intake → profile → PDF → dashboard metrics. Demo data is clearly marked and does not pollute live pilot reporting.
 
@@ -51,9 +48,14 @@ The demo loads a sample invention (HydroSeal), walks through disclaimer → inta
 
 | Route | Description |
 | --- | --- |
-| `/` | IP Readiness Platform landing — “What are you trying to protect?” |
-| `/protect/[path]` | Protection-path entry (patent → disclaimer; others coming soon) |
-| `/smartprobonoip` | Same landing (rewrite) |
+| `/` | SmartProBono umbrella landing — choose Legal or IP |
+| `/legal` | SmartProBono Legal home |
+| `/legal/ask-ermi` | Ermi legal preparation assistant |
+| `/legal/draft` | Legal-support draft builder |
+| `/legal/record-clearing` | Record-clearing preparation flow |
+| `/ip` | SmartProBonoIP product landing |
+| `/protect/[path]` | IP protection-path entry (patent → disclaimer; others coming soon) |
+| `/smartprobonoip` | Compatibility redirect to `/ip` |
 | `/smartprobonoip/disclaimer` | Legal disclaimer + privacy notice + dual consent |
 | `/smartprobonoip/start` | Guided invention disclosure / intake |
 | `/smartprobonoip/learn` | Patent-focused educational journey |
@@ -95,7 +97,9 @@ Connect the same GitHub repo and set the same environment variables. Next.js 16 
 | `SUPABASE_SERVICE_ROLE_KEY` | Pilot only | Server API routes (never public) |
 | `PARTNER_DASHBOARD_SECRET` | Pilot only | Protects `/api/partner/*` |
 | `OPENAI_API_KEY` | No | Optional AI profiles |
-| `OPENAI_MODEL` | No | AI model override |
+| `OPENAI_MODEL` | No | SmartProBonoIP AI model override |
+| `GROQ_API_KEY` | Legal AI only | Ermi and legal draft builder (server-only) |
+| `GROQ_MODEL` | No | Legal AI model override |
 | `NEXT_PUBLIC_APP_URL` | No | Canonical URL in exports |
 
 Copy [`.env.example`](./.env.example) to `.env.local` for local development.
