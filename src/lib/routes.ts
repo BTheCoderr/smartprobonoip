@@ -1,5 +1,10 @@
 export const ROUTES = {
   home: "/",
+  legal: "/legal",
+  legalErmi: "/legal/ask-ermi",
+  legalDraft: "/legal/draft",
+  legalRecordClearing: "/legal/record-clearing",
+  ip: "/ip",
   legacyHome: "/smartprobonoip",
   start: "/start",
   disclaimer: "/disclaimer",
@@ -16,7 +21,7 @@ export const ROUTES = {
   pilotTracker: "/pilot-tracker",
   forClinics: "/for/clinics",
   forUniversities: "/for/universities",
-  /** Inventor workspace. Returning inventors are redirected here from `/`. */
+  /** Inventor workspace. */
   workspace: "/workspace",
   /** Partner pilot metrics — unrelated to the inventor workspace. */
   dashboard: "/dashboard",
@@ -31,7 +36,7 @@ export const ROUTES = {
   contact: "/contact",
   about: "/about",
   afterMeeting: "/after-meeting",
-  /** Protection-path entry points (platform architecture) */
+  /** Protection-path entry points (SmartProBonoIP architecture) */
   protect: "/protect",
   protectPatent: "/protect/patent",
   protectTrademark: "/protect/trademark",
@@ -48,7 +53,10 @@ export const ROUTES = {
   sampleSimilarRef: "/sample#similar-reference-search-prep",
 } as const;
 
-/** Strip accidental /smartprobonoip prefix from route paths (not from URLs or slugs). */
+/**
+ * Keep historical SmartProBonoIP URLs working while the umbrella platform
+ * moves to the root and the IP product lives at /ip.
+ */
 export function normalizeAppPath(path: string): string {
   let normalized = path.startsWith("/") ? path : `/${path}`;
 
@@ -57,7 +65,7 @@ export function normalizeAppPath(path: string): string {
   }
 
   if (normalized === "/smartprobonoip") {
-    return "/";
+    return ROUTES.ip;
   }
 
   if (normalized.startsWith("/smartprobonoip/")) {

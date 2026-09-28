@@ -11,6 +11,7 @@ export const BRAND_COLORS = {
 export const LEGAL = {
   copyrightHolder: "SmartProBono",
   copyrightYear: 2026,
+  platformName: "SmartProBono",
   productName: "SmartProBonoIP",
   privacyEmail: "bferrell@smartprobono.org",
   pdfWatermark:
@@ -26,6 +27,10 @@ export function formatCopyrightNotice() {
 
 export const BRAND = {
   umbrella: "SmartProBono",
+  platformFeature: "Legal + IP Preparation",
+  platformTagline: "Prepare before the next legal or IP conversation.",
+  platformPositioning:
+    "SmartProBono helps people understand what they have, organize the facts, prepare useful documents and questions, and connect with the right next step — without pretending to replace a lawyer or other qualified professional.",
   product: "SmartProBonoIP",
   feature: "IP Readiness Platform",
   tagline: "What are you trying to protect?",
@@ -34,5 +39,5 @@ export const BRAND = {
   coreMessage:
     "A good idea should not die just because the first step is confusing.",
   mission:
-    "Built for people who may have strong ideas but limited access to the IP system. SmartProBonoIP is not replacing experts — it helps more people become ready enough to reach them.",
+    "Built for people who may have strong ideas but limited access to the legal and IP systems. SmartProBono helps people become better prepared for the professionals and institutions they may need.",
 } as const;

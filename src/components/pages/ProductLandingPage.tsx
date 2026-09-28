@@ -27,6 +27,21 @@ export default function ProductLandingPage() {
   return (
     <div>
       <PageEvent event="landing_viewed" />
+      <div className="border-b border-teal-200/70 bg-teal-50/70">
+        <PaperShell className="flex flex-wrap items-center justify-between gap-2 py-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-base font-bold tracking-tight text-navy-900">
+              SmartProBono<span className="text-teal-700">IP</span>
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-navy-500">
+              IP Readiness Platform
+            </span>
+          </div>
+          <Link href={ROUTES.home} className="text-xs font-medium text-teal-700 hover:underline">
+            Back to SmartProBono
+          </Link>
+        </PaperShell>
+      </div>
       <CreativeHeroSection
         stamp={LANDING_COPY.heroStamp}
         title={BRAND.tagline}
