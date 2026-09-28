@@ -9,6 +9,9 @@ jobs:
   netlify-repro:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      NETLIFY_SITE_ID: smartprobonoip.netlify.app
+      CONTEXT: deploy-preview
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -16,5 +19,5 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Netlify local build
-        run: npx --yes netlify-cli@latest build
+      - name: Netlify deploy-preview build
+        run: DEBUG=* npx --yes netlify-cli@latest build --context deploy-preview
