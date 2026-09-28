@@ -277,7 +277,7 @@ export const LANDING_COPY = {
   productProofLead:
     "Screens below use the fictional HydroSeal demo packet — the same example you can open, download, or start from.",
   productProofMediaNote:
-    "Add real screenshots or a short clip under public/product-proof/ when available. Until then, interactive UI previews are shown.",
+    "Interactive previews use fictional demo data so no inventor record is exposed.",
   socialProofEmptyLead:
     "Partner quotes and logos will appear here once we have permission to share them.",
   trustQuotes: [] as const,
@@ -354,7 +354,7 @@ export const LANDING_COPY = {
   trustPoints: [
     "SmartProBonoIP is not a law firm and does not provide legal advice",
     "Preparation tool only — not patentability, clearance, or filing opinions",
-    "Packet data stays in your session; exports happen only when you choose",
+    "Packet access is scoped to your browser session or recovery link; pilot records may be stored in our database, and exports or professional sharing happen only when you choose",
     "Public analytics exclude invention descriptions, emails, and recovery tokens",
     "Suggested CPC areas and search tools are conversation starters for expert review",
   ],
@@ -1030,7 +1030,7 @@ export const TRUST_COPY = {
   aiScope: {
     title: "AI usage and limitations",
     points: [
-      "SmartProBonoIP uses optional OpenAI for packet generation and the Packet Coach when an API key is configured; otherwise rule-based prep responses are used",
+      "SmartProBonoIP uses optional OpenAI for packet generation and the Packet Coach when configured; SmartProBono Legal can use Groq or OpenAI for Ermi and draft assistance, with deterministic preparation fallbacks when no provider is available",
       "When OpenAI is enabled, API submissions are not used to train OpenAI models by default under OpenAI's published API data policy; abuse-monitoring logs may be retained up to 30 days unless your deployment uses Zero Data Retention",
       "All AI-assisted outputs are editable drafts — not legal conclusions about patentability, inventorship, or disclosure duties",
       "Suggested CPC areas and search terms are conversation starters only",
