@@ -98,7 +98,7 @@ Connect the same GitHub repo and set the same environment variables. Next.js 16 
 | `PARTNER_DASHBOARD_SECRET` | Pilot only | Protects `/api/partner/*` |
 | `OPENAI_API_KEY` | No | Optional AI profiles |
 | `OPENAI_MODEL` | No | SmartProBonoIP AI model override |
-| `GROQ_API_KEY` | Legal AI only | Ermi and legal draft builder (server-only) |
+| `GROQ_API_KEY` | No | Optional dedicated provider for Ermi/legal drafts; otherwise uses `OPENAI_API_KEY` |
 | `GROQ_MODEL` | No | Legal AI model override |
 | `NEXT_PUBLIC_APP_URL` | No | Canonical URL in exports |
 
