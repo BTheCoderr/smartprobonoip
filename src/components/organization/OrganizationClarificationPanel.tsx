@@ -49,7 +49,7 @@ export function OrganizationClarificationPanel({
       `/api/organization/referrals/${referralId}/clarifications`,
     );
     if (res.status === 401 || res.status === 403) {
-      window.location.href = ROUTES.organizationLogin;
+      window.location.assign(ROUTES.organizationLogin);
       return;
     }
     if (!res.ok) throw new Error(await readError(res));
@@ -62,7 +62,7 @@ export function OrganizationClarificationPanel({
     fetch(`/api/organization/referrals/${referralId}/clarifications`)
       .then(async (res) => {
         if (res.status === 401 || res.status === 403) {
-          window.location.href = ROUTES.organizationLogin;
+          window.location.assign(ROUTES.organizationLogin);
           return null;
         }
         if (!res.ok) throw new Error(await readError(res));
