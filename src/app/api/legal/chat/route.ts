@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { ERMI_SYSTEM_PROMPT } from "@/lib/legal/prompts";
 import { runLegalModel, type LegalModelMessage } from "@/lib/legal/model";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
+import {
+  limitErrorResponse,
+  readJsonWithLimit,
+} from "@/lib/security/requestLimits";
+import { logServerError } from "@/lib/security/safeLog";
 
 export const runtime = "nodejs";
 
@@ -26,11 +32,29 @@ function cleanMessages(input: ChatBody["messages"]): LegalModelMessage[] {
 }
 
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "legal-chat", {
+    limit: 24,
+    windowMs: 15 * 60_000,
+  });
+  if (limited) return limited;
+
+  let body: ChatBody;
   try {
-    const body = (await request.json()) as ChatBody;
+    body = (await readJsonWithLimit(request, 96_000)) as ChatBody;
+  } catch (error) {
+    return (
+      limitErrorResponse(error) ??
+      NextResponse.json({ error: "Invalid JSON body." }, { status: 400 })
+    );
+  }
+
+  try {
     const messages = cleanMessages(body.messages);
     if (!messages.length || messages[messages.length - 1]?.role !== "user") {
-      return NextResponse.json({ error: "A user message is required." }, { status: 400 });
+      return NextResponse.json(
+        { error: "A user message is required." },
+        { status: 400 },
+      );
     }
 
     const handoff =
@@ -48,7 +72,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: response });
   } catch (error) {
-    console.error("legal chat failed", error);
+    logServerError("legal.chat", error, { route: "api/legal/chat" });
     return NextResponse.json(
       { error: "Ermi could not respond right now. Please try again." },
       { status: 500 },
