@@ -12,7 +12,7 @@ export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
       <p className="mb-2 text-sm font-medium uppercase tracking-wide text-navy-600">
-        {BRAND.product}
+        {BRAND.umbrella}
       </p>
       <h1 className="text-3xl font-bold text-navy-900">Privacy & your data</h1>
       <p className="mt-2 text-navy-500">
