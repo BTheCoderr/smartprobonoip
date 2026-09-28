@@ -18,9 +18,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SmartProBonoIP — IP Readiness Platform",
+  title: {
+    default: "SmartProBono — Legal + IP Preparation",
+    template: "%s | SmartProBono",
+  },
   description:
-    "What are you trying to protect? Prepare invention disclosures and professional handoff packets before expert review. Patent readiness available now — preparation only, not legal advice.",
+    "Prepare for legal and intellectual-property conversations with clearer facts, documents, questions, and professional handoffs. Educational preparation only — not legal advice.",
 };
 
 export default function RootLayout({
@@ -31,10 +34,7 @@ export default function RootLayout({
   const gtmId = gtmContainerId();
 
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
         {gtmId ? (
           <noscript>
