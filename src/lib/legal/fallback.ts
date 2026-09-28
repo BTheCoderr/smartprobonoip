@@ -1,5 +1,3 @@
-import "server-only";
-
 import type { LegalModelMessage } from "@/lib/legal/model";
 
 function lastUserMessage(messages: LegalModelMessage[]): string {
