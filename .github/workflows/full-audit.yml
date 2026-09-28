@@ -24,6 +24,39 @@ jobs:
         run: npm run test:copy-safety
       - name: Production build
         run: npm run build
+      - name: Local runtime smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start > /tmp/smartprobono-next.log 2>&1 &
+          pid=$!
+          trap 'kill $pid 2>/dev/null || true' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/legal >/dev/null; then break; fi
+            sleep 1
+          done
+
+          chat=$(curl -sS -w '\n%{http_code}'             -H 'Content-Type: application/json'             -d '{"messages":[{"role":"user","content":"I received a generic notice. Give me a preparation checklist only."}]}'             http://127.0.0.1:3000/api/legal/chat)
+          chat_code=$(echo "$chat" | tail -n1)
+          chat_body=$(echo "$chat" | sed '$d')
+          echo "local legal/chat -> $chat_code"
+          test "$chat_code" = "200"
+          echo "$chat_body" | jq -e '.message | type=="string" and length > 40' >/dev/null
+
+          draft=$(curl -sS -w '\n%{http_code}'             -H 'Content-Type: application/json'             -d '{"documentType":"Factual summary","jurisdiction":"Not specified","facts":"I received a written notice on September 1. I have a copy of it. I have not verified any deadlines.","goal":"Create a neutral factual summary I can bring to a professional.","tone":"Professional and factual"}'             http://127.0.0.1:3000/api/legal/draft)
+          draft_code=$(echo "$draft" | tail -n1)
+          draft_body=$(echo "$draft" | sed '$d')
+          echo "local legal/draft -> $draft_code"
+          test "$draft_code" = "200"
+          echo "$draft_body" | jq -e '.draft | startswith("DRAFT — FOR REVIEW")' >/dev/null
+
+          session="audit-smoke-20260928-0001"
+          generated=$(curl -sS -w '\n%{http_code}'             -H 'Content-Type: application/json'             -H "x-pilot-session: $session"             -d '{"answers":{"whatCreated":"A portable bottle that filters water while a hiker drinks.","problemSolved":"Hikers can run out of safe drinking water and existing treatment gear can be cumbersome.","whoFor":"Hikers and campers who need portable clean water.","howItWorks":"Water passes through a replaceable filter cartridge as the user drinks through the mouthpiece.","mainParts":"Bottle body, replaceable filter cartridge, intake valve, cap, and mouthpiece.","whatDifferent":"The replaceable cartridge filters inline while drinking without a separate pumping step.","itemType":"physical_product","assets":["notes"],"sharedChannels":["none"],"goals":["expert_review"],"location":"United States"}}'             http://127.0.0.1:3000/api/generate)
+          generate_code=$(echo "$generated" | tail -n1)
+          generate_body=$(echo "$generated" | sed '$d')
+          echo "local api/generate -> $generate_code"
+          test "$generate_code" = "200"
+          echo "$generate_body" | jq -e '.profile.ideaSummary | type=="string" and length > 20' >/dev/null
       - name: Dependency audit
         if: always()
         run: npm audit --json || true
@@ -112,6 +145,7 @@ jobs:
           echo "$body" | jq -e '.message | type=="string" and length > 40' >/dev/null
 
       - name: Legal draft production POST
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
@@ -121,3 +155,16 @@ jobs:
           echo "legal/draft -> $code"
           test "$code" = "200"
           echo "$body" | jq -e '.draft | type=="string" and length > 60' >/dev/null
+
+      - name: IP generator production POST
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          session="audit-smoke-20260928-0002"
+          response=$(curl -sS -w '\n%{http_code}'             -H 'Content-Type: application/json'             -H "x-pilot-session: $session"             -d '{"answers":{"whatCreated":"A portable bottle that filters water while a hiker drinks.","problemSolved":"Hikers can run out of safe drinking water and existing treatment gear can be cumbersome.","whoFor":"Hikers and campers who need portable clean water.","howItWorks":"Water passes through a replaceable filter cartridge as the user drinks through the mouthpiece.","mainParts":"Bottle body, replaceable filter cartridge, intake valve, cap, and mouthpiece.","whatDifferent":"The replaceable cartridge filters inline while drinking without a separate pumping step.","itemType":"physical_product","assets":["notes"],"sharedChannels":["none"],"goals":["expert_review"],"location":"United States"}}'             https://smartprobono.org/api/generate)
+          code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          echo "api/generate -> $code"
+          test "$code" = "200"
+          echo "$body" | jq -e '.profile.ideaSummary | type=="string" and length > 20' >/dev/null
