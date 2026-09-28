@@ -1,0 +1,31 @@
+name: Authenticated Netlify Repro
+
+on:
+  push:
+    branches:
+      - audit/full-app-2026-09-28
+
+jobs:
+  netlify-auth-repro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: smartprobonoip.netlify.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify Netlify auth without printing token
+        shell: bash
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "NETLIFY_AUTH_TOKEN is not configured in GitHub Actions."
+            exit 2
+          fi
+          npx --yes netlify-cli@latest status
+      - name: Reproduce deploy-preview build
+        run: DEBUG=* npx --yes netlify-cli@latest build --context deploy-preview
