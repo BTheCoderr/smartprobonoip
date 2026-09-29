@@ -31,7 +31,7 @@ jobs:
           body=$(echo "$response" | sed '$d')
           echo "portfolio -> $code"
           test "$code" = "200"
-          echo "$body" | jq -e '.inventions | type=="array"' >/dev/null
+          echo "$body" | jq -e '.snapshot.inventions | type=="array"' >/dev/null
 
       - name: Existing Legal API
         shell: bash
