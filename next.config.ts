@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import { HSTS_HEADER, SECURITY_HEADERS } from "./src/lib/security/headers";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pdf-parse", "@napi-rs/canvas", "mammoth"],
+  serverExternalPackages: ["mammoth"],
   async rewrites() {
     return [
       { source: "/smartprobonoip/:path*", destination: "/:path*" },
