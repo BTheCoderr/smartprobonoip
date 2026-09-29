@@ -94,20 +94,29 @@ function normalizeText(text: string): string {
 }
 
 async function extractPdf(buffer: Buffer): Promise<string> {
-  const worker = await import("pdf-parse/worker");
-  const { PDFParse } = await import("pdf-parse");
-  PDFParse.setWorker(worker.getData());
+  const { extractText, getDocumentProxy } = await import("unpdf");
+  const data = new Uint8Array(buffer.byteLength);
+  data.set(buffer);
 
-  const data = new Uint8Array(
-    buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
-  );
-  const parser = new PDFParse({ data });
-  try {
-    const result = await parser.getText();
-    return result.text ?? "";
-  } finally {
-    await parser.destroy();
+  const pdf = await getDocumentProxy(data, {
+    maxImageSize: 16_777_216,
+    disableFontFace: true,
+  });
+  if (pdf.numPages > 200) {
+    throw new LegalDocumentError(
+      "This PDF has too many pages for the current document reader.",
+      422,
+      "too_many_pages",
+    );
   }
+
+  const result = await Promise.race([
+    extractText(pdf, { mergePages: true }),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("PDF extraction timed out")), 12_000),
+    ),
+  ]);
+  return typeof result.text === "string" ? result.text : result.text.join("\n");
 }
 
 async function extractDocx(buffer: Buffer): Promise<string> {
