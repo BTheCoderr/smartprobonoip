@@ -1,13 +1,23 @@
 import type { Metadata } from "next";
 import { InventorWorkspace } from "@/components/dashboard/InventorWorkspace";
+import { getPlatformAuth } from "@/lib/account/auth";
 
 export const metadata: Metadata = {
-  title: "Your inventor workspace — SmartProBonoIP",
+  title: "Your SmartProBono workspace",
   description:
-    "Every invention you are preparing, with readiness, timeline, and professional handoff exports in one place.",
+    "Legal matters and SmartProBonoIP invention preparation in one workspace.",
   robots: { index: false, follow: false },
 };
 
-export default function WorkspacePage() {
-  return <InventorWorkspace />;
+export default async function WorkspacePage() {
+  let account: { email: string | null } | null = null;
+
+  try {
+    const auth = await getPlatformAuth();
+    account = auth ? { email: auth.email } : null;
+  } catch {
+    account = null;
+  }
+
+  return <InventorWorkspace account={account} />;
 }
