@@ -1,0 +1,57 @@
+name: Post-Merge Production Smoke
+
+on:
+  push:
+    branches:
+      - audit/post-merge-production-smoke
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Public pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in / /legal /legal/ask-ermi /legal/draft /legal/record-clearing /ip /trust /privacy; do
+            code=$(curl -L -sS -o /tmp/body -w "%{http_code}" "https://smartprobono.org$route")
+            echo "$route -> $code"
+            test "$code" = "200"
+          done
+
+      - name: Ermi production POST
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -sS -w '\n%{http_code}'             -H 'Content-Type: application/json'             -d '{"messages":[{"role":"user","content":"I received a generic notice. Give me a short checklist of facts to gather before I contact a qualified professional. Do not give legal advice."}]}'             https://smartprobono.org/api/legal/chat)
+          code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          echo "legal/chat -> $code"
+          echo "$body" | head -c 500
+          test "$code" = "200"
+          echo "$body" | jq -e '.message | type=="string" and length > 40' >/dev/null
+
+      - name: Legal draft production POST
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -sS -w '\n%{http_code}'             -H 'Content-Type: application/json'             -d '{"documentType":"Factual summary","jurisdiction":"Not specified","facts":"On September 1 I received a written notice. I have a copy of it. I have not verified any deadlines.","goal":"Create a neutral factual summary I can bring to a professional.","tone":"Professional and factual"}'             https://smartprobono.org/api/legal/draft)
+          code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          echo "legal/draft -> $code"
+          echo "$body" | head -c 500
+          test "$code" = "200"
+          echo "$body" | jq -e '.draft | type=="string" and length > 60' >/dev/null
+
+      - name: IP generator production POST
+        shell: bash
+        run: |
+          set -euo pipefail
+          session="post-merge-smoke-20260928"
+          response=$(curl -sS -w '\n%{http_code}'             -H 'Content-Type: application/json'             -H "x-pilot-session: $session"             -d '{"answers":{"whatCreated":"A portable bottle that filters water while a hiker drinks.","problemSolved":"Hikers can run out of safe drinking water and existing treatment gear can be cumbersome.","whoFor":"Hikers and campers who need portable clean water.","howItWorks":"Water passes through a replaceable filter cartridge as the user drinks through the mouthpiece.","mainParts":"Bottle body, replaceable filter cartridge, intake valve, cap, and mouthpiece.","whatDifferent":"The replaceable cartridge filters inline while drinking without a separate pumping step.","itemType":"physical_product","assets":["notes"],"sharedChannels":["none"],"goals":["expert_review"],"location":"United States"}}'             https://smartprobono.org/api/generate)
+          code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          echo "api/generate -> $code"
+          test "$code" = "200"
+          echo "$body" | jq -e '.profile.ideaSummary | type=="string" and length > 20' >/dev/null
