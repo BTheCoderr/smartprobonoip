@@ -27,16 +27,21 @@ export const EMPTY_RI_EVICTION_INTAKE: RiEvictionIntake = {
   understandsPreparationOnly: false,
 };
 
-export function readRiEvictionIntake(): RiEvictionIntake | null {
-  if (typeof window === "undefined") return null;
+export function parseRiEvictionSnapshot(raw: string): RiEvictionIntake | null {
+  if (!raw) return null;
   try {
-    const raw = window.sessionStorage.getItem(RI_EVICTION_SESSION_KEY);
-    if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<RiEvictionIntake>;
     return { ...EMPTY_RI_EVICTION_INTAKE, ...parsed };
   } catch {
     return null;
   }
+}
+
+export function readRiEvictionIntake(): RiEvictionIntake | null {
+  if (typeof window === "undefined") return null;
+  return parseRiEvictionSnapshot(
+    window.sessionStorage.getItem(RI_EVICTION_SESSION_KEY) || "",
+  );
 }
 
 export function saveRiEvictionIntake(intake: RiEvictionIntake): void {
