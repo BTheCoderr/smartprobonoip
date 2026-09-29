@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getPlatformAuth } from "@/lib/account/auth";
 import { getPortfolioSnapshot } from "@/lib/db/portfolio";
 import {
   GENERIC_SERVER_ERROR,
@@ -14,12 +15,17 @@ export async function GET(request: Request) {
   }
 
   const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) {
-    return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
+  const auth = await getPlatformAuth().catch(() => null);
+  const validPilotSession = isValidPilotSessionId(pilotSession)
+    ? pilotSession
+    : null;
+
+  if (!validPilotSession && !auth) {
+    return NextResponse.json({ error: "Missing workspace identity" }, { status: 401 });
   }
 
   try {
-    const snapshot = await getPortfolioSnapshot(pilotSession);
+    const snapshot = await getPortfolioSnapshot(validPilotSession, auth?.userId ?? null);
     return NextResponse.json({ snapshot });
   } catch (err) {
     logServerError("portfolio.get", err, { route: "portfolio" });
