@@ -46,7 +46,17 @@ export default function LegalHomePage() {
             title="Start with the legal tools that move cleanly into the new platform"
             lead="These features are being rebuilt natively on the same Next.js platform as SmartProBonoIP instead of copying the old app wholesale."
           />
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <article className="dossier-card flex h-full flex-col p-6">
+              <StampLabel tone="aqua">AVAILABLE</StampLabel>
+              <h2 className="headline-editorial mt-4 text-xl">Understand a document</h2>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-blue">
+                Upload a PDF, DOCX, or TXT file for text extraction, plain-English review, date and action-language flags, and Ermi follow-up.
+              </p>
+              <Link href={ROUTES.legalDocument} className="btn-primary mt-6">
+                Read a document
+              </Link>
+            </article>
             <article className="dossier-card flex h-full flex-col p-6">
               <StampLabel tone="aqua">AVAILABLE</StampLabel>
               <h2 className="headline-editorial mt-4 text-xl">Ask Ermi</h2>
@@ -84,12 +94,11 @@ export default function LegalHomePage() {
       <Section soft>
         <PaperShell>
           <SectionHeader
-            kicker="Migration order"
-            title="The stronger parts of the existing legal app are coming over in slices"
-            lead="The old codebase already has useful document extraction, Rhode Island eviction workflows, agent orchestration, billing, and attorney-facing features. They need to be ported onto the newer platform architecture rather than duplicated."
+            kicker="Next migration slices"
+            title="Keep moving the strongest legal workflows onto the unified platform"
+            lead="Document understanding now lives natively in SmartProBono. The remaining legal features should continue moving over in focused slices instead of copying the old app wholesale."
           />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <DossierCard title="Document understanding" body="PDF/DOCX/TXT extraction and structured plain-English review." />
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
             <DossierCard title="RI eviction pilot" body="Intake, grounded materials, issue flags, assistant, and printable case summary." />
             <DossierCard title="Professional workspace" body="Authenticated legal-team intake, persistence, documents, and operational review." />
             <DossierCard title="Exports + billing" body="DOCX/PDF export, plan controls, and payment flows after the core account model is unified." />
