@@ -1,0 +1,46 @@
+name: Install Legal Document Dependencies
+
+on:
+  push:
+    branches:
+      - feature/legal-document-understanding
+
+permissions:
+  contents: write
+
+jobs:
+  install-and-verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/legal-document-understanding
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install extraction dependencies
+        run: npm install --save-exact pdf-parse@2.4.5 mammoth@1.10.0
+      - name: Verify feature branch
+        shell: bash
+        run: |
+          npm run lint
+          npm test
+          npm run test:copy-safety
+          npm run build
+          npm audit
+      - name: Commit dependency lockfile
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          if git diff --cached --quiet; then
+            echo "No dependency changes required."
+            exit 0
+          fi
+          git commit -m "Add legal document extraction dependencies"
+          git push origin HEAD:feature/legal-document-understanding
