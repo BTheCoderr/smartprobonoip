@@ -1,5 +1,3 @@
-import "server-only";
-
 import * as mammoth from "mammoth";
 import { PDFParse } from "pdf-parse";
 import { EXTRACTED_TEXT_LIMIT } from "@/lib/legal/documentAnalysis";
