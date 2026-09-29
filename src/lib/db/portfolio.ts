@@ -10,7 +10,7 @@ import {
   listDocumentsForProjects,
 } from "./documents";
 import { getLastEventAtByProject, listEventsForProjects } from "./events";
-import { listRecordsForSession } from "./records";
+import { listRecordsForOwnerUser, listRecordsForSession } from "./records";
 
 const RECENT_ACTIVITY_LIMIT = 12;
 const RECENT_DOCUMENTS_LIMIT = 6;
@@ -43,10 +43,19 @@ async function countReferencesByProject(
  * a portfolio response never carries every invention's private text.
  */
 export async function getPortfolioSnapshot(
-  pilotSessionId: string,
+  pilotSessionId: string | null,
+  ownerUserId?: string | null,
 ): Promise<PortfolioSnapshot> {
-  const records = await listRecordsForSession(pilotSessionId);
-  const liveRecords = records.filter((record) => !record.isDemo);
+  const [sessionRecords, ownerRecords] = await Promise.all([
+    pilotSessionId ? listRecordsForSession(pilotSessionId) : Promise.resolve([]),
+    ownerUserId ? listRecordsForOwnerUser(ownerUserId) : Promise.resolve([]),
+  ]);
+  const deduped = new Map(
+    [...sessionRecords, ...ownerRecords].map((record) => [record.id, record]),
+  );
+  const liveRecords = [...deduped.values()]
+    .filter((record) => !record.isDemo)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   if (liveRecords.length === 0) {
     return {
