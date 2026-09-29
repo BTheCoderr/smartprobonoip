@@ -29,7 +29,10 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/account") ||
-    pathname.startsWith("/api/legal/matters");
+    pathname.startsWith("/api/legal/matters") ||
+    pathname.startsWith("/api/portfolio") ||
+    pathname.startsWith("/api/records") ||
+    pathname.startsWith("/profile");
 
   if (url && anonKey && needsAuthRefresh) {
     const supabase = createServerClient(url, anonKey, {
