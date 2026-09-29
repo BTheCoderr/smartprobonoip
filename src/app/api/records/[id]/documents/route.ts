@@ -4,16 +4,12 @@ import {
   listDocumentsForProject,
 } from "@/lib/db/documents";
 import { recordProjectEvent } from "@/lib/db/events";
-import { getRecordById } from "@/lib/db/records";
 import {
   documentDisplayLabel,
   findDocumentDescriptor,
 } from "@/lib/ideas/documents";
-import {
-  GENERIC_SERVER_ERROR,
-  isValidPilotSessionId,
-  readPilotSession,
-} from "@/lib/security/api";
+import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
+import { resolveProjectAccess } from "@/lib/account/projectAccess";
 import {
   limitErrorResponse,
   readJsonWithLimit,
@@ -30,13 +26,8 @@ export async function GET(
   }
 
   const { id } = await params;
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) {
-    return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
-  }
-
-  const owned = await getRecordById(id, pilotSession);
-  if (!owned) {
+  const access = await resolveProjectAccess(request, id);
+  if (!access) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -58,10 +49,11 @@ export async function POST(
   }
 
   const { id } = await params;
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) {
-    return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
+  const access = await resolveProjectAccess(request, id);
+  if (!access) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  const pilotSession = access.pilotSessionId;
 
   try {
     const body = (await readJsonWithLimit(request)) as {
@@ -72,11 +64,6 @@ export async function POST(
     const descriptor = findDocumentDescriptor(body.kind, body.format);
     if (!descriptor) {
       return NextResponse.json({ error: "Unsupported document" }, { status: 422 });
-    }
-
-    const owned = await getRecordById(id, pilotSession);
-    if (!owned) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
     const document = await createDocument({
