@@ -1,5 +1,5 @@
 /**
- * Read-only production schema verification for migrations 017–037.
+ * Read-only production schema verification for migrations 017–039.
  *
  * Usage (pick one auth method):
  *
@@ -50,6 +50,8 @@ export const MIGRATION_ORDER = [
   "035",
   "036",
   "037",
+  "038",
+  "039",
 ] as const;
 
 export type MigrationVersion = (typeof MIGRATION_ORDER)[number];
@@ -77,6 +79,8 @@ export const EXPECTED_PASS_AFTER: Record<MigrationVersion, number> = {
   "035": 24,
   "036": 25,
   "037": 31,
+  "038": 32,
+  "039": 33,
 };
 
 interface CheckDef {
@@ -393,6 +397,36 @@ export const CHECKS: CheckDef[] = [
     ) AS pass`,
   },
   {
+    id: "browser_role_least_privilege",
+    label: "browser table grants limited to authenticated account tables",
+    introducedBy: "038",
+    sql: `SELECT (
+      NOT EXISTS (
+        SELECT 1
+        FROM information_schema.role_table_grants
+        WHERE table_schema = 'public'
+          AND grantee = 'anon'
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM information_schema.role_table_grants
+        WHERE table_schema = 'public'
+          AND grantee = 'authenticated'
+          AND table_name NOT IN ('platform_profiles','legal_matters','legal_artifacts')
+      )
+    ) AS pass`,
+  },
+  {
+    id: "trigger_helper_not_public",
+    label: "set_updated_at has no PUBLIC execute grant",
+    introducedBy: "039",
+    sql: `SELECT NOT has_function_privilege(
+      'public',
+      'public.set_updated_at()',
+      'execute'
+    ) AS pass`,
+  },
+  {
     id: "project_events_backfill",
     label: "smartprobonoip_project_events backfill count > 0",
     introducedBy: "018",
@@ -481,10 +515,10 @@ export function evaluateResults(
       : `${passCount}/${CHECKS.length} PASS (expected ${expected}/${CHECKS.length} after migration ${options.atMigration}) — STOP. Do not continue.`;
     exitCode = ok ? 0 : 1;
   } else if (passCount === CHECKS.length) {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–037 verified.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–039 verified.`;
     exitCode = 0;
   } else {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–037 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–039 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
     exitCode = 1;
   }
 
