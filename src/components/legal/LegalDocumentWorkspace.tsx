@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   formatDocumentSummary,
   type LegalDocumentAnalysis,
@@ -67,6 +68,7 @@ function SectionList({
 }
 
 export function LegalDocumentWorkspace() {
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -195,7 +197,7 @@ export function LegalDocumentWorkspace() {
     } catch {
       // Continue to Ermi even when session storage is unavailable.
     }
-    window.location.assign("/legal/ask-ermi");
+    router.push("/legal/ask-ermi");
   }
 
   async function createFactualSummary() {
