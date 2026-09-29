@@ -79,7 +79,10 @@ jobs:
             code=$(echo "$extract" | tail -n1)
             body=$(echo "$extract" | sed '$d')
             echo "$(basename "$file") extract -> $code"
-            test "$code" = "200"
+            if [ "$code" != "200" ]; then
+              echo "$body"
+              exit 1
+            fi
             echo "$body" | jq -e --arg marker "$marker" '.text | contains($marker)' >/dev/null
 
             payload=$(echo "$body" | jq '{fileName,text,truncated}')
@@ -87,7 +90,10 @@ jobs:
             analyze_code=$(echo "$analyze" | tail -n1)
             analyze_body=$(echo "$analyze" | sed '$d')
             echo "$(basename "$file") analyze -> $analyze_code"
-            test "$analyze_code" = "200"
+            if [ "$analyze_code" != "200" ]; then
+              echo "$analyze_body"
+              exit 1
+            fi
             echo "$analyze_body" | jq -e '.analysis.overview | type=="string" and length > 20' >/dev/null
             echo "$analyze_body" | jq -e '.analysis.questionsToConfirm | type=="array"' >/dev/null
           }
