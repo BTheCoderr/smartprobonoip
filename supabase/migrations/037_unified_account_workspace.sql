@@ -71,6 +71,18 @@ create index if not exists idx_spb_projects_owner_user
   on public.smartprobonoip_projects(owner_user_id, created_at desc)
   where owner_user_id is not null;
 
+create index if not exists idx_ip_expert_questions_saved_reference
+  on public.ip_expert_questions(saved_reference_id);
+
+create index if not exists idx_ip_research_sessions_venture
+  on public.ip_research_sessions(venture_id);
+
+create index if not exists idx_pilot_sessions_partner_organization
+  on public.pilot_sessions(partner_organization_id);
+
+create index if not exists idx_spb_projects_partner_organization
+  on public.smartprobonoip_projects(partner_organization_id);
+
 drop trigger if exists platform_profiles_set_updated_at on public.platform_profiles;
 create trigger platform_profiles_set_updated_at
   before update on public.platform_profiles
