@@ -1,7 +1,6 @@
 import { EXTRACTED_TEXT_LIMIT } from "@/lib/legal/documentAnalysis";
 
 export const MAX_LEGAL_DOCUMENT_BYTES = 4 * 1024 * 1024;
-export const MAX_MULTIPART_BYTES = Math.floor(4.5 * 1024 * 1024);
 
 type DocumentKind = "pdf" | "docx" | "txt";
 
@@ -21,9 +20,9 @@ function extensionFor(name: string): string {
   return index >= 0 ? normalized.slice(index) : "";
 }
 
-function classifyDocument(file: File): DocumentKind {
-  const ext = extensionFor(file.name);
-  const mime = (file.type || "").toLowerCase();
+function classifyDocument(input: { name: string; type: string }): DocumentKind {
+  const ext = extensionFor(input.name);
+  const mime = (input.type || "").toLowerCase();
 
   if (ext === ".pdf") {
     if (!["application/pdf", "application/octet-stream", ""].includes(mime)) {
@@ -126,16 +125,21 @@ export type ExtractedLegalDocument = {
   truncated: boolean;
 };
 
-export async function extractLegalDocument(
-  file: File,
-): Promise<ExtractedLegalDocument> {
-  if (!file.name.trim()) {
+export async function extractLegalDocument(input: {
+  name: string;
+  type: string;
+  buffer: Buffer;
+}): Promise<ExtractedLegalDocument> {
+  const name = input.name.trim();
+  const buffer = input.buffer;
+
+  if (!name) {
     throw new LegalDocumentError("The uploaded file must have a name.", 400, "missing_name");
   }
-  if (file.size <= 0) {
+  if (buffer.byteLength <= 0) {
     throw new LegalDocumentError("The uploaded file is empty.", 400, "empty_file");
   }
-  if (file.size > MAX_LEGAL_DOCUMENT_BYTES) {
+  if (buffer.byteLength > MAX_LEGAL_DOCUMENT_BYTES) {
     throw new LegalDocumentError(
       "File too large. SmartProBono currently accepts documents up to 4 MB.",
       413,
@@ -143,8 +147,7 @@ export async function extractLegalDocument(
     );
   }
 
-  const kind = classifyDocument(file);
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const kind = classifyDocument({ name, type: input.type });
   validateSignature(kind, buffer);
 
   let rawText = "";
@@ -175,9 +178,9 @@ export async function extractLegalDocument(
   const text = truncated ? normalized.slice(0, EXTRACTED_TEXT_LIMIT) : normalized;
 
   return {
-    fileName: file.name.slice(0, 180),
+    fileName: name.slice(0, 180),
     fileType: kind,
-    fileSize: file.size,
+    fileSize: buffer.byteLength,
     text,
     extractedCharacters: normalized.length,
     returnedCharacters: text.length,
