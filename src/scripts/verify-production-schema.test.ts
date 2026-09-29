@@ -10,7 +10,7 @@ import {
 } from "../../scripts/verify-production-schema";
 
 describe("verify-production-schema", () => {
-  it("maps cumulative PASS counts through 036", () => {
+  it("maps cumulative PASS counts through 037", () => {
     assert.deepEqual(EXPECTED_PASS_AFTER["017"], 2);
     assert.deepEqual(EXPECTED_PASS_AFTER["018"], 4);
     assert.deepEqual(EXPECTED_PASS_AFTER["019"], 4);
@@ -31,8 +31,9 @@ describe("verify-production-schema", () => {
     assert.deepEqual(EXPECTED_PASS_AFTER["034"], 23);
     assert.deepEqual(EXPECTED_PASS_AFTER["035"], 24);
     assert.deepEqual(EXPECTED_PASS_AFTER["036"], 25);
-    assert.equal(MIGRATION_ORDER.length, 20);
-    assert.equal(CHECKS.length, 25);
+    assert.deepEqual(EXPECTED_PASS_AFTER["037"], 31);
+    assert.equal(MIGRATION_ORDER.length, 21);
+    assert.equal(CHECKS.length, 31);
   });
 
   it("parses --migration and --strict flags", () => {
