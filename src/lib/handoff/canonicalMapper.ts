@@ -455,7 +455,7 @@ export async function prepareProfessionalHandoff(input: {
     loadCanonicalValues(input.projectId),
   ]);
 
-  let { data: session, error: sessionError } = await sb
+  const { data: existingSession, error: sessionError } = await sb
     .from("smartprobonoip_handoff_sessions")
     .select("id")
     .eq("project_id", input.projectId)
@@ -465,6 +465,7 @@ export async function prepareProfessionalHandoff(input: {
     .limit(1)
     .maybeSingle();
   if (sessionError) throw new Error(sessionError.message);
+  let session = existingSession;
 
   if (!session) {
     const created = await sb

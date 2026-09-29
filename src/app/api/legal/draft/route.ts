@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { DRAFT_SYSTEM_PROMPT } from "@/lib/legal/prompts";
 import { runLegalModel } from "@/lib/legal/model";
+import { buildLegalDraftFallback } from "@/lib/legal/fallback";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
 import {
   limitErrorResponse,
@@ -65,13 +66,26 @@ export async function POST(request: Request) {
       goal,
     ].join("\n");
 
-    const draft = await runLegalModel({
-      system: DRAFT_SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userPrompt }],
-      maxTokens: 2200,
-    });
-
-    return NextResponse.json({ draft });
+    try {
+      const draft = await runLegalModel({
+        system: DRAFT_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: userPrompt }],
+        maxTokens: 2200,
+      });
+      return NextResponse.json({ draft, mode: "ai" });
+    } catch (error) {
+      logServerError("legal.draft.ai_fallback", error, { route: "api/legal/draft" });
+      return NextResponse.json({
+        draft: buildLegalDraftFallback({
+          documentType,
+          jurisdiction,
+          facts,
+          goal,
+          tone,
+        }),
+        mode: "fallback",
+      });
+    }
   } catch (error) {
     logServerError("legal.draft", error, { route: "api/legal/draft" });
     return NextResponse.json(

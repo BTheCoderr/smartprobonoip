@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/design";
 
 export const metadata = {
-  title: "Trust Center — SmartProBonoIP",
+  title: "Trust Center — SmartProBono",
   description:
-    "What SmartProBonoIP does and does not do. Privacy, AI scope, and pilot practices.",
+    "What SmartProBono does and does not do across Legal and SmartProBonoIP. Privacy, AI scope, access, and pilot practices.",
 };
 
 function BulletList({ items }: { items: readonly string[] }) {
@@ -65,7 +65,7 @@ export default function TrustPage() {
         <PaperShell>
           <div className="grid gap-8 lg:grid-cols-2">
             <div>
-              <SectionHeader kicker="What we do" title="SmartProBonoIP helps you prepare" />
+              <SectionHeader kicker="What we do" title="SmartProBono helps you prepare" />
               <BulletList items={TRUST_COPY.doesDo} />
             </div>
             <div>
@@ -164,7 +164,7 @@ export default function TrustPage() {
           <CalloutCard
             tone="aqua"
             title="Preparation only — not legal advice"
-            body="SmartProBonoIP is not a law firm. No attorney-client relationship is created by using this tool."
+            body="SmartProBono is not a law firm. SmartProBono Legal and SmartProBonoIP provide preparation support only, and no attorney-client relationship is created by using the platform."
           />
           <div className="mt-8">
             <DisclaimerNotice />

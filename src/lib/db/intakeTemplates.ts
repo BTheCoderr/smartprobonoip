@@ -2,10 +2,7 @@ import "server-only";
 
 import { getOrganizationById } from "@/lib/db/partnerOrganizations";
 import { getSupabaseService } from "@/lib/supabaseServer";
-import type {
-  ParsedIntake,
-  ParsedIntakeQuestion,
-} from "@/lib/handoff/intakeImporter";
+import type { ParsedIntake } from "@/lib/handoff/intakeImporter";
 import { hashIntakeText } from "@/lib/handoff/intakeImporter";
 import {
   canonicalFieldLabel,
