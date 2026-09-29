@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { buildRiEvictionGuidance, formatRiEvictionSummary } from "@/lib/legal/riEvictionGuidance";
 import { riEvictionSourcesById, RI_EVICTION_SOURCE_REVIEWED_AT } from "@/lib/legal/riEvictionSources";
 import { parseRiEvictionSnapshot, riEvictionSnapshot, subscribeRiEvictionStorage } from "@/lib/legal/riEvictionStorage";
@@ -15,6 +15,8 @@ export function RiEvictionSummary() {
   const router = useRouter();
   const snapshot = useSyncExternalStore(subscribeRiEvictionStorage, riEvictionSnapshot, serverSnapshot);
   const intake = parseRiEvictionSnapshot(snapshot);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState("");
 
   if (!intake) {
     return (
@@ -39,13 +41,69 @@ export function RiEvictionSummary() {
     URL.revokeObjectURL(url);
   }
 
+  async function saveToWorkspace() {
+    if (saving) return;
+    setSaving(true);
+    setStatus("");
+
+    try {
+      const response = await fetch("/api/legal/matters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matterType: "ri_eviction",
+          title: "Rhode Island eviction preparation",
+          jurisdiction: "Rhode Island",
+          sourceTool: "ri_eviction_prep",
+          summary: guidance.summary,
+          artifact: {
+            artifactType: "ri_eviction_summary",
+            title: "Rhode Island eviction preparation summary",
+            content: {
+              intake,
+              guidance,
+              summaryText,
+            },
+            metadata: {
+              sourceIds: guidance.sourceIds,
+              sourceReviewedAt: RI_EVICTION_SOURCE_REVIEWED_AT,
+            },
+          },
+        }),
+      });
+
+      if (response.status === 401) {
+        setStatus("Sign in from the SmartProBono workspace first, then save this summary.");
+        return;
+      }
+
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) throw new Error(data.error || "Could not save this summary.");
+
+      setStatus("Saved to your SmartProBono workspace.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Could not save this summary.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="print:hidden flex flex-wrap gap-3">
         <button type="button" className="btn-secondary" onClick={() => router.push(ROUTES.legalRiEvictionResults)}>Back to results</button>
         <button type="button" className="btn-secondary" onClick={download}>Download TXT</button>
+        <button type="button" className="btn-secondary" onClick={saveToWorkspace} disabled={saving}>
+          {saving ? "Saving…" : "Save to workspace"}
+        </button>
         <button type="button" className="btn-primary" onClick={() => window.print()}>Print / Save PDF</button>
       </div>
+
+      {status ? (
+        <p className="print:hidden border border-mist-200 bg-cream px-4 py-3 text-sm text-navy-700" role="status">
+          {status}
+        </p>
+      ) : null}
 
       <article className="dossier-card bg-white p-6 sm:p-8 print:border-0 print:shadow-none">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">SmartProBono</p>
