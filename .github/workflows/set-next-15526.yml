@@ -1,0 +1,47 @@
+name: Set Patched Netlify-Compatible Next
+
+on:
+  push:
+    branches:
+      - audit/full-app-2026-09-28
+
+permissions:
+  contents: write
+
+jobs:
+  set-next:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/full-app-2026-09-28
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install patched Netlify-compatible framework line
+        run: |
+          npm install --save-exact next@15.5.26 eslint-config-next@15.5.26
+          npm install --save-dev --save-exact @netlify/plugin-nextjs@5.15.11
+          node - <<'NODE'
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json','utf8'));
+          pkg.devDependencies['@netlify/plugin-nextjs'] = '^5.15.11';
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          NODE
+          npm install --package-lock-only
+      - name: Commit dependency line
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          if git diff --cached --quiet; then
+            echo "No dependency changes required."
+            exit 0
+          fi
+          git commit -m "Use patched Next 15.5.26 for Netlify"
+          git push origin HEAD:audit/full-app-2026-09-28
