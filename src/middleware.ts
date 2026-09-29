@@ -22,11 +22,16 @@ export async function middleware(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (
-    url &&
-    anonKey &&
-    (pathname.startsWith("/organization") || pathname.startsWith("/api/organization"))
-  ) {
+  const needsAuthRefresh =
+    pathname.startsWith("/organization") ||
+    pathname.startsWith("/api/organization") ||
+    pathname.startsWith("/workspace") ||
+    pathname.startsWith("/sign-in") ||
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/account") ||
+    pathname.startsWith("/api/legal/matters");
+
+  if (url && anonKey && needsAuthRefresh) {
     const supabase = createServerClient(url, anonKey, {
       cookies: {
         getAll() {
