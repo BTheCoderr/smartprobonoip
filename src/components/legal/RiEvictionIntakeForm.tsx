@@ -230,7 +230,7 @@ export function RiEvictionIntakeForm() {
           <button type="button" className="btn-secondary" onClick={reset}>Reset session intake</button>
         </div>
         <p className="mt-3 text-xs leading-relaxed text-navy-500">
-          This intake is stored only in this browser tab's session storage. It is not saved to your SmartProBono account by this workflow.
+          This intake is stored only in this browser tab&apos;s session storage. It is not saved to your SmartProBono account by this workflow.
         </p>
       </section>
     </form>
