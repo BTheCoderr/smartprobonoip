@@ -94,8 +94,14 @@ function normalizeText(text: string): string {
 }
 
 async function extractPdf(buffer: Buffer): Promise<string> {
+  const worker = await import("pdf-parse/worker");
   const { PDFParse } = await import("pdf-parse");
-  const parser = new PDFParse({ data: buffer });
+  PDFParse.setWorker(worker.getData());
+
+  const data = new Uint8Array(
+    buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
+  );
+  const parser = new PDFParse({ data });
   try {
     const result = await parser.getText();
     return result.text ?? "";
