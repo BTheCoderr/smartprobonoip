@@ -4,12 +4,8 @@ import {
   listProjectClarifications,
 } from "@/lib/db/clarificationRequests";
 import { recordProjectEvent } from "@/lib/db/events";
-import { getRecordById } from "@/lib/db/records";
-import {
-  GENERIC_SERVER_ERROR,
-  isValidPilotSessionId,
-  readPilotSession,
-} from "@/lib/security/api";
+import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
+import { resolveProjectAccess } from "@/lib/account/projectAccess";
 import {
   assertTextWithinLimit,
   limitErrorResponse,
@@ -19,13 +15,6 @@ import {
 import { logServerError } from "@/lib/security/safeLog";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
-async function ownedProject(request: Request, id: string) {
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) return null;
-  const record = await getRecordById(id, pilotSession);
-  return record ? { record, pilotSession } : null;
-}
-
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -34,7 +23,7 @@ export async function GET(
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
   const { id } = await params;
-  const owned = await ownedProject(request, id);
+  const owned = await resolveProjectAccess(request, id);
   if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   try {
@@ -54,7 +43,7 @@ export async function POST(
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
   const { id } = await params;
-  const owned = await ownedProject(request, id);
+  const owned = await resolveProjectAccess(request, id);
   if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   try {
@@ -86,7 +75,7 @@ export async function POST(
 
     await recordProjectEvent({
       projectId: id,
-      pilotSessionId: owned.pilotSession,
+      pilotSessionId: owned.pilotSessionId,
       type: "professional_clarification_answered",
       source: "user",
       detail: "Inventor answered a professional clarification request.",
