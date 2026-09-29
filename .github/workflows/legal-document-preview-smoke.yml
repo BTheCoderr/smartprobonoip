@@ -75,7 +75,14 @@ jobs:
           check_file () {
             file="$1"
             marker="$2"
-            extract=$(curl -sS -w '\n%{http_code}' -F "file=@$file" "$base/api/legal/documents/extract")
+            case "$file" in
+              *.pdf) mime="application/pdf" ;;
+              *.docx) mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document" ;;
+              *.txt) mime="text/plain" ;;
+              *) mime="application/octet-stream" ;;
+            esac
+            encoded_name=$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$(basename "$file")")
+            extract=$(curl -sS -w '\n%{http_code}'               -H "Content-Type: $mime"               -H "X-File-Name: $encoded_name"               --data-binary "@$file"               "$base/api/legal/documents/extract")
             code=$(echo "$extract" | tail -n1)
             body=$(echo "$extract" | sed '$d')
             echo "$(basename "$file") extract -> $code"
@@ -107,7 +114,7 @@ jobs:
           check_file /tmp/sample.docx "SMARTPROBONO DOCX FIXTURE"
 
           cp /tmp/sample.txt /tmp/sample.rtf
-          bad=$(curl -sS -w '\n%{http_code}' -F "file=@/tmp/sample.rtf;type=text/rtf" "$base/api/legal/documents/extract")
+          bad=$(curl -sS -w '\n%{http_code}'             -H 'Content-Type: text/rtf'             -H 'X-File-Name: sample.rtf'             --data-binary '@/tmp/sample.rtf'             "$base/api/legal/documents/extract")
           bad_code=$(echo "$bad" | tail -n1)
           echo "unsupported RTF -> $bad_code"
           test "$bad_code" = "415"
