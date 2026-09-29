@@ -79,6 +79,7 @@ export function LegalDocumentWorkspace() {
   const [factualSummary, setFactualSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [drafting, setDrafting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("");
 
   const ready = useMemo(() => Boolean(file) && !loading, [file, loading]);
@@ -242,6 +243,56 @@ export function LegalDocumentWorkspace() {
     URL.revokeObjectURL(url);
   }
 
+  async function saveToWorkspace() {
+    if (!analysis || !extracted || saving) return;
+    setSaving(true);
+    setStatus("");
+
+    try {
+      const response = await fetch("/api/legal/matters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matterType: "document",
+          title: `Document review: ${extracted.fileName}`,
+          sourceTool: "legal_document_understanding",
+          summary: analysis.overview,
+          artifact: {
+            artifactType: "document_review",
+            title: `Document review: ${extracted.fileName}`,
+            content: {
+              analysis,
+              factualSummary: factualSummary || null,
+            },
+            metadata: {
+              fileName: extracted.fileName,
+              fileType: extracted.fileType,
+              fileSize: extracted.fileSize,
+              analysisMode,
+              analysisWasTruncated,
+            },
+          },
+        }),
+      });
+
+      if (response.status === 401) {
+        setStatus("Sign in from the SmartProBono workspace first, then save this review.");
+        return;
+      }
+
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        throw new Error(data.error || "Could not save this review.");
+      }
+
+      setStatus("Saved to your SmartProBono workspace.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Could not save this review.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
     setDragActive(false);
@@ -352,6 +403,9 @@ export function LegalDocumentWorkspace() {
               <button type="button" className="btn-secondary" onClick={createFactualSummary} disabled={drafting}>
                 {drafting ? "Preparing…" : "Create factual summary"}
               </button>
+              <button type="button" className="btn-secondary" onClick={saveToWorkspace} disabled={saving}>
+                {saving ? "Saving…" : "Save to workspace"}
+              </button>
               <button type="button" className="btn-primary" onClick={askErmi}>Ask Ermi about this</button>
             </div>
           </section>
@@ -389,7 +443,7 @@ export function LegalDocumentWorkspace() {
             <section className="dossier-card border border-aqua-200 bg-aqua-50/40 p-5 sm:p-6">
               <p className="section-kicker">Privacy note</p>
               <p className="mt-3 text-sm leading-relaxed text-navy-700">
-                This version extracts the document in memory for the request. It does not add the uploaded file or extracted text to your SmartProBono record. If an AI provider is configured, the text needed for the explanation is sent to that provider for processing.
+                The uploaded file and raw extracted text are processed for this request and are not saved to your SmartProBono account. If you explicitly choose “Save to workspace,” SmartProBono saves only the structured review, optional factual summary, and basic file metadata. If an AI provider is configured, the text needed for the explanation is sent to that provider for processing.
               </p>
             </section>
           </aside>

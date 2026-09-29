@@ -5,12 +5,8 @@ import {
   deleteEvidenceFile,
   listEvidenceFiles,
 } from "@/lib/db/canonicalWorkspace";
-import { getRecordById } from "@/lib/db/records";
-import {
-  GENERIC_SERVER_ERROR,
-  isValidPilotSessionId,
-  readPilotSession,
-} from "@/lib/security/api";
+import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
+import { resolveProjectAccess } from "@/lib/account/projectAccess";
 import { logServerError } from "@/lib/security/safeLog";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 import type { CanonicalEvidenceFile } from "@/lib/types";
@@ -30,13 +26,6 @@ const EVIDENCE_TYPES = new Set([
   "agreement","prototype_record","search_result","other",
 ]);
 
-async function ownedProject(request: Request, id: string) {
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) return null;
-  const record = await getRecordById(id, pilotSession);
-  return record ? { record, pilotSession } : null;
-}
-
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -45,7 +34,7 @@ export async function GET(
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
   const { id } = await params;
-  const owned = await ownedProject(request, id);
+  const owned = await resolveProjectAccess(request, id);
   if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   try {
@@ -70,7 +59,7 @@ export async function POST(
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
   const { id } = await params;
-  const owned = await ownedProject(request, id);
+  const owned = await resolveProjectAccess(request, id);
   if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const declared = Number(request.headers.get("content-length") ?? "0");
@@ -103,7 +92,7 @@ export async function POST(
 
     const evidence = await createEvidenceFile({
       projectId: id,
-      pilotSessionId: owned.pilotSession,
+      pilotSessionId: owned.pilotSessionId,
       originalFilename: file.name.slice(0, 255),
       mimeType: file.type,
       sizeBytes: file.size,
@@ -127,7 +116,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
   const { id } = await params;
-  const owned = await ownedProject(request, id);
+  const owned = await resolveProjectAccess(request, id);
   if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const fileId = new URL(request.url).searchParams.get("file");
   if (!fileId) return NextResponse.json({ error: "Missing file" }, { status: 422 });

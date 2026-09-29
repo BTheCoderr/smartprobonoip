@@ -12,6 +12,7 @@ export function LegalDraftBuilder() {
   const [tone, setTone] = useState("Professional and factual");
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("");
 
   async function generate(e: FormEvent) {
@@ -69,6 +70,54 @@ export function LegalDraftBuilder() {
       router.push("/legal/ask-ermi");
     } catch {
       router.push("/legal/ask-ermi");
+    }
+  }
+
+  async function saveToWorkspace() {
+    if (!draft || saving) return;
+    setSaving(true);
+    setStatus("");
+
+    try {
+      const response = await fetch("/api/legal/matters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matterType: "general",
+          title: `${documentType} draft`,
+          jurisdiction,
+          sourceTool: "legal_draft_builder",
+          summary: goal,
+          artifact: {
+            artifactType: "draft",
+            title: `${documentType} draft`,
+            content: {
+              draft,
+              facts,
+              goal,
+              tone,
+            },
+            metadata: {
+              documentType,
+              jurisdiction: jurisdiction || null,
+            },
+          },
+        }),
+      });
+
+      if (response.status === 401) {
+        setStatus("Sign in from the SmartProBono workspace first, then save this draft.");
+        return;
+      }
+
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) throw new Error(data.error || "Could not save this draft.");
+
+      setStatus("Saved to your SmartProBono workspace.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Could not save this draft.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -142,6 +191,9 @@ export function LegalDraftBuilder() {
           <div className="flex flex-wrap gap-2 border-t border-mist-200 bg-cream/70 p-4 sm:px-6">
             <button type="button" className="btn-secondary" onClick={copyDraft}>Copy</button>
             <button type="button" className="btn-secondary" onClick={downloadTxt}>Download TXT</button>
+            <button type="button" className="btn-secondary" onClick={saveToWorkspace} disabled={saving}>
+              {saving ? "Saving…" : "Save to workspace"}
+            </button>
             <button type="button" className="btn-primary" onClick={sendToErmi}>Review with Ermi</button>
           </div>
         ) : null}

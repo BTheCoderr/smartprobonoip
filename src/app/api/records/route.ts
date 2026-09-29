@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getPlatformAuth } from "@/lib/account/auth";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { recordProjectEvent } from "@/lib/db/events";
 import { createRecord } from "@/lib/db/records";
@@ -61,6 +62,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const auth = await getPlatformAuth().catch(() => null);
     const record = await createRecord({
       answers: body.answers,
       profile: body.profile,
@@ -68,6 +70,7 @@ export async function POST(request: Request) {
       pilotSessionId: pilotSession,
       isDemo: body.isDemo ?? false,
       tracking: body.tracking ?? null,
+      ownerUserId: auth?.userId ?? null,
     });
 
     await Promise.all([

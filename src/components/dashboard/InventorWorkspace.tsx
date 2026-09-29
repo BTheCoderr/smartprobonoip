@@ -9,6 +9,7 @@ import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { RecentDocuments } from "@/components/dashboard/RecentDocuments";
 import { SavePortfolioCard } from "@/components/dashboard/SavePortfolioCard";
 import { WorkspaceHeader } from "@/components/dashboard/WorkspaceHeader";
+import { AccountWorkspacePanel } from "@/components/dashboard/AccountWorkspacePanel";
 import { InventionList } from "@/components/portfolio/InventionList";
 import { DisclaimerNotice } from "@/components/DisclaimerNotice";
 import { trackEvent } from "@/lib/analytics/client";
@@ -24,7 +25,7 @@ import { getStore } from "@/lib/store";
 
 type LoadState = "loading" | "ready" | "error";
 
-export function InventorWorkspace() {
+export function InventorWorkspace({ account }: { account: { email: string | null } | null }) {
   const [snapshot, setSnapshot] = useState<PortfolioSnapshot | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [sortMode, setSortMode] = useState<InventionSortMode>("recent");
@@ -132,6 +133,8 @@ export function InventorWorkspace() {
       <WorkspaceHeader summary={snapshot.summary} />
 
       <div className="space-y-8">
+        <AccountWorkspacePanel account={account} />
+
         <PortfolioSummaryCards summary={snapshot.summary} />
 
         <QuickActions mostRecent={mostRecent} />

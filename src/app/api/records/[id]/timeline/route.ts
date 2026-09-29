@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { recordProjectEvent } from "@/lib/db/events";
-import { getRecordById, updateDevelopmentTimeline } from "@/lib/db/records";
-import {
-  GENERIC_SERVER_ERROR,
-  isValidPilotSessionId,
-  readPilotSession,
-} from "@/lib/security/api";
+import { updateDevelopmentTimeline } from "@/lib/db/records";
+import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
+import { resolveProjectAccess } from "@/lib/account/projectAccess";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 import { countFilledTimelineFields } from "@/lib/packet";
@@ -21,10 +18,11 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) {
+  const access = await resolveProjectAccess(request, id);
+  if (!access) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  const pilotSession = access.pilotSessionId;
 
   const limited = enforceRateLimit(
     request,
@@ -46,11 +44,6 @@ export async function PATCH(
   }
 
   try {
-    const existing = await getRecordById(id, pilotSession);
-    if (!existing) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-
     const record = await updateDevelopmentTimeline(
       id,
       pilotSession,

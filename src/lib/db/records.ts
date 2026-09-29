@@ -100,6 +100,7 @@ async function ensurePilotSession(
   pilotSessionId: string,
   isDemo: boolean,
   tracking?: PilotTracking | null,
+  ownerUserId?: string | null,
 ): Promise<void> {
   const payload: Record<string, unknown> = {
     venture_id: ventureId,
@@ -107,6 +108,7 @@ async function ensurePilotSession(
     is_demo: isDemo,
     status: "active",
   };
+  if (ownerUserId) payload.owner_user_id = ownerUserId;
   if (tracking && !isDemo) {
     if (tracking.partnerSlug) payload.partner_slug = tracking.partnerSlug;
     if (tracking.partnerName) payload.partner_name = tracking.partnerName;
@@ -224,12 +226,27 @@ export async function createRecord(input: {
   pilotSessionId: string;
   isDemo?: boolean;
   tracking?: PilotTracking | null;
+  ownerUserId?: string | null;
 }): Promise<ProjectRecord> {
   const sb = getSupabaseService();
-  const { answers, profile, preClarity, pilotSessionId, isDemo = false, tracking } =
-    input;
+  const {
+    answers,
+    profile,
+    preClarity,
+    pilotSessionId,
+    isDemo = false,
+    tracking,
+    ownerUserId = null,
+  } = input;
   const ventureId = await getSmartProBonoIpVentureId(sb);
-  await ensurePilotSession(sb, ventureId, pilotSessionId, isDemo, tracking);
+  await ensurePilotSession(
+    sb,
+    ventureId,
+    pilotSessionId,
+    isDemo,
+    tracking,
+    ownerUserId,
+  );
 
   const projectInsert: Record<string, unknown> = {
     venture_id: ventureId,
@@ -242,6 +259,7 @@ export async function createRecord(input: {
     is_demo: isDemo,
     status: "packet_generated",
   };
+  if (ownerUserId) projectInsert.owner_user_id = ownerUserId;
 
   if (!isDemo && tracking) {
     if (tracking.partnerSlug) projectInsert.partner_slug = tracking.partnerSlug;
@@ -365,6 +383,21 @@ export async function listRecordsForSession(
     .from("smartprobonoip_projects")
     .select(NESTED_SELECT)
     .eq("pilot_session_id", pilotSessionId)
+    .order("created_at", { ascending: false });
+  if (error || !data) return [];
+  return (data as unknown as ProjectRow[])
+    .map(rowToRecord)
+    .filter((r): r is ProjectRecord => r !== null);
+}
+
+export async function listRecordsForOwnerUser(
+  ownerUserId: string,
+): Promise<ProjectRecord[]> {
+  const sb = getSupabaseService();
+  const { data, error } = await sb
+    .from("smartprobonoip_projects")
+    .select(NESTED_SELECT)
+    .eq("owner_user_id", ownerUserId)
     .order("created_at", { ascending: false });
   if (error || !data) return [];
   return (data as unknown as ProjectRow[])

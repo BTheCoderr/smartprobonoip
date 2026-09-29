@@ -12,11 +12,8 @@ import {
 import { isInventionStatus } from "@/lib/ideas/status";
 import { MAX_INVENTION_TITLE_LENGTH } from "@/lib/ideas/title";
 import { inventionStatusLabel } from "@/lib/ideas/status";
-import {
-  GENERIC_SERVER_ERROR,
-  isValidPilotSessionId,
-  readPilotSession,
-} from "@/lib/security/api";
+import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
+import { resolveProjectAccess } from "@/lib/account/projectAccess";
 import {
   assertIntakeAnswersWithinLimits,
   assertTextWithinLimit,
@@ -40,17 +37,12 @@ export async function GET(
   }
 
   const { id } = await params;
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) {
-    return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
-  }
-
-  const record = await getRecordById(id, pilotSession);
-  if (!record) {
+  const access = await resolveProjectAccess(request, id);
+  if (!access) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ record });
+  return NextResponse.json({ record: access.record });
 }
 
 export async function PATCH(
@@ -62,10 +54,11 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) {
-    return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
+  const access = await resolveProjectAccess(request, id);
+  if (!access) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  const pilotSession = access.pilotSessionId;
 
   try {
     const body = (await readJsonWithLimit(request)) as {

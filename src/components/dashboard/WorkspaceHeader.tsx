@@ -11,9 +11,9 @@ export function WorkspaceHeader({ summary }: { summary: PortfolioSummary }) {
 
   return (
     <header className="mb-8">
-      <p className="section-kicker">Inventor workspace</p>
+      <p className="section-kicker">SmartProBono workspace</p>
       <h1 className="mt-1 text-3xl font-semibold tracking-tight text-navy-900 sm:text-4xl">
-        Welcome back
+        Legal + IP, together
       </h1>
       <p className="mt-2 text-sm leading-relaxed text-navy-500">{subtitle}</p>
     </header>

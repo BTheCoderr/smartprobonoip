@@ -19,7 +19,7 @@ export function SiteFooter() {
           <nav aria-label="Footer" className="flex flex-wrap gap-x-4 gap-y-2.5 text-xs font-medium">
             <Link href={ROUTES.legal} className={footerLinkClass}>Legal help</Link>
             <Link href={ROUTES.ip} className={footerLinkClass}>SmartProBonoIP</Link>
-            <Link href={ROUTES.workspace} className={footerLinkClass}>IP Workspace</Link>
+            <Link href={ROUTES.workspace} className={footerLinkClass}>Workspace</Link>
             <Link href={ROUTES.learn} className={footerLinkClass}>Learn</Link>
             <Link href={ROUTES.trust} className={footerLinkClass}>Trust</Link>
             <Link href={ROUTES.forProfessionals} className={footerLinkClass}>For Professionals</Link>
