@@ -39,6 +39,8 @@ const labels: Array<[RecordKind, string]> = [
 export function RecordClearingPrep() {
   const router = useRouter();
   const [data, setData] = useState<Prep>(initial);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState("");
 
   const summary = useMemo(
     () =>
@@ -78,6 +80,49 @@ export function RecordClearingPrep() {
       // Continue to Ermi even if storage is blocked.
     }
     router.push("/legal/ask-ermi");
+  }
+
+  async function saveToWorkspace() {
+    if (saving) return;
+    setSaving(true);
+    setStatus("");
+
+    try {
+      const response = await fetch("/api/legal/matters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matterType: "record_clearing",
+          title: "Record-clearing preparation",
+          jurisdiction: data.state.trim(),
+          sourceTool: "record_clearing_prep",
+          summary: data.recordDescription.trim() || "Record-clearing preparation summary",
+          artifact: {
+            artifactType: "record_clearing_summary",
+            title: "Record-clearing preparation summary",
+            content: {
+              intake: data,
+              summary,
+            },
+            metadata: {},
+          },
+        }),
+      });
+
+      if (response.status === 401) {
+        setStatus("Sign in from the SmartProBono workspace first, then save this summary.");
+        return;
+      }
+
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Could not save this summary.");
+
+      setStatus("Saved to your SmartProBono workspace.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Could not save this summary.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -144,9 +189,15 @@ export function RecordClearingPrep() {
           <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-navy-800">{summary}</pre>
         </div>
         <div className="border-t border-mist-200 bg-cream/70 p-4 sm:px-6">
-          <button type="button" className="btn-primary" onClick={askErmi}>
-            Ask Ermi what to confirm next
-          </button>
+          {status ? <p className="mb-3 text-sm text-navy-600" role="status">{status}</p> : null}
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn-secondary" onClick={saveToWorkspace} disabled={saving}>
+              {saving ? "Saving…" : "Save to workspace"}
+            </button>
+            <button type="button" className="btn-primary" onClick={askErmi}>
+              Ask Ermi what to confirm next
+            </button>
+          </div>
         </div>
       </section>
     </div>
