@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { listProjectEvents } from "@/lib/db/events";
-import { getRecordById } from "@/lib/db/records";
-import { isValidPilotSessionId, readPilotSession } from "@/lib/security/api";
+import { resolveProjectAccess } from "@/lib/account/projectAccess";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
 /**
@@ -17,13 +16,8 @@ export async function GET(
   }
 
   const { id } = await params;
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) {
-    return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
-  }
-
-  const owned = await getRecordById(id, pilotSession);
-  if (!owned) {
+  const access = await resolveProjectAccess(request, id);
+  if (!access) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
