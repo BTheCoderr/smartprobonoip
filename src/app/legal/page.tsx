@@ -46,7 +46,7 @@ export default function LegalHomePage() {
             title="Start with the legal tools that move cleanly into the new platform"
             lead="These features are being rebuilt natively on the same Next.js platform as SmartProBonoIP instead of copying the old app wholesale."
           />
-          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
             <article className="dossier-card flex h-full flex-col p-6">
               <StampLabel tone="aqua">AVAILABLE</StampLabel>
               <h2 className="headline-editorial mt-4 text-xl">Understand a document</h2>
@@ -78,6 +78,16 @@ export default function LegalHomePage() {
               </Link>
             </article>
             <article className="dossier-card flex h-full flex-col p-6">
+              <StampLabel tone="teal">AVAILABLE</StampLabel>
+              <h2 className="headline-editorial mt-4 text-xl">RI eviction prep</h2>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-blue">
+                Organize a Rhode Island eviction notice or court situation, see source-backed preparation steps, and build a staff-ready summary.
+              </p>
+              <Link href={ROUTES.legalRiEvictionIntake} className="btn-primary mt-6">
+                Start RI eviction prep
+              </Link>
+            </article>
+            <article className="dossier-card flex h-full flex-col p-6">
               <StampLabel tone="warm">AVAILABLE</StampLabel>
               <h2 className="headline-editorial mt-4 text-xl">Record-clearing prep</h2>
               <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-blue">
@@ -96,10 +106,9 @@ export default function LegalHomePage() {
           <SectionHeader
             kicker="Next migration slices"
             title="Keep moving the strongest legal workflows onto the unified platform"
-            lead="Document understanding now lives natively in SmartProBono. The remaining legal features should continue moving over in focused slices instead of copying the old app wholesale."
+            lead="Document understanding and Rhode Island eviction preparation now live natively in SmartProBono. The remaining legal features should continue moving over in focused slices instead of copying the old app wholesale."
           />
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            <DossierCard title="RI eviction pilot" body="Intake, grounded materials, issue flags, assistant, and printable case summary." />
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
             <DossierCard title="Professional workspace" body="Authenticated legal-team intake, persistence, documents, and operational review." />
             <DossierCard title="Exports + billing" body="DOCX/PDF export, plan controls, and payment flows after the core account model is unified." />
           </div>
