@@ -3,7 +3,6 @@ import { trackServerEvent } from "@/lib/analytics/server";
 import { listDocumentsForProject } from "@/lib/db/documents";
 import { createOrganizationReferral } from "@/lib/db/organizationReferrals";
 import { isOrganizationShareEnabled } from "@/lib/db/partnerOrganizations";
-import { getRecordById } from "@/lib/db/records";
 import {
   ORGANIZATION_CONSENT_COPY_VERSION,
   ORGANIZATION_CONSENT_DISCLAIMER_VERSION,
@@ -11,11 +10,8 @@ import {
 } from "@/lib/organization/consent";
 import { buildSharedSnapshot } from "@/lib/organization/snapshot";
 import { getPartner } from "@/lib/routing/registry";
-import {
-  GENERIC_SERVER_ERROR,
-  isValidPilotSessionId,
-  readPilotSession,
-} from "@/lib/security/api";
+import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
+import { resolveProjectAccess } from "@/lib/account/projectAccess";
 import { readJsonWithLimit } from "@/lib/security/requestLimits";
 import { logServerError } from "@/lib/security/safeLog";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
@@ -29,10 +25,11 @@ export async function POST(
   }
 
   const { id: projectId } = await params;
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) {
-    return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
+  const access = await resolveProjectAccess(request, projectId);
+  if (!access) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  const pilotSession = access.pilotSessionId;
 
   try {
     const body = (await readJsonWithLimit(request)) as {
@@ -56,10 +53,7 @@ export async function POST(
       });
     }
 
-    const record = await getRecordById(projectId, pilotSession);
-    if (!record) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
+    const record = access.record;
 
     const documents = await listDocumentsForProject(projectId);
     const selectedFields = normalizeSelectedShareFields(body.selectedFields);
