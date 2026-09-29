@@ -5,7 +5,7 @@ import { useSyncExternalStore } from "react";
 import { buildRiEvictionGuidance, formatRiEvictionSummary } from "@/lib/legal/riEvictionGuidance";
 import { riEvictionSourcesById, RI_EVICTION_SOURCE_REVIEWED_AT } from "@/lib/legal/riEvictionSources";
 import {
-  readRiEvictionIntake,
+  parseRiEvictionSnapshot,
   riEvictionSnapshot,
   subscribeRiEvictionStorage,
 } from "@/lib/legal/riEvictionStorage";
@@ -30,8 +30,8 @@ function ListSection({ title, items }: { title: string; items: string[] }) {
 
 export function RiEvictionResults() {
   const router = useRouter();
-  useSyncExternalStore(subscribeRiEvictionStorage, riEvictionSnapshot, serverSnapshot);
-  const intake = readRiEvictionIntake();
+  const snapshot = useSyncExternalStore(subscribeRiEvictionStorage, riEvictionSnapshot, serverSnapshot);
+  const intake = parseRiEvictionSnapshot(snapshot);
 
   if (!intake) {
     return (
