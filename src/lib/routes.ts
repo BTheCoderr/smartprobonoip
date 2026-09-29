@@ -2,6 +2,7 @@ export const ROUTES = {
   home: "/",
   legal: "/legal",
   legalErmi: "/legal/ask-ermi",
+  legalDocument: "/legal/document",
   legalDraft: "/legal/draft",
   legalRecordClearing: "/legal/record-clearing",
   ip: "/ip",
