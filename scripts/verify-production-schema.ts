@@ -1,5 +1,5 @@
 /**
- * Read-only production schema verification for migrations 017–036.
+ * Read-only production schema verification for migrations 017–037.
  *
  * Usage (pick one auth method):
  *
@@ -49,6 +49,7 @@ export const MIGRATION_ORDER = [
   "034",
   "035",
   "036",
+  "037",
 ] as const;
 
 export type MigrationVersion = (typeof MIGRATION_ORDER)[number];
@@ -75,6 +76,7 @@ export const EXPECTED_PASS_AFTER: Record<MigrationVersion, number> = {
   "034": 23,
   "035": 24,
   "036": 25,
+  "037": 31,
 };
 
 interface CheckDef {
@@ -324,6 +326,73 @@ export const CHECKS: CheckDef[] = [
     sql: `SELECT to_regclass('public.idx_spbip_clarifications_referral') IS NOT NULL AS pass`,
   },
   {
+    id: "platform_profiles",
+    label: "platform_profiles table exists",
+    introducedBy: "037",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'platform_profiles'
+    ) AS pass`,
+  },
+  {
+    id: "legal_matters",
+    label: "legal_matters table exists",
+    introducedBy: "037",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'legal_matters'
+    ) AS pass`,
+  },
+  {
+    id: "legal_artifacts",
+    label: "legal_artifacts table exists",
+    introducedBy: "037",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'legal_artifacts'
+    ) AS pass`,
+  },
+  {
+    id: "pilot_session_owner",
+    label: "pilot_sessions.owner_user_id column exists",
+    introducedBy: "037",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'pilot_sessions'
+        AND column_name = 'owner_user_id'
+    ) AS pass`,
+  },
+  {
+    id: "ip_project_owner",
+    label: "smartprobonoip_projects.owner_user_id column exists",
+    introducedBy: "037",
+    sql: `SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'smartprobonoip_projects'
+        AND column_name = 'owner_user_id'
+    ) AS pass`,
+  },
+  {
+    id: "legal_rls_policies",
+    label: "authenticated own-row Legal RLS policies exist",
+    introducedBy: "037",
+    sql: `SELECT (
+      SELECT count(*) = 3
+      FROM pg_policies
+      WHERE schemaname = 'public'
+        AND policyname IN (
+          'platform_profiles_select_own',
+          'legal_matters_select_own',
+          'legal_artifacts_select_own'
+        )
+    ) AS pass`,
+  },
+  {
     id: "project_events_backfill",
     label: "smartprobonoip_project_events backfill count > 0",
     introducedBy: "018",
@@ -412,10 +481,10 @@ export function evaluateResults(
       : `${passCount}/${CHECKS.length} PASS (expected ${expected}/${CHECKS.length} after migration ${options.atMigration}) — STOP. Do not continue.`;
     exitCode = ok ? 0 : 1;
   } else if (passCount === CHECKS.length) {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–036 verified.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — all migrations 017–037 verified.`;
     exitCode = 0;
   } else {
-    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–036 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
+    summaryLine = `${passCount}/${CHECKS.length} PASS — migrations 017–037 not fully applied. Use --migration N after each apply, or --strict before app deploy.`;
     exitCode = 1;
   }
 
