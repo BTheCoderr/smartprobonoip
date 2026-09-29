@@ -1,5 +1,3 @@
-import * as mammoth from "mammoth";
-import { PDFParse } from "pdf-parse";
 import { EXTRACTED_TEXT_LIMIT } from "@/lib/legal/documentAnalysis";
 
 export const MAX_LEGAL_DOCUMENT_BYTES = 4 * 1024 * 1024;
@@ -97,6 +95,7 @@ function normalizeText(text: string): string {
 }
 
 async function extractPdf(buffer: Buffer): Promise<string> {
+  const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data: buffer });
   try {
     const result = await parser.getText();
@@ -107,7 +106,13 @@ async function extractPdf(buffer: Buffer): Promise<string> {
 }
 
 async function extractDocx(buffer: Buffer): Promise<string> {
-  const result = await mammoth.extractRawText({ buffer });
+  const mammothModule = await import("mammoth");
+  const extractRawText =
+    mammothModule.extractRawText ?? mammothModule.default?.extractRawText;
+  if (!extractRawText) {
+    throw new Error("DOCX extractor unavailable");
+  }
+  const result = await extractRawText({ buffer });
   return result.value ?? "";
 }
 
