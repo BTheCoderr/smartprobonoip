@@ -116,7 +116,7 @@ async function extractPdf(buffer: Buffer): Promise<string> {
       setTimeout(() => reject(new Error("PDF extraction timed out")), 12_000),
     ),
   ]);
-  return typeof result.text === "string" ? result.text : result.text.join("\n");
+  return result.text;
 }
 
 async function extractDocx(buffer: Buffer): Promise<string> {
