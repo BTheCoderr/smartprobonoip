@@ -6,11 +6,8 @@ import {
   restoreAllRecommendations,
   restoreRecommendation,
 } from "@/lib/db/routingPreferences";
-import {
-  GENERIC_SERVER_ERROR,
-  isValidPilotSessionId,
-  readPilotSession,
-} from "@/lib/security/api";
+import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
+import { resolveProjectAccess } from "@/lib/account/projectAccess";
 import { readJsonWithLimit } from "@/lib/security/requestLimits";
 import { logServerError } from "@/lib/security/safeLog";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
@@ -24,10 +21,11 @@ export async function GET(
   }
 
   const { id } = await params;
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) {
-    return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
+  const access = await resolveProjectAccess(request, id);
+  if (!access) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  const pilotSession = access.pilotSessionId;
 
   const preferences = await getRoutingPreferences(id, pilotSession);
   if (!preferences) {
@@ -46,10 +44,11 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const pilotSession = readPilotSession(request);
-  if (!isValidPilotSessionId(pilotSession)) {
-    return NextResponse.json({ error: "Missing pilot session" }, { status: 401 });
+  const access = await resolveProjectAccess(request, id);
+  if (!access) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  const pilotSession = access.pilotSessionId;
 
   try {
     const body = (await readJsonWithLimit(request)) as {
