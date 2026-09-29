@@ -117,11 +117,13 @@ export function LegalDocumentWorkspace() {
     setFactualSummary("");
 
     try {
-      const form = new FormData();
-      form.append("file", file);
       const extractResponse = await fetch("/api/legal/documents/extract", {
         method: "POST",
-        body: form,
+        headers: {
+          "Content-Type": file.type || "application/octet-stream",
+          "X-File-Name": encodeURIComponent(file.name),
+        },
+        body: file,
       });
       const extractData = (await extractResponse.json()) as ExtractedDocument & { error?: string };
       if (!extractResponse.ok || !extractData.text) {
