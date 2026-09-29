@@ -1,8 +1,10 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function LegalDraftBuilder() {
+  const router = useRouter();
   const [documentType, setDocumentType] = useState("Letter");
   const [jurisdiction, setJurisdiction] = useState("");
   const [facts, setFacts] = useState("");
@@ -64,9 +66,9 @@ export function LegalDraftBuilder() {
         "spb_legal_handoff",
         `Please help me review this draft and identify unclear facts or questions to confirm before I use it:\n\n${draft.slice(0, 8000)}`,
       );
-      window.location.href = "/legal/ask-ermi";
+      router.push("/legal/ask-ermi");
     } catch {
-      window.location.href = "/legal/ask-ermi";
+      router.push("/legal/ask-ermi");
     }
   }
 
