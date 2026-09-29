@@ -1,0 +1,107 @@
+name: Legal Document Preview Smoke
+
+on:
+  push:
+    branches:
+      - feature/legal-document-understanding
+
+jobs:
+  document-smoke:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Create TXT PDF and DOCX fixtures
+        shell: bash
+        run: |
+          cat > /tmp/sample.txt <<'EOF'
+          SMARTPROBONO TXT FIXTURE
+          Example Services LLC requests a written response within 10 days.
+          A meeting is listed for October 14, 2026.
+          EOF
+
+          node - <<'NODE'
+          const fs = require("fs");
+          const { jsPDF } = require("jspdf");
+          const doc = new jsPDF();
+          doc.text("SMARTPROBONO PDF FIXTURE", 20, 20);
+          doc.text("Example Services LLC requests a written response within 10 days.", 20, 35);
+          doc.text("A meeting is listed for October 14, 2026.", 20, 50);
+          fs.writeFileSync("/tmp/sample.pdf", Buffer.from(doc.output("arraybuffer")));
+          NODE
+
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import Path
+
+          content_types = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+            <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+            <Default Extension="xml" ContentType="application/xml"/>
+            <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+          </Types>"""
+          rels = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+            <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+          </Relationships>"""
+          document = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+            <w:body>
+              <w:p><w:r><w:t>SMARTPROBONO DOCX FIXTURE</w:t></w:r></w:p>
+              <w:p><w:r><w:t>Example Services LLC requests a written response within 10 days.</w:t></w:r></w:p>
+              <w:p><w:r><w:t>A meeting is listed for October 14, 2026.</w:t></w:r></w:p>
+              <w:sectPr/>
+            </w:body>
+          </w:document>"""
+          with zipfile.ZipFile("/tmp/sample.docx", "w", zipfile.ZIP_DEFLATED) as z:
+              z.writestr("[Content_Types].xml", content_types)
+              z.writestr("_rels/.rels", rels)
+              z.writestr("word/document.xml", document)
+          PY
+
+      - name: Exercise preview extraction and analysis
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://deploy-preview-16--smartprobonoip.netlify.app"
+
+          check_file () {
+            file="$1"
+            marker="$2"
+            extract=$(curl -sS -w '\n%{http_code}' -F "file=@$file" "$base/api/legal/documents/extract")
+            code=$(echo "$extract" | tail -n1)
+            body=$(echo "$extract" | sed '$d')
+            echo "$(basename "$file") extract -> $code"
+            test "$code" = "200"
+            echo "$body" | jq -e --arg marker "$marker" '.text | contains($marker)' >/dev/null
+
+            payload=$(echo "$body" | jq '{fileName,text,truncated}')
+            analyze=$(curl -sS -w '\n%{http_code}'               -H 'Content-Type: application/json'               -d "$payload"               "$base/api/legal/documents/analyze")
+            analyze_code=$(echo "$analyze" | tail -n1)
+            analyze_body=$(echo "$analyze" | sed '$d')
+            echo "$(basename "$file") analyze -> $analyze_code"
+            test "$analyze_code" = "200"
+            echo "$analyze_body" | jq -e '.analysis.overview | type=="string" and length > 20' >/dev/null
+            echo "$analyze_body" | jq -e '.analysis.questionsToConfirm | type=="array"' >/dev/null
+          }
+
+          page_code=$(curl -L -sS -o /dev/null -w "%{http_code}" "$base/legal/document")
+          echo "/legal/document -> $page_code"
+          test "$page_code" = "200"
+
+          check_file /tmp/sample.txt "SMARTPROBONO TXT FIXTURE"
+          check_file /tmp/sample.pdf "SMARTPROBONO PDF FIXTURE"
+          check_file /tmp/sample.docx "SMARTPROBONO DOCX FIXTURE"
+
+          cp /tmp/sample.txt /tmp/sample.rtf
+          bad=$(curl -sS -w '\n%{http_code}' -F "file=@/tmp/sample.rtf;type=text/rtf" "$base/api/legal/documents/extract")
+          bad_code=$(echo "$bad" | tail -n1)
+          echo "unsupported RTF -> $bad_code"
+          test "$bad_code" = "415"
