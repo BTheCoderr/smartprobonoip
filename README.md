@@ -53,6 +53,10 @@ The demo loads a sample invention (HydroSeal), walks through disclaimer → inta
 | `/legal/ask-ermi` | Ermi legal preparation assistant |
 | `/legal/draft` | Legal-support draft builder |
 | `/legal/record-clearing` | Record-clearing preparation flow |
+| `/legal/document` | PDF/DOCX/TXT Document Understanding |
+| `/legal/ri/eviction` | Rhode Island eviction preparation workflow |
+| `/sign-in` | SmartProBono account magic-link sign-in |
+| `/workspace` | Unified Legal + IP workspace |
 | `/ip` | SmartProBonoIP product landing |
 | `/protect/[path]` | IP protection-path entry (patent → disclaimer; others coming soon) |
 | `/smartprobonoip` | Compatibility redirect to `/ip` |
@@ -92,9 +96,9 @@ Connect the same GitHub repo and set the same environment variables. Next.js 16 
 
 | Variable | Required | Used for |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Pilot only | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Pilot only | Client detects Supabase mode |
-| `SUPABASE_SERVICE_ROLE_KEY` | Pilot only | Server API routes (never public) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Pilot/account mode | Supabase project URL + Auth |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Pilot/account mode | Supabase Auth/browser client |
+| `SUPABASE_SERVICE_ROLE_KEY` | Pilot/account mode | Server-only data APIs (never public) |
 | `PARTNER_DASHBOARD_SECRET` | Pilot only | Protects `/api/partner/*` |
 | `OPENAI_API_KEY` | No | Optional AI profiles |
 | `OPENAI_MODEL` | No | SmartProBonoIP AI model override |
@@ -142,9 +146,9 @@ NEXT_PUBLIC_APP_URL=https://smartprobono.org
 7. **Test dashboard:** open `/smartprobonoip/dashboard`, enter `PARTNER_DASHBOARD_SECRET`, confirm live metrics load.
 8. **Test CSV export:** download from dashboard or `GET /api/partner/export.csv?secret=...`.
 
-With Supabase configured, inventor data is written via `/api/records` using session-scoped server routes and the **service role** (never exposed to the browser). Partners unlock live metrics with the partner secret.
+With Supabase configured, anonymous SmartProBonoIP still works through session-scoped server routes. Users may also sign in by magic link and link the current pilot session to a SmartProBono account. Account-owned Legal matters use authenticated RLS policies; legacy IP/org/research tables remain server-only behind API authorization. The service-role key is never exposed to the browser.
 
-Without Supabase, the app falls back to `localStorage` on the user's device (demo mode still works).
+Without Supabase, the IP demo/local flow can still fall back to `localStorage`; account persistence is unavailable.
 
 ### Umbrella schema tables
 
@@ -160,8 +164,21 @@ Without Supabase, the app falls back to `localStorage` on the user's device (dem
 | `smartprobonoip_impact_metrics` | Clarity scores and pilot impact flags |
 | `followups` | 30/60/90-day follow-up tracking |
 | `venture_documents` | Future venture document registry |
+| `platform_profiles` | SmartProBono account profile keyed to Supabase Auth |
+| `legal_matters` | Account-owned Legal matters |
+| `legal_artifacts` | Saved Legal reviews, drafts, and preparation summaries |
 
 Legacy files (`supabase/schema.sql`, `002_pilot_rls.sql`) are **deprecated** for new projects.
+
+### Unified account security
+
+- Anonymous IP preparation remains available through the existing `x-pilot-session` server API model.
+- Signing in at `/sign-in` can link the current browser's IP session to the authenticated SmartProBono account without rewriting the original pilot-session identifiers.
+- New IP projects created while signed in receive an account owner link and can be loaded from another signed-in browser.
+- Legal matters are saved only when the user explicitly chooses **Save to workspace**.
+- Browser table grants are limited to `platform_profiles`, `legal_matters`, and `legal_artifacts`; each is protected by own-row RLS using `auth.uid()`.
+- Legacy IP, organization, research, analytics, referral, and recovery tables have no direct `anon` or `authenticated` table privileges. They remain server-only.
+- Document Understanding never saves the raw upload or extracted text to the Legal workspace; explicit saves retain the structured review, optional summary, and limited file metadata.
 
 ### Backup and restore
 
