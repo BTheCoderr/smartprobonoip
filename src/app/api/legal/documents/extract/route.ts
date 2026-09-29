@@ -5,7 +5,7 @@ import {
   MAX_LEGAL_DOCUMENT_BYTES,
 } from "@/lib/legal/documentExtraction";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
-import { logServerError, safeErrorMessage } from "@/lib/security/safeLog";
+import { logServerError } from "@/lib/security/safeLog";
 
 export const runtime = "nodejs";
 
@@ -59,15 +59,8 @@ export async function POST(request: Request) {
     logServerError("legal.document.extract", error, {
       route: "api/legal/documents/extract",
     });
-    const hostname = new URL(request.url).hostname;
-    const allowPreviewDebug =
-      hostname.startsWith("deploy-preview-") &&
-      request.headers.get("x-spb-smoke-debug") === "1";
     return NextResponse.json(
-      {
-        error: "SmartProBono could not process this document right now.",
-        ...(allowPreviewDebug ? { debug: safeErrorMessage(error) } : {}),
-      },
+      { error: "SmartProBono could not process this document right now." },
       { status: 500 },
     );
   }
