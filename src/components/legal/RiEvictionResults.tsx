@@ -43,7 +43,8 @@ export function RiEvictionResults() {
     );
   }
 
-  const guidance = buildRiEvictionGuidance(intake);
+  const currentIntake = intake;
+  const guidance = buildRiEvictionGuidance(currentIntake);
   const sources = riEvictionSourcesById(guidance.sourceIds);
 
   function askErmi() {
@@ -51,7 +52,7 @@ export function RiEvictionResults() {
     const context = [
       "Rhode Island eviction preparation context. Use this only to help organize questions and next steps. Do not invent RI rules or deadlines; use the source links below when discussing a rule and tell me to confirm current requirements.",
       "",
-      formatRiEvictionSummary(intake, guidance),
+      formatRiEvictionSummary(currentIntake, guidance),
       "",
       "CURRENT SOURCE SET",
       sourceLines,
