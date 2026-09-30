@@ -14,7 +14,8 @@ export async function GET() {
   const diagnostics = {
     configured: isSupabaseServerConfigured(),
     hasUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
-    hasServiceRole: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    hasSecretKey: Boolean(process.env.SUPABASE_SECRET_KEY),
+    hasLegacyServiceRole: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
   };
 
   try {
