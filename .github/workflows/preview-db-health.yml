@@ -1,0 +1,31 @@
+name: Preview DB Health
+
+on:
+  push:
+    branches:
+      - feature/partner-admin-auth
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Wait for matching Netlify preview and verify Supabase service access
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://deploy-preview-19--smartprobonoip.netlify.app/api/internal/preview-db-health"
+          body=""
+          code=""
+          for i in $(seq 1 40); do
+            response=$(curl -sS -w '\n%{http_code}' "$url" || true)
+            code=$(echo "$response" | tail -n1)
+            body=$(echo "$response" | sed '$d')
+            echo "attempt $i -> $code $body"
+            if [ "$code" = "200" ] && echo "$body" | jq -e '.ok == true' >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Preview DB health never became healthy."
+          exit 1
