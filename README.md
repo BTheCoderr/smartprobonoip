@@ -8,6 +8,18 @@
 
 **Live platform:** https://smartprobono.org
 
+<!-- portfolio-visuals:start -->
+### Product walkthrough
+
+<p align="center">
+  <img src="./public/product-proof/walkthrough/01-guided-intake.png" alt="SmartProBonoIP guided intake" width="32%" />
+  <img src="./public/product-proof/walkthrough/04-readiness-packet.png" alt="SmartProBonoIP readiness packet" width="32%" />
+  <img src="./public/product-proof/walkthrough/05-professional-review.png" alt="SmartProBono professional review handoff" width="32%" />
+</p>
+
+The product proof flow moves from guided intake → organized readiness record → professional handoff.
+<!-- portfolio-visuals:end -->
+
 SmartProBono is a Legal + IP preparation platform built around one operating model:
 
 > **Learn → Prepare → Connect**
