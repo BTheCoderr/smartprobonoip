@@ -1,5 +1,11 @@
 # SmartProBono — Legal + IP Preparation Platform
 
+<!-- repo-intro:start -->
+**Project snapshot:** SmartProBono is a unified legal and intellectual-property preparation platform built around Learn → Prepare → Connect, with guided organization, readiness workflows, reusable records, and clearer handoff to qualified professionals.
+
+**What it demonstrates:** Next.js · legal/IP workflow design · local-first demo mode · Supabase-ready architecture · document/readiness systems.
+<!-- repo-intro:end -->
+
 **SmartProBono** is the umbrella platform. It now has two primary preparation paths:
 
 - **SmartProBono Legal** — legal-question organization, Ermi, draft preparation, and guided legal workflows.
