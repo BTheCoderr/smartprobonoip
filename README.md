@@ -104,7 +104,8 @@ Connect the same GitHub repo and set the same environment variables. Next.js 16 
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Pilot/account mode | Supabase project URL + Auth |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Pilot/account mode | Supabase Auth/browser client |
-| `SUPABASE_SERVICE_ROLE_KEY` | Pilot/account mode | Server-only data APIs (never public) |
+| `SUPABASE_SECRET_KEY` | Pilot/account mode | Preferred server-only Supabase secret key (`sb_secret_...`; never public) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Legacy fallback | Legacy server-only service-role JWT while migrating to `SUPABASE_SECRET_KEY` |
 | `PARTNER_DASHBOARD_SECRET` | Pilot only | Protects `/api/partner/*` |
 | `OPENAI_API_KEY` | No | Optional AI profiles |
 | `OPENAI_MODEL` | No | SmartProBonoIP AI model override |
@@ -142,7 +143,8 @@ Recommended project name: **`smartprobono-platform`**
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key   # server-only — never NEXT_PUBLIC_
+SUPABASE_SECRET_KEY=sb_secret_your-server-key    # preferred; server-only — never NEXT_PUBLIC_
+# SUPABASE_SERVICE_ROLE_KEY=your-legacy-service-role-key  # temporary fallback
 PARTNER_DASHBOARD_SECRET=your-partner-secret
 NEXT_PUBLIC_APP_URL=https://smartprobono.org
 ```
@@ -152,7 +154,7 @@ NEXT_PUBLIC_APP_URL=https://smartprobono.org
 7. **Test dashboard:** open `/smartprobonoip/dashboard`, enter `PARTNER_DASHBOARD_SECRET`, confirm live metrics load.
 8. **Test CSV export:** download from dashboard or `GET /api/partner/export.csv?secret=...`.
 
-With Supabase configured, anonymous SmartProBonoIP still works through session-scoped server routes. Users may also sign in by magic link and link the current pilot session to a SmartProBono account. Account-owned Legal matters use authenticated RLS policies; legacy IP/org/research tables remain server-only behind API authorization. The service-role key is never exposed to the browser.
+With Supabase configured, anonymous SmartProBonoIP still works through session-scoped server routes. Users may also sign in by magic link and link the current pilot session to a SmartProBono account. Account-owned Legal matters use authenticated RLS policies; legacy IP/org/research tables remain server-only behind API authorization. The Supabase server key (`SUPABASE_SECRET_KEY`, or the legacy service-role fallback) is never exposed to the browser.
 
 Without Supabase, the IP demo/local flow can still fall back to `localStorage`; account persistence is unavailable.
 
