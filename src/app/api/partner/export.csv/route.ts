@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { trackServerEvent } from "@/lib/analytics/server";
-import { listLiveRecords, verifyPartnerSecret } from "@/lib/db/records";
+import { listLiveRecords } from "@/lib/db/records";
 import { getFeedbackMapByProjectIds } from "@/lib/db/feedback";
 import { getProjectEventFlags } from "@/lib/db/analytics";
 import { ownershipCsvFields } from "@/lib/ownership";
@@ -10,10 +10,8 @@ import { SUPPORT_NEED_OPTIONS } from "@/lib/feedback";
 import { SIGNAL_LABELS, RESOURCE_LABELS } from "@/lib/labels";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 import { escapeCsvField } from "@/lib/security/csv";
-import {
-  GENERIC_UNAUTHORIZED,
-  readPartnerSecretHeader,
-} from "@/lib/security/api";
+import { GENERIC_UNAUTHORIZED } from "@/lib/security/api";
+import { authorizePartnerAdminRequest } from "@/lib/security/partnerAdminAuth";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 
 export async function GET(request: Request) {
@@ -24,7 +22,7 @@ export async function GET(request: Request) {
   const limited = enforceRateLimit(request, "partner-export-csv", RATE_LIMITS.partner);
   if (limited) return limited;
 
-  if (!verifyPartnerSecret(readPartnerSecretHeader(request))) {
+  if (!(await authorizePartnerAdminRequest(request))) {
     return NextResponse.json({ error: GENERIC_UNAUTHORIZED }, { status: 401 });
   }
 
