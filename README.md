@@ -6,14 +6,47 @@
 **What it demonstrates:** Next.js · Supabase-backed ownership · AI/rule-based preparation · document workflows · legal/IP product architecture.
 <!-- repo-intro:end -->
 
-**SmartProBono** is the umbrella platform. It now has two primary preparation paths:
+**Live platform:** https://smartprobono.org
 
-- **SmartProBono Legal** — legal-question organization, Ermi, draft preparation, and guided legal workflows.
-- **SmartProBonoIP** — the specialized IP Readiness Platform, with patent readiness live and the canonical IP record / professional handoff system.
+SmartProBono is a Legal + IP preparation platform built around one operating model:
 
-The platform model is **Learn → Prepare → Connect**: understand the issue, organize facts and documents, then move a clearer record to the right human next step.
+> **Learn → Prepare → Connect**
 
-**SmartProBono does not replace lawyers, patent professionals, courts, legal-aid organizations, or other qualified experts. It helps people become better prepared to work with them.**
+The goal is not to replace a lawyer, patent professional, court, legal-aid organization, or other qualified expert. The product helps people understand what they are dealing with, organize the underlying facts/documents, and arrive at the human next step with a clearer record.
+
+## Product areas
+
+| Area | What it does |
+| --- | --- |
+| **SmartProBono Legal** | Organizes legal questions, documents, draft preparation, and guided legal workflows. |
+| **Ermi** | Helps users structure legal-support questions and preparation without presenting itself as a lawyer. |
+| **SmartProBonoIP** | Builds an IP readiness record, starting with patent preparation, education, inventor intake, evidence, and professional handoff. |
+| **Unified workspace** | Gives signed-in users one place for Legal + IP records while preserving anonymous IP preparation. |
+| **Partner workflows** | Supports pilot dashboards, metrics, exports, and professional handoff without exposing sensitive data directly to browser roles. |
+
+## What makes the architecture interesting
+
+- **Progressive persistence:** the IP flow works locally with no setup, then upgrades to Supabase-backed persistence when configured.
+- **Anonymous + authenticated ownership:** an inventor can start without an account, then link the existing browser session to a signed-in SmartProBono account.
+- **Server-side data boundary:** legacy IP, organization, research, analytics, referral, and recovery data remain behind authorized server routes rather than direct browser grants.
+- **AI with deterministic fallback:** preparation flows can use AI when configured while retaining rule-based output for core readiness workflows.
+- **Human handoff as a product feature:** the system is designed to produce clearer packets and records for professionals, not to make legal conclusions for the user.
+- **Document understanding without raw-file retention in the Legal workspace:** explicit saves keep structured review output and limited metadata rather than automatically retaining the upload itself.
+
+```mermaid
+flowchart LR
+    A[User question / invention] --> B[Learn]
+    B --> C[Structured intake + documents]
+    C --> D[Prepare]
+    D --> E[Readiness record / draft / packet]
+    E --> F[Connect]
+    F --> G[Professional / organization / next step]
+
+    H[Anonymous session] --> C
+    I[SmartProBono account] --> C
+    C --> J[Server-authorized data layer]
+    J --> K[Supabase]
+```
 
 See [`docs/SMARTPROBONO_UNIFIED_PLATFORM.md`](./docs/SMARTPROBONO_UNIFIED_PLATFORM.md) for the consolidation architecture and migration plan.
 
