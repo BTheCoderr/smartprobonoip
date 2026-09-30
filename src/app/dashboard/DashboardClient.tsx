@@ -97,6 +97,7 @@ export default function DashboardClient() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [partnerSecret, setPartnerSecretState] = useState("");
   const [secretSaved, setSecretSaved] = useState(false);
+  const [partnerAccessAuthorized, setPartnerAccessAuthorized] = useState(false);
   const [analytics, setAnalytics] = useState<AnalyticsDashboardData | null>(null);
   const [feedbackMetrics, setFeedbackMetrics] = useState<FeedbackMetrics | null>(
     null,
@@ -131,24 +132,29 @@ export default function DashboardClient() {
       try {
         if (isApiStoreAvailable()) {
           const secret = getPartnerSecret();
-          if (secret) {
-            const res = await fetch("/api/partner/metrics", {
-              headers: partnerSecretHeaders(secret),
-            });
-            if (res.ok) {
-              const data = (await res.json()) as {
-                records: ProjectRecord[];
-                researchMetrics?: ResearchPrepMetrics;
-              };
-              if (active) {
-                setRecords(data.records);
-                setResearchMetrics(data.researchMetrics ?? null);
-                setLoading(false);
-                return;
-              }
+          const res = await fetch("/api/partner/metrics", {
+            headers: partnerSecretHeaders(secret),
+          });
+
+          if (res.ok) {
+            const data = (await res.json()) as {
+              records: ProjectRecord[];
+              researchMetrics?: ResearchPrepMetrics;
+            };
+            if (active) {
+              setPartnerAccessAuthorized(true);
+              setRecords(data.records);
+              setResearchMetrics(data.researchMetrics ?? null);
+              setLoading(false);
+              return;
             }
           }
-          if (active) setRecords([]);
+
+          if (active) {
+            setPartnerAccessAuthorized(false);
+            setRecords([]);
+            setResearchMetrics(null);
+          }
         } else {
           const local = await getStore().listRecords();
           if (active) setRecords(local.filter((r) => !r.isDemo));
@@ -204,7 +210,8 @@ export default function DashboardClient() {
     [displayRecords],
   );
   const analyticsEnabled =
-    isApiStoreAvailable() && Boolean(getPartnerSecret() ?? partnerSecret);
+    isApiStoreAvailable() &&
+    (partnerAccessAuthorized || Boolean(getPartnerSecret() ?? partnerSecret));
   const pilotImpact = useMemo(
     () => computePilotImpactFromRecords(filteredRecords),
     [filteredRecords],
@@ -213,7 +220,6 @@ export default function DashboardClient() {
   useEffect(() => {
     if (!analyticsEnabled) return;
     const secret = getPartnerSecret() ?? partnerSecret;
-    if (!secret) return;
 
     const params = new URLSearchParams({
       partner: filters.partner,
@@ -247,7 +253,6 @@ export default function DashboardClient() {
   useEffect(() => {
     if (!analyticsEnabled) return;
     const secret = getPartnerSecret() ?? partnerSecret;
-    if (!secret) return;
 
     let active = true;
     fetch("/api/partner/feedback", {
@@ -296,15 +301,13 @@ export default function DashboardClient() {
 
   async function exportCsv() {
     const secret = getPartnerSecret() ?? partnerSecret;
-    if (!secret) {
-      alert("Enter the partner dashboard secret to export pilot CSV.");
-      return;
-    }
     const res = await fetch("/api/partner/export.csv", {
       headers: partnerSecretHeaders(secret),
     });
     if (!res.ok) {
-      alert("Export failed. Check your partner secret.");
+      alert(
+        "Export failed. Sign in with an authorized SmartProBono admin account or enter the legacy partner secret.",
+      );
       return;
     }
     const blob = await res.blob();
@@ -369,9 +372,25 @@ export default function DashboardClient() {
         <Card className="mt-6">
           <CardHeader
             title="Partner access"
-            subtitle="Required to load live Supabase pilot data and export CSV."
+            subtitle={
+              partnerAccessAuthorized
+                ? "Authorized through your SmartProBono account or legacy partner secret."
+                : "Sign in with an authorized SmartProBono admin account, or use the legacy partner secret."
+            }
           />
           <div className="flex flex-wrap gap-2">
+            {!partnerAccessAuthorized ? (
+              <Link
+                href="/sign-in?next=/dashboard"
+                className="rounded-lg bg-navy-900 px-4 py-2 text-sm font-medium text-white hover:bg-navy-800"
+              >
+                Sign in as admin
+              </Link>
+            ) : (
+              <span className="rounded-lg border border-teal-200 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800">
+                Admin access active
+              </span>
+            )}
             <input
               type="password"
               value={partnerSecret}
@@ -382,9 +401,9 @@ export default function DashboardClient() {
             <button
               type="button"
               onClick={savePartnerSecret}
-              className="rounded-lg bg-navy-900 px-4 py-2 text-sm font-medium text-white hover:bg-navy-800"
+              className="rounded-lg border border-mist-300 px-4 py-2 text-sm font-medium text-navy-700 hover:bg-mist-100"
             >
-              Unlock live data
+              Use legacy secret
             </button>
             <button
               type="button"

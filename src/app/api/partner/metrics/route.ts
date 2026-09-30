@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { listLiveRecords, verifyPartnerSecret } from "@/lib/db/records";
+import { listLiveRecords } from "@/lib/db/records";
 import { getResearchMetricsForLiveRecords } from "@/lib/db/research";
 import { computeMetrics } from "@/lib/metrics";
 import { redactRecordsForPartnerMetrics } from "@/lib/security/partnerRecordRedaction";
-import {
-  GENERIC_UNAUTHORIZED,
-  readPartnerSecretHeader,
-} from "@/lib/security/api";
+import { GENERIC_UNAUTHORIZED } from "@/lib/security/api";
+import { authorizePartnerAdminRequest } from "@/lib/security/partnerAdminAuth";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
@@ -18,8 +16,7 @@ export async function GET(request: Request) {
   const limited = enforceRateLimit(request, "partner-metrics", RATE_LIMITS.partner);
   if (limited) return limited;
 
-  const secret = readPartnerSecretHeader(request);
-  if (!verifyPartnerSecret(secret)) {
+  if (!(await authorizePartnerAdminRequest(request))) {
     return NextResponse.json({ error: GENERIC_UNAUTHORIZED }, { status: 401 });
   }
 

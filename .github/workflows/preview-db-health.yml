@@ -1,0 +1,42 @@
+name: Preview DB Health
+
+on:
+  push:
+    branches:
+      - feature/partner-admin-auth
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Verify current production still has Supabase server access
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -sS -w '\n%{http_code}'             -H 'x-pilot-session: env-safety-prod-check-20260930'             https://smartprobono.org/api/portfolio)
+          code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          echo "production portfolio -> $code"
+          test "$code" = "200"
+          echo "$body" | jq -e '.snapshot.inventions | type=="array"' >/dev/null
+
+      - name: Wait for matching Netlify preview and verify Supabase service access
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://deploy-preview-19--smartprobonoip.netlify.app/api/internal/preview-db-health"
+          body=""
+          code=""
+          for i in $(seq 1 40); do
+            response=$(curl --connect-timeout 5 --max-time 15 -sS -w '\n%{http_code}' "$url" || true)
+            code=$(echo "$response" | tail -n1)
+            body=$(echo "$response" | sed '$d')
+            echo "attempt $i -> $code $body"
+            if [ "$code" = "200" ] && echo "$body" | jq -e '.ok == true' >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Preview DB health never became healthy."
+          exit 1
