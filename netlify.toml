@@ -10,3 +10,5 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Netlify rebuild marker: 2026-09-30 portfolio refresh
