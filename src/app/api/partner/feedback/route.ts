@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import { computeFeedbackMetrics } from "@/lib/feedbackMetrics";
 import { listFeedbackRecords } from "@/lib/db/feedback";
-import { verifyPartnerSecret } from "@/lib/db/records";
-import {
-  GENERIC_UNAUTHORIZED,
-  readPartnerSecretHeader,
-} from "@/lib/security/api";
+import { GENERIC_UNAUTHORIZED } from "@/lib/security/api";
+import { authorizePartnerAdminRequest } from "@/lib/security/partnerAdminAuth";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
@@ -21,7 +18,7 @@ export async function GET(request: Request) {
   );
   if (limited) return limited;
 
-  if (!verifyPartnerSecret(readPartnerSecretHeader(request))) {
+  if (!(await authorizePartnerAdminRequest(request))) {
     return NextResponse.json({ error: GENERIC_UNAUTHORIZED }, { status: 401 });
   }
 
