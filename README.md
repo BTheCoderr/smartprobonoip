@@ -104,8 +104,9 @@ Connect the same GitHub repo and set the same environment variables. Next.js 16 
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Pilot/account mode | Supabase project URL + Auth |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Pilot/account mode | Supabase Auth/browser client |
-| `SUPABASE_SERVICE_ROLE_KEY` | Pilot/account mode | Server-only data APIs (never public) |
-| `PARTNER_DASHBOARD_SECRET` | Pilot only | Protects `/api/partner/*` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Pilot/account mode | Server-only data APIs; mark Secret in Netlify |
+| `PLATFORM_ADMIN_EMAIL` | Admin reporting | Signed-in SmartProBono account allowed to access global partner reporting |
+| `PARTNER_DASHBOARD_SECRET` | Legacy optional | Shared-secret fallback for `/api/partner/*` |
 | `OPENAI_API_KEY` | No | Optional AI profiles |
 | `OPENAI_MODEL` | No | SmartProBonoIP AI model override |
 | `GROQ_API_KEY` | No | Optional dedicated provider for Ermi/legal drafts; otherwise uses `OPENAI_API_KEY` |
