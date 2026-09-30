@@ -73,8 +73,10 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 |----------|----------|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes (pilot) | Public project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes (pilot) | Anon key (reads blocked after RLS migration) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes (pilot) | Server-only; powers `/api/records` and `/api/partner` |
-| `PARTNER_DASHBOARD_SECRET` | Yes (pilot) | Shared with partner admins only |
+| `SUPABASE_SECRET_KEY` | Yes (pilot) | Preferred modern server-only key; powers server data APIs |
+| `SUPABASE_SERVICE_ROLE_KEY` | Legacy fallback | Legacy server-role JWT during migration |
+| `PLATFORM_ADMIN_EMAIL` | Yes (admin reporting) | Authorized signed-in SmartProBono admin email(s) |
+| `PARTNER_DASHBOARD_SECRET` | Legacy optional | Shared-secret fallback only |
 | `OPENAI_API_KEY` | No | Optional AI profiles |
 | `NEXT_PUBLIC_APP_URL` | No | Canonical URL for exports |
 
@@ -89,7 +91,7 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 ## Pilot safety (Phase 9)
 
 - [ ] `supabase/umbrella_schema.sql` applied on project `smartprobono-platform` (RLS enabled; no anon policies on inventor data)
-- [ ] Service role key is **not** in client bundle or `NEXT_PUBLIC_*` (enforced at build time via `server-only` import in `src/lib/supabaseServer.ts` and `src/lib/db/records.ts`)
+- [ ] Supabase server credential (`SUPABASE_SECRET_KEY` preferred; legacy service role accepted) is stored as a hosting-provider secret and is **not** in the client bundle or `NEXT_PUBLIC_*`
 - [ ] Partner API routes (`/api/partner/*`) return 503 when Supabase is unconfigured and 401 without the secret
 - [ ] Disclaimer shows privacy notice + **two** consent checkboxes
 - [ ] Consent includes confidential-details language
@@ -102,7 +104,7 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 - [ ] Pre/post clarity scores save on profile page
 - [ ] Dashboard filters: IP signals, disclosure risk, referral type, clarity improvement
 - [ ] Follow-up 30/60/90 placeholders visible in metrics
-- [ ] Partner can unlock live data with `PARTNER_DASHBOARD_SECRET`
+- [ ] Authorized SmartProBono admin can sign in and load live partner data; legacy partner-secret fallback is optional
 - [ ] CSV export downloads from dashboard (`/api/partner/export.csv`)
 
 ## Supabase persistence (pilot)
@@ -115,7 +117,7 @@ Use this before showing to pilot partners or deploying for 10–25 inventors.
 - [ ] CSV export includes live non-demo records only (`is_demo = false`)
 - [ ] Demo records stay separate (`is_demo = true` or localStorage demo mode)
 - [ ] Another browser/incognito session cannot read a private packet (`GET /api/records/[id]` returns 404 without matching session)
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` is not in client bundle (grep build output / source for `NEXT_PUBLIC_*SERVICE*`)
+- [ ] Neither `SUPABASE_SECRET_KEY` nor `SUPABASE_SERVICE_ROLE_KEY` appears in client bundles or any `NEXT_PUBLIC_*` variable
 
 ## Smoke test script
 
