@@ -1,0 +1,60 @@
+name: Agent Task
+description: Request a scoped, reviewable research, design, coding, QA, or growth task
+title: "[Agent Task] "
+body:
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Responsible agent
+      options:
+        - Planner / coordinator
+        - Research
+        - Design
+        - Builder
+        - QA / security
+        - Growth / operations
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem and evidence
+      description: Link reproducible examples or anonymized screenshots; never paste invention disclosures, case records, credentials, or PII.
+      placeholder: "Who has the problem? What did you observe? What proves it?"
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      placeholder: "Explain the smallest measurable result we want."
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: "- [ ] Given ..., when ..., then ...\n- [ ] ... passes automated tests."
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk level
+      description: High-risk tasks require explicit founder review before implementation and release.
+      options:
+        - Low (documentation, isolated UI)
+        - Medium (flow logic, analytics)
+        - High (auth, legal guidance, privacy, RLS, data, money, deployment)
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Constraints and out of scope
+      placeholder: "No production changes. Use synthetic data. Do not contact external users."
+  - type: textarea
+    id: verification
+    attributes:
+      label: Test and measurement plan
+      placeholder: "How will we verify this change and know it helped?"

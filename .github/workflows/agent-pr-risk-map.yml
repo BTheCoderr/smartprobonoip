@@ -1,0 +1,51 @@
+name: Agent PR Risk Map
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  risk-map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Review touched paths and agent handoff
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner, repo, pull_number: pr.number, per_page: 100
+            });
+            const sensitive = files.filter((f) =>
+              /^(supabase\/|src\/lib\/(security|privacy|legal)\/|src\/app\/api\/|\.github\/workflows\/)/.test(f.filename)
+            );
+            const body = pr.body || '';
+            const isAgent = pr.head.ref.startsWith('agent/');
+            const required = [
+              '### What changed',
+              '### Verification',
+              '### Risk assessment',
+              '### Human approval and rollback'
+            ];
+            const missing = isAgent ? required.filter((heading) => !body.includes(heading)) : [];
+            const list = (items) => items.length
+              ? items.map((s) => '- ' + s).join('\n')
+              : '- None detected';
+            await core.summary
+              .addHeading('Agent PR risk map')
+              .addRaw('Branch: ' + pr.head.ref + '\n\n')
+              .addHeading('Sensitive paths requiring founder inspection', 3)
+              .addRaw(list(sensitive.map((f) => f.filename)) + '\n\n')
+              .addHeading('Agent handoff sections missing', 3)
+              .addRaw(list(missing) + '\n\n')
+              .addRaw('This report cannot approve a PR or enforce production release controls. Configure branch protection separately.\n')
+              .write();
+            if (missing.length) {
+              core.setFailed('Agent PR missing required review sections: ' + missing.join(', '));
+            }

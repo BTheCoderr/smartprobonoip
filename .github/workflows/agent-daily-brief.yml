@@ -1,0 +1,65 @@
+name: Agent Ops Daily Brief
+
+on:
+  schedule:
+    - cron: '0 13 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+  actions: read
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Update a single operating brief issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const title = '[Agent Ops] Daily operating brief';
+            const [allIssues, prs, runs] = await Promise.all([
+              github.paginate(github.rest.issues.listForRepo, { owner, repo, state: 'open', per_page: 100 }),
+              github.paginate(github.rest.pulls.list, { owner, repo, state: 'open', per_page: 100 }),
+              github.rest.actions.listWorkflowRunsForRepo({ owner, repo, per_page: 20 })
+            ]);
+            const current = allIssues.find((i) => !i.pull_request && i.title === title);
+            const issues = allIssues.filter((i) => !i.pull_request && i.title !== title);
+            const failures = runs.data.workflow_runs.filter((r) => r.conclusion === 'failure').slice(0, 5);
+            const bullet = (items) => items.length ? items.map((x) => '- ' + x).join('\n') : '- None in the checked set';
+            const safe = (s) => String(s || '').replace(/[\r\n]/g, ' ').slice(0, 180);
+            const body = [
+              '# SmartProBono agent operations',
+              '',
+              'Generated: ' + new Date().toISOString(),
+              '',
+              '**Source:** GitHub issues, open pull requests, and 20 recent Actions runs. This is not an AI analysis and includes no production customer, analytics or revenue data.',
+              '',
+              '## Open review queue (' + prs.length + ')',
+              bullet(prs.slice(0, 15).map((p) => '#' + p.number + ' ' + safe(p.title) + ' (' + p.html_url + ')')),
+              '',
+              '## Open task queue (' + issues.length + ')',
+              bullet(issues.slice(0, 15).map((i) => '#' + i.number + ' ' + safe(i.title) + ' (' + i.html_url + ')')),
+              '',
+              '## Failed runs (among 20 recent Actions runs)',
+              bullet(failures.map((r) => safe(r.name) + ' ' + r.html_url)),
+              '',
+              '## Human action',
+              '1. Review failed checks and sensitive-path flags on pending PRs.',
+              '2. Choose the highest-value scoped issue with objective acceptance criteria.',
+              '3. Approve or reject changes before production release.',
+              '',
+              'For product and customer outcomes, consult separately authorized analytics sources rather than inventing metrics.',
+              ''
+            ].join('\n');
+            if (current) {
+              await github.rest.issues.update({ owner, repo, issue_number: current.number, body });
+              core.info('Updated operating brief issue #' + current.number);
+            } else {
+              const created = await github.rest.issues.create({ owner, repo, title, body });
+              core.info('Created operating brief issue #' + created.data.number);
+            }

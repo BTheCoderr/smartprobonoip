@@ -1,0 +1,8 @@
+# Review routing only. CODEOWNERS does not enforce approvals unless branch protection is configured.
+* @BTheCoderr
+/supabase/ @BTheCoderr
+/src/lib/security/ @BTheCoderr
+/src/lib/privacy/ @BTheCoderr
+/src/lib/legal/ @BTheCoderr
+/src/app/api/ @BTheCoderr
+/.github/workflows/ @BTheCoderr
