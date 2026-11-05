@@ -54,3 +54,12 @@ Keep the GitHub no-LLM baseline free of model API secrets. Before turning on pai
 - \`docs/PRODUCTION_GO_NO_GO_CHECKLIST.md\`
 - \`docs/PRIVACY_IMPLEMENTATION_NOTES.md\`
 - \`docs/launch/stage-1-scorecard.md\`
+
+
+## Release order for PRs #27 and #22
+
+1. Review [security dependency PR #27](https://github.com/BTheCoderr/smartprobonoip/pull/27); its standalone CI and Netlify preview should pass. Merge it before the agent operating system PR.
+2. Review [agent operating system PR #22](https://github.com/BTheCoderr/smartprobonoip/pull/22), which is temporarily based on the security branch so the combined changes can be tested. After #27 merges, retarget #22 to \`main\` and confirm the current checks.
+3. Require status checks on protected \`main\` before merging #22. Then mark #22 ready and merge after founder review.
+4. Turn on one approved cloud coding agent and assign [smoke-test issue #24](https://github.com/BTheCoderr/smartprobonoip/issues/24) to it. The available GitHub App connection returned HTTP 403 when attempting to assign Copilot; use the GitHub issue Assignees UI on an eligible paid Copilot account, or a permitted user-token-based integration. This does not mean the agent has been activated.
+5. Review the resulting draft coding PR and test evidence. Keep deployment approval manual.
