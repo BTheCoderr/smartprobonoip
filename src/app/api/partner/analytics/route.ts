@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { computeAnalyticsDashboard } from "@/lib/analyticsMetrics";
+import { computePilotFunnelScorecard } from "@/lib/pilotScorecard";
 import { listAnalyticsEvents } from "@/lib/db/analytics";
 import { verifyPartnerSecret } from "@/lib/db/records";
 import {
@@ -36,5 +37,10 @@ export async function GET(request: Request) {
 
   const events = await listAnalyticsEvents(filters);
   const analytics = computeAnalyticsDashboard(events);
-  return NextResponse.json({ analytics, eventCount: events.length });
+  // The analytics query is capped at the most recent 5,000 events. Treat
+  // the resulting funnel as a limited snapshot when that cap is reached.
+  const pilotFunnel = computePilotFunnelScorecard(events, {
+    eventWindowLimited: events.length >= 5000,
+  });
+  return NextResponse.json({ analytics, pilotFunnel, eventCount: events.length });
 }
