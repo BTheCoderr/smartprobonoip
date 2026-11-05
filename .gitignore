@@ -41,3 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 test-output/
+
+# Playwright browser smoke-test outputs
+/playwright-report/
+/test-results/

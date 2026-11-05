@@ -1,0 +1,56 @@
+name: One-Time Browser Smoke Bootstrap
+
+on:
+  push:
+    branches:
+      - agent/issue-24-browser-smoke-20261105
+    paths:
+      - .github/workflows/one-time-smoke-bootstrap.yml
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    if: github.repository == 'BTheCoderr/smartprobonoip'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      NEXT_PUBLIC_SUPABASE_URL: ""
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ""
+      SUPABASE_SECRET_KEY: ""
+      SUPABASE_SERVICE_ROLE_KEY: ""
+      OPENAI_API_KEY: ""
+      GROQ_API_KEY: ""
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Resolve and lock browser testing dependencies using npm
+        run: npm install --package-lock-only --no-fund
+      - name: Install dependencies from generated lockfile
+        run: npm ci
+      - name: Verify application and production dependency safety
+        run: |
+          npm run lint
+          npm test
+          npm run test:copy-safety
+          npm run build
+          npm audit --omit=dev --audit-level=critical
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+      - name: Prove fictional Learn Prepare Connect flow
+        run: npm run test:smoke
+      - name: Publish reproducible lockfile and remove one-time bootstrap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git rm -- .github/workflows/one-time-smoke-bootstrap.yml
+          git diff --cached --check
+          git commit -m "Lock verified Playwright smoke test dependencies"
+          git push origin HEAD:agent/issue-24-browser-smoke-20261105
