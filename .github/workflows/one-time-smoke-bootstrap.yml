@@ -54,3 +54,4 @@ jobs:
           git diff --cached --check
           git commit -m "Lock verified Playwright smoke test dependencies"
           git push origin HEAD:agent/issue-24-browser-smoke-20261105
+# Retry after fixing an ambiguous CTA selector.
