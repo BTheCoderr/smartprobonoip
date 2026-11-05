@@ -16,6 +16,7 @@ import {
   type AnalyticsDashboardData,
 } from "@/lib/analyticsMetrics";
 import { type FeedbackMetrics } from "@/lib/feedbackMetrics";
+import type { PilotFunnelScorecard } from "@/lib/pilotScorecard";
 import { DEFAULT_FILTERS, filterRecords } from "@/lib/dashboardFilters";
 import { mergeWithDemoRecords } from "@/lib/demo";
 import { clarityDelta, computeMetrics } from "@/lib/metrics";
@@ -98,6 +99,7 @@ export default function DashboardClient() {
   const [partnerSecret, setPartnerSecretState] = useState("");
   const [secretSaved, setSecretSaved] = useState(false);
   const [analytics, setAnalytics] = useState<AnalyticsDashboardData | null>(null);
+  const [pilotFunnel, setPilotFunnel] = useState<PilotFunnelScorecard | null>(null);
   const [feedbackMetrics, setFeedbackMetrics] = useState<FeedbackMetrics | null>(
     null,
   );
@@ -230,14 +232,19 @@ export default function DashboardClient() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (active) {
-          setAnalytics(
-            (data as { analytics?: AnalyticsDashboardData } | null)?.analytics ??
-              null,
-          );
+          const result = data as {
+            analytics?: AnalyticsDashboardData;
+            pilotFunnel?: PilotFunnelScorecard;
+          } | null;
+          setAnalytics(result?.analytics ?? null);
+          setPilotFunnel(result?.pilotFunnel ?? null);
         }
       })
       .catch(() => {
-        if (active) setAnalytics(null);
+        if (active) {
+          setAnalytics(null);
+          setPilotFunnel(null);
+        }
       });
     return () => {
       active = false;
@@ -721,6 +728,58 @@ export default function DashboardClient() {
                   accent="navy"
                 />
               </div>
+            </Card>
+          ) : null}
+
+          {analyticsEnabled && pilotFunnel ? (
+            <Card>
+              <CardHeader
+                title="Verified inventor funnel"
+                subtitle="Distinct sessions explicitly tagged non-demo. Not verified unique people."
+              />
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <MetricCard
+                  label="Real intake sessions"
+                  value={pilotFunnel.confirmedRealIntakeSessions}
+                  hint="Explicit demo=false; distinct sessions"
+                />
+                <MetricCard
+                  label="Completed session signals"
+                  value={pilotFunnel.confirmedRealCompletedSessions}
+                  accent="teal"
+                  hint="Not proof of professional review"
+                />
+                <MetricCard
+                  label="Export sessions"
+                  value={pilotFunnel.confirmedRealExportSessions}
+                  accent="aqua"
+                  hint="Packet prepared, not confirmed delivered"
+                />
+                <MetricCard
+                  label="Started sessions completed"
+                  value={
+                    pilotFunnel.matchedCompletionPercent === null
+                      ? "—"
+                      : `${pilotFunnel.matchedCompletionPercent}%`
+                  }
+                  hint="Matched sessions in selected event window"
+                  accent="navy"
+                />
+              </div>
+              <p className="mt-4 text-xs leading-relaxed text-navy-600">
+                Excluded {pilotFunnel.excludedDemoEvents} demo events and
+                {" "}{pilotFunnel.unclassifiedEvents} unclassified events.
+                {" "}{pilotFunnel.unidentifiableRealEvents} real-tagged events
+                without a session identifier could not be counted.
+                {pilotFunnel.eventWindowLimited
+                  ? " Results are limited to the latest 5,000 event rows."
+                  : ""}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-navy-600">
+                Professional packet reviews and reviewer time saved: not yet
+                independently verified. A download or export does not prove
+                delivery, a professional relationship, or value created.
+              </p>
             </Card>
           ) : null}
 

@@ -8,11 +8,21 @@ Prove that SmartProBonoIP creates better prepared inventors and more useful prof
 
 | Metric | Target | Current | Definition |
 |---|---:|---:|---|
-| Completed real inventor packets | 100 | 0 | A non-demo user completes the core intake and produces a packet. |
-| IP professional pilot partners | 10 | 0 | A patent professional, firm, clinic, university program, or inventor-support organization agrees to refer users or review packets. |
-| Paying organizations | 5 | 0 | An organization pays for a pilot, sponsored access, or recurring program access. |
-| Strong case studies | 3 | 0 | A documented before-and-after story with permission, measurable value, and a professional or organizational quote. |
-| Partner referral rate | 30% | 0% | Percentage of activated pilot partners that refer at least one additional inventor after their first referral. |
+| Completed real inventor packets | 100 | Unverified | A non-demo user completes the core intake and produces a packet. |
+| IP professional pilot partners | 10 | Unverified | A patent professional, firm, clinic, university program, or inventor-support organization agrees to refer users or review packets. |
+| Paying organizations | 5 | Unverified | An organization pays for a pilot, sponsored access, or recurring program access. |
+| Strong case studies | 3 | Unverified | A documented before-and-after story with permission, measurable value, and a professional or organizational quote. |
+| Partner referral rate | 30% | Unverified | Percentage of activated pilot partners that refer at least one additional inventor after their first referral. |
+
+## Measurement status
+
+The "Current" column is **unverified** until authorized production data or
+documented partner evidence has been reviewed. Do not interpret absent
+verification as a confirmed zero or count example/demo activity as traction.
+The partner-authenticated dashboard has a separate strictly non-demo event
+funnel; it is not a verified count of unique inventors, completed partner
+reviews, or professional time saved. The event query may be truncated at
+5,000 rows, and missing demo flags are excluded rather than guessed.
 
 ## North star metric
 
