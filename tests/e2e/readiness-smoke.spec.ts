@@ -16,7 +16,7 @@ test("Learn → explicit consent → demo intake → generated packet → profes
   });
 
   await page.goto("/learn");
-  const start = page.getByRole("link", { name: "Start patent readiness" });
+  const start = page.getByRole("link", { name: "Start patent readiness", exact: true });
   await expect(start).toBeVisible();
   await start.click();
   await expect(page).toHaveURL(/\/disclaimer(?:\?|$)/);
