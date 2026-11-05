@@ -59,7 +59,7 @@ test("Learn → explicit consent → demo intake → generated packet → profes
 
   await expect(page).toHaveURL(/\/profile\/[^/?#]+/, { timeout: 30_000 });
   await expect(page.getByText(/HydroSeal/i).first()).toBeVisible();
-  await expect(page.getByText("Handoff packet")).toBeVisible();
+  await expect(page.getByText("Handoff packet", { exact: true })).toBeVisible();
 
   // Check that handoff UI can be opened, without emailing or sharing anything.
   await page.getByRole("button", { name: "Export professional JSON" }).first().click();
