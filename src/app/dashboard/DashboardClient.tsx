@@ -160,6 +160,12 @@ export default function DashboardClient() {
           const local = await getStore().listRecords();
           if (active) setRecords(local.filter((r) => !r.isDemo));
         }
+      } catch {
+        if (active) {
+          setPartnerAccessAuthorized(false);
+          setRecords([]);
+          setResearchMetrics(null);
+        }
       } finally {
         if (active) setLoading(false);
       }
