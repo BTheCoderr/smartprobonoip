@@ -16,7 +16,9 @@ Current system: a partner-only Supabase dashboard; the historical shared-secret 
 
 ## Critical launch gates
 
-- [ ] Configure PLATFORM_ADMIN_EMAIL securely in Netlify for **production**; never NEXT_PUBLIC_.
+A failed production deployment on November 6 left the prior release live. The first attempted admin-email configuration was incorrectly flagged as a secret; Netlify scans marked secret values in repository/build outputs and can block builds. This public business email was re-created as a nonsecret server-only setting. That is a plausible build-failure cause, **not a proven diagnosis without the full Netlify build log**. Do not disable secret scanning. Rebuild and inspect the first failure line before claiming the issue resolved.
+
+- [x] Configure PLATFORM_ADMIN_EMAIL as a **server-side, production-context** Netlify environment variable; never NEXT_PUBLIC_. The value is the public business address bferrell@smartprobono.org, so this is **not a secret value** and must not be flagged as a Netlify secret. Verified November 6, 2026; a new published deploy is still needed for runtime use.
 - [ ] Review the existing SUPABASE_SERVICE_ROLE_KEY Netlify environment variable: it was not marked secret during an audit on Nov 6. Mark a rotated replacement as a Netlify **Secret** and revoke the old key via an approved rotation plan. Never disclose either value in logs, browser bundles, GitHub issues, or screenshots.
 - [ ] Ensure Netlify functions runtime has proper service credentials and Supabase auth / magic-link redirect URLs.
 - [ ] Verify unauthorized GET /api/partner/analytics /metrics /feedback /export.csv /leads /leads/export.csv return 401 in an appropriately configured preview.
