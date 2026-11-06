@@ -23,6 +23,8 @@ export async function middleware(request: NextRequest) {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   const needsAuthRefresh =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/api/partner") ||
     pathname.startsWith("/organization") ||
     pathname.startsWith("/api/organization") ||
     pathname.startsWith("/workspace") ||

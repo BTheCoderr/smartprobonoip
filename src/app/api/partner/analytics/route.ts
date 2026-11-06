@@ -2,13 +2,12 @@ import { NextResponse } from "next/server";
 import { computeAnalyticsDashboard } from "@/lib/analyticsMetrics";
 import { computePilotFunnelScorecard } from "@/lib/pilotScorecard";
 import { listAnalyticsEvents } from "@/lib/db/analytics";
-import { verifyPartnerSecret } from "@/lib/db/records";
-import {
-  GENERIC_UNAUTHORIZED,
-  readPartnerSecretHeader,
-} from "@/lib/security/api";
+import { GENERIC_UNAUTHORIZED } from "@/lib/security/api";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
+import { authorizePartnerAdminRequest } from "@/lib/security/partnerAdminAuth";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   if (!isSupabaseServerConfigured()) {
@@ -22,7 +21,7 @@ export async function GET(request: Request) {
   );
   if (limited) return limited;
 
-  if (!verifyPartnerSecret(readPartnerSecretHeader(request))) {
+  if (!(await authorizePartnerAdminRequest(request))) {
     return NextResponse.json({ error: GENERIC_UNAUTHORIZED }, { status: 401 });
   }
 
