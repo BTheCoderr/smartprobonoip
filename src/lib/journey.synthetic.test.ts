@@ -5,6 +5,7 @@
  */
 import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
+import "./testing/serverModuleStubs";
 import { buildAttorneyExportCsv, buildAttorneyExportPacket } from "./attorneyExport";
 import { createIntakeConsent, parseIntakeConsent } from "./consent";
 import { DEMO_INVENTION } from "./demo";
