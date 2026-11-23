@@ -8,6 +8,7 @@ import type {
 import type { PortfolioSnapshot } from "../portfolio/types";
 import type { RoutingPreferences } from "../routing/dismissals";
 import type { TimelineEvent } from "../timeline/types";
+import type { IntakeConsent } from "../consent";
 
 export interface SaveInput {
   answers: IntakeAnswers;
@@ -15,6 +16,8 @@ export interface SaveInput {
   preClarity: number;
   isDemo?: boolean;
   tracking?: PilotTracking | null;
+  /** Disclaimer acceptance; required by the server for new non-demo records. */
+  consent?: IntakeConsent | null;
 }
 
 export type StoreBackend = "supabase" | "local";

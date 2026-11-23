@@ -3,6 +3,7 @@ import { getPlatformAuth } from "@/lib/account/auth";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { recordProjectEvent } from "@/lib/db/events";
 import { createRecord } from "@/lib/db/records";
+import { CONSENT_REQUIRED_ERROR, parseIntakeConsent } from "@/lib/consent";
 import { validateForGeneration } from "@/lib/intakeValidation";
 import {
   GENERIC_SERVER_ERROR,
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
       profile: ReadinessProfile;
       preClarity: number;
       isDemo?: boolean;
+      consent?: unknown;
       tracking?: {
         partnerSlug?: string;
         partnerName?: string;
@@ -62,6 +64,15 @@ export async function POST(request: Request) {
       );
     }
 
+    const isDemo = body.isDemo ?? false;
+    const consent = parseIntakeConsent(body.consent);
+    if (!isDemo && !consent) {
+      return NextResponse.json(
+        { error: CONSENT_REQUIRED_ERROR, code: "consent_required" },
+        { status: 422 },
+      );
+    }
+
     const auth = await getPlatformAuth().catch(() => null);
     const record = await createRecord({
       answers: body.answers,
@@ -80,6 +91,8 @@ export async function POST(request: Request) {
         type: "idea_created",
         occurredAt: record.createdAt,
         dedupeKey: "idea_created",
+        // Append-only record of the disclaimer version the inventor accepted.
+        metadata: consent ? { consent } : undefined,
       }),
       recordProjectEvent({
         projectId: record.id,
