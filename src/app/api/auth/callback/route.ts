@@ -1,12 +1,12 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { safeRelativeRedirect } from "@/lib/security/safeRedirect";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
 function safeNext(value: string | null): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/workspace";
-  return value;
+  return safeRelativeRedirect(value, "/workspace");
 }
 
 export async function GET(request: Request) {

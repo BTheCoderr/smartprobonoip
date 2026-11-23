@@ -3,10 +3,10 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { safeRelativeRedirect } from "@/lib/security/safeRedirect";
 
 function safeNext(value: string | null): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/workspace";
-  return value;
+  return safeRelativeRedirect(value, "/workspace");
 }
 
 export default function PlatformLoginClient() {
