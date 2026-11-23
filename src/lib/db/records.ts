@@ -23,6 +23,8 @@ import type { PilotTracking } from "@/lib/partnerTracking";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { verifyPartnerSecretTimingSafe } from "@/lib/security/api";
 import { logServerError } from "@/lib/security/safeLog";
+import type { IntakeConsent } from "@/lib/consent";
+import { timelineEventDetail } from "@/lib/timeline/eventTypes";
 
 const SMARTPROBONOIP_VENTURE_SLUG = "smartprobonoip";
 
@@ -227,6 +229,8 @@ export async function createRecord(input: {
   isDemo?: boolean;
   tracking?: PilotTracking | null;
   ownerUserId?: string | null;
+  /** Validated consent; persisted strictly with the record when present. */
+  consent?: IntakeConsent | null;
 }): Promise<ProjectRecord> {
   const sb = getSupabaseService();
   const {
@@ -237,6 +241,7 @@ export async function createRecord(input: {
     isDemo = false,
     tracking,
     ownerUserId = null,
+    consent = null,
   } = input;
   const ventureId = await getSmartProBonoIpVentureId(sb);
   await ensurePilotSession(
@@ -280,7 +285,7 @@ export async function createRecord(input: {
 
   const projectId = project.id as string;
 
-  const [answersRes, profileRes, metricsRes] = await Promise.all([
+  const [answersRes, profileRes, metricsRes, consentRes] = await Promise.all([
     sb.from("smartprobonoip_answers").insert({
       project_id: projectId,
       ...answersToColumns(answers),
@@ -294,9 +299,26 @@ export async function createRecord(input: {
       pre_clarity_score: preClarity,
       packet_completed: true,
     }),
+    // Consent audit record: the idea_created milestone (append-only table,
+    // migration 018) carries the accepted disclaimer version. Written in the
+    // same strict batch as the answers, so a failed write fails the request
+    // instead of being swallowed like ordinary timeline events.
+    consent
+      ? sb.from("smartprobonoip_project_events").insert({
+          project_id: projectId,
+          pilot_session_id: pilotSessionId,
+          event_type: "idea_created",
+          source: "user",
+          occurred_at: project.created_at as string,
+          detail: timelineEventDetail("idea_created"),
+          metadata: { consent },
+          dedupe_key: "idea_created",
+        })
+      : Promise.resolve({ error: null }),
   ]);
 
-  const writeError = answersRes.error || profileRes.error || metricsRes.error;
+  const writeError =
+    answersRes.error || profileRes.error || metricsRes.error || consentRes.error;
   if (writeError) throw new Error(writeError.message);
 
   // Keep the normalized factual record in sync without breaking the existing

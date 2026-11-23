@@ -82,17 +82,18 @@ export async function POST(request: Request) {
       isDemo: body.isDemo ?? false,
       tracking: body.tracking ?? null,
       ownerUserId: auth?.userId ?? null,
+      consent,
     });
 
     await Promise.all([
+      // With consent, createRecord already wrote idea_created strictly
+      // (carrying the consent record); this is a no-op on the dedupe index.
       recordProjectEvent({
         projectId: record.id,
         pilotSessionId: pilotSession,
         type: "idea_created",
         occurredAt: record.createdAt,
         dedupeKey: "idea_created",
-        // Append-only record of the disclaimer version the inventor accepted.
-        metadata: consent ? { consent } : undefined,
       }),
       recordProjectEvent({
         projectId: record.id,

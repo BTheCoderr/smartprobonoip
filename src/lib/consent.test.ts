@@ -46,7 +46,7 @@ test("regression: packet creation requires and persists consent server-side", ()
   assert.match(route, /const consent = parseIntakeConsent\(body\.consent\)/);
   assert.match(route, /if \(!isDemo && !consent\)/);
   assert.match(route, /code: "consent_required"/);
-  assert.match(route, /metadata: consent \? \{ consent \} : undefined/);
+  assert.match(route, /ownerUserId: auth\?\.userId \?\? null,\s*consent,/);
   const form = readFileSync("src/components/intake/IntakeForm.tsx", "utf8");
   assert.match(form, /consent: getIntakeConsent\(\)/);
 });
