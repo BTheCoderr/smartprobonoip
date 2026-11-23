@@ -10,6 +10,7 @@ import {
   updateProfile,
 } from "@/lib/db/records";
 import { isInventionStatus } from "@/lib/ideas/status";
+import { validateClientProfile } from "@/lib/profileValidation";
 import { MAX_INVENTION_TITLE_LENGTH } from "@/lib/ideas/title";
 import { inventionStatusLabel } from "@/lib/ideas/status";
 import { GENERIC_SERVER_ERROR } from "@/lib/security/api";
@@ -77,9 +78,13 @@ export async function PATCH(
         typeof body.preClarity === "number"
           ? body.preClarity
           : body.answers.preClarity;
+      const regenerated = validateClientProfile(body.profile, { generated: true });
+      if (!regenerated.ok) {
+        return NextResponse.json({ error: regenerated.error }, { status: 422 });
+      }
       await updateAnswersAndProfile(id, pilotSession, {
         answers: body.answers,
-        profile: body.profile,
+        profile: regenerated.profile,
         preClarity,
       });
       await recordProjectEvent({
@@ -148,7 +153,12 @@ export async function PATCH(
       });
     }
     if (body.profile) {
-      await updateProfile(id, pilotSession, body.profile);
+      // Inventor edits: shape, disclaimer and enum checks (their own words).
+      const edited = validateClientProfile(body.profile, { generated: false });
+      if (!edited.ok) {
+        return NextResponse.json({ error: edited.error }, { status: 422 });
+      }
+      await updateProfile(id, pilotSession, edited.profile);
       await recordProjectEvent({
         projectId: id,
         pilotSessionId: pilotSession,
