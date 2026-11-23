@@ -1,5 +1,6 @@
 import type { AnalyticsEventName } from "./events";
 import { campaignAttributionParams } from "./campaignAttribution";
+import { conversionFor, conversionParams, isPrivatePageConversion } from "./conversions";
 
 declare global {
   interface Window {
@@ -196,7 +197,8 @@ export function trackGtmEvent(
   metadata?: Record<string, string | number | boolean | undefined>,
 ): void {
   const gtmEvent = GTM_EVENT_MAP[eventName];
-  if (!gtmEvent) return;
+  const conversion = conversionFor(eventName);
+  if (!gtmEvent && !conversion) return;
 
   const route =
     typeof metadata?.route === "string"
@@ -207,9 +209,17 @@ export function trackGtmEvent(
 
   if (!isPublicGtmEventPath(route)) return;
 
-  pushDataLayer({
-    event: gtmEvent,
-    ...campaignAttributionParams(),
-    ...sanitizeGtmParams(metadata),
-  });
+  if (gtmEvent) {
+    pushDataLayer({
+      event: gtmEvent,
+      ...campaignAttributionParams(),
+      ...sanitizeGtmParams(metadata),
+    });
+  }
+
+  // Learn -> Prepare -> Connect conversions: fixed names, enum params only.
+  // Private-page conversions are sent server-side (measurementProtocol.ts).
+  if (conversion && !isPrivatePageConversion(conversion)) {
+    pushDataLayer({ event: conversion, ...conversionParams(metadata) });
+  }
 }

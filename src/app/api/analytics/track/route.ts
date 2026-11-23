@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
 import { isAnalyticsEventName, isServerRecordedEvent } from "@/lib/analytics/events";
 import { readAnalyticsHeaders, trackServerEvent } from "@/lib/analytics/server";
+import { forwardPrivateConversion } from "@/lib/analytics/forwardConversion";
 import { resolvePartnerName } from "@/lib/partnerTracking";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { isSupabaseServerConfigured } from "@/lib/supabaseServer";
 
 export async function POST(request: Request) {
-  if (!isSupabaseServerConfigured()) {
-    return new NextResponse(null, { status: 204 });
-  }
-
   const limited = enforceRateLimit(request, "analytics-track", RATE_LIMITS.analytics);
   if (limited) return limited;
 
@@ -33,6 +30,13 @@ export async function POST(request: Request) {
     // double counting and forged completions). Accept silently: older cached
     // clients may still send them.
     if (isServerRecordedEvent(body.eventName)) {
+      return new NextResponse(null, { status: 204 });
+    }
+
+    // Private-page conversions (Connect) go to GA4 without any page URL.
+    await forwardPrivateConversion(request, body.eventName, body.metadata);
+
+    if (!isSupabaseServerConfigured()) {
       return new NextResponse(null, { status: 204 });
     }
 
