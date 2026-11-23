@@ -34,8 +34,30 @@ export interface AnalyticsDashboardData {
   partnerPerformance: PartnerEventPerformance[];
 }
 
+function isDemoEvent(event: Pick<AnalyticsEventRow, "metadata">): boolean {
+  const demo = event.metadata?.demo ?? event.metadata?.isDemo;
+  return demo === true;
+}
+
+function sessionKey(event: AnalyticsEventRow): string {
+  if (event.pilot_session_id) return `session:${event.pilot_session_id}`;
+  if (event.anonymous_id) return `anon:${event.anonymous_id}`;
+  if (event.project_id) return `project:${event.project_id}`;
+  return `event:${event.id}`;
+}
+
+/**
+ * Funnel counts are distinct browser sessions per step, excluding demo
+ * activity. Raw row counts double-counted retries, duplicate client/server
+ * emits, and repeated page views.
+ */
 function countEvents(events: AnalyticsEventRow[], name: string): number {
-  return events.filter((e) => e.event_name === name).length;
+  const keys = new Set<string>();
+  for (const event of events) {
+    if (event.event_name !== name || isDemoEvent(event)) continue;
+    keys.add(sessionKey(event));
+  }
+  return keys.size;
 }
 
 function partnerLabel(row: AnalyticsEventRow): string {
@@ -58,6 +80,8 @@ export function computeAnalyticsDashboard(
     }
   >();
 
+  const seenPartnerEvents = new Set<string>();
+
   for (const event of events) {
     if (event.event_name === "intake_step_completed") {
       const step = Number(event.metadata?.stepNumber ?? event.metadata?.step);
@@ -71,6 +95,11 @@ export function computeAnalyticsDashboard(
       );
       fieldErrors.set(field, (fieldErrors.get(field) ?? 0) + 1);
     }
+
+    if (isDemoEvent(event)) continue;
+    const partnerKey = `${event.event_name}|${sessionKey(event)}`;
+    if (seenPartnerEvents.has(partnerKey)) continue;
+    seenPartnerEvents.add(partnerKey);
 
     const slug = event.partner_slug ?? "unattributed";
     const entry = partnerMap.get(slug) ?? {
