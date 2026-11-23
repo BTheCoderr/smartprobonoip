@@ -7,9 +7,11 @@ import { captureCampaignAttribution } from "@/lib/analytics/campaignAttribution"
 import {
   ga4MeasurementId,
   gtmContainerId,
+  publicGtmPaths,
   shouldLoadGtm,
   trackGtmPageView,
 } from "@/lib/analytics/gtm";
+import { buildGtmBootstrapScript } from "@/lib/analytics/gtmGuard";
 
 const CONSENT_KEY = "smartprobonoip:analytics-notice";
 
@@ -98,9 +100,10 @@ export function GtmProvider() {
   const pathname = usePathname();
   if (!containerId) return null;
 
-  // Never inject GTM on private routes. If it was injected earlier on a public
-  // page in this tab, next/script keeps a single copy (deduped by id) and the
-  // guard below switches GA4 collection off while on private routes.
+  // Never inject GTM on private routes. The bootstrap script also turns any
+  // in-app navigation from a public page to a private URL into a full page
+  // load, so GTM is never in memory while a private URL is in the address bar.
+  // PrivateRouteGuard is a second layer (ga-disable flag).
   const allowed = shouldLoadGtm(pathname);
 
   return (
@@ -109,13 +112,11 @@ export function GtmProvider() {
       {allowed ? (
         <>
           <Script id="gtm-init" strategy="afterInteractive">
-            {`
-              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-              })(window,document,'script','dataLayer','${containerId}');
-            `}
+            {buildGtmBootstrapScript({
+              containerId,
+              publicPaths: publicGtmPaths(),
+              ga4MeasurementId: ga4MeasurementId(),
+            })}
           </Script>
           <Suspense fallback={null}>
             <CampaignCapture />

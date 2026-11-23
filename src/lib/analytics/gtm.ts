@@ -123,6 +123,13 @@ export function isPublicMarketingPath(pathname: string): boolean {
   return PUBLIC_MARKETING_PATHS.has(pathname);
 }
 
+/** Public paths where the GTM container may run (used by the inline guard). */
+export function publicGtmPaths(): string[] {
+  return [...PUBLIC_FUNNEL_PATHS].filter(
+    (path) => !BLOCKED_PATH_PREFIXES.some((prefix) => path.startsWith(prefix)),
+  );
+}
+
 export function isPublicGtmEventPath(pathname: string): boolean {
   if (BLOCKED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     return false;
