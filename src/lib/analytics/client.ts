@@ -1,7 +1,7 @@
 import { getStoredTracking } from "@/lib/partnerTracking";
 import { getAnonymousId, pilotSessionHeaders } from "@/lib/pilotSession";
 import { trackGtmEvent } from "./gtm";
-import type { AnalyticsEventName } from "./events";
+import { isServerRecordedEvent, type AnalyticsEventName } from "./events";
 
 export interface TrackOptions {
   projectId?: string;
@@ -46,6 +46,8 @@ export function trackEvent(
 
   try {
     trackGtmEvent(eventName, buildGtmMetadata(options, tracking));
+    // Server routes record these milestones after the write succeeds.
+    if (isServerRecordedEvent(eventName)) return;
     void fetch("/api/analytics/track", {
       method: "POST",
       headers: {
