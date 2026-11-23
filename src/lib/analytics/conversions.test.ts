@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { beforeEach, test } from "node:test";
+import "../testing/serverModuleStubs";
 import { conversionFor, conversionParams, GA_CONVERSION_EVENTS } from "./conversions";
 import { isAnalyticsEventName } from "./events";
 import { buildMeasurementProtocolRequest, gaClientIdFromCookie } from "./measurementProtocol";
