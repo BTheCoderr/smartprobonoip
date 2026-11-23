@@ -4,6 +4,7 @@ import { trackServerEvent } from "@/lib/analytics/server";
 import { recordProjectEvent } from "@/lib/db/events";
 import { createRecord } from "@/lib/db/records";
 import { validateForGeneration } from "@/lib/intakeValidation";
+import { validateClientProfile } from "@/lib/profileValidation";
 import {
   GENERIC_SERVER_ERROR,
   isValidPilotSessionId,
@@ -54,6 +55,11 @@ export async function POST(request: Request) {
 
     assertIntakeAnswersWithinLimits(body.answers);
 
+    const checkedProfile = validateClientProfile(body.profile, { generated: true });
+    if (!checkedProfile.ok) {
+      return NextResponse.json({ error: checkedProfile.error }, { status: 422 });
+    }
+
     const validationErrors = validateForGeneration(body.answers);
     if (validationErrors.length > 0) {
       return NextResponse.json(
@@ -65,7 +71,7 @@ export async function POST(request: Request) {
     const auth = await getPlatformAuth().catch(() => null);
     const record = await createRecord({
       answers: body.answers,
-      profile: body.profile,
+      profile: checkedProfile.profile,
       preClarity: body.preClarity,
       pilotSessionId: pilotSession,
       isDemo: body.isDemo ?? false,
@@ -111,7 +117,7 @@ export async function POST(request: Request) {
       metadata: {
         demo: body.isDemo ?? false,
         clarityRating: body.preClarity,
-        signalKeys: body.profile.signals,
+        signalKeys: checkedProfile.profile.signals,
       },
     };
     await trackServerEvent("packet_generated", analyticsContext);
