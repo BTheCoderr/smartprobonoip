@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
+import "../testing/serverModuleStubs";
 import { createIntakeConsent } from "../consent";
 import { DEMO_INVENTION } from "../demo";
 import { generateProfile } from "../generateProfile";
