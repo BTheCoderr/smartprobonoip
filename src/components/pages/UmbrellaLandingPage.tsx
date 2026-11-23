@@ -10,7 +10,6 @@ import {
   SectionHeader,
   StampLabel,
 } from "@/components/ui/design";
-import { BRAND } from "@/lib/brand";
 import { ROUTES } from "@/lib/routes";
 
 const legalCapabilities = [
