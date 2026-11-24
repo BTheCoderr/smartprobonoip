@@ -23,8 +23,11 @@ export function SiteNav() {
           <Link href={ROUTES.forProfessionals} className="link-brand hidden rounded-md px-2 py-2 font-medium lg:inline-block">
             Professionals
           </Link>
-          <Link href="/#choose-a-path" className="btn-primary px-3 py-2 text-xs sm:px-4 sm:text-sm">
-            Choose a path
+          <Link href={ROUTES.ip} className="rounded-md px-2 py-2 text-xs font-medium sm:hidden">
+            IP
+          </Link>
+          <Link href={ROUTES.disclaimer} className="btn-primary px-3 py-2 text-xs sm:px-4 sm:text-sm">
+            Start packet
           </Link>
         </div>
       </nav>

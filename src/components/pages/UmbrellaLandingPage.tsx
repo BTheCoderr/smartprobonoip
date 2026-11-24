@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TrackedNavLink } from "@/components/analytics/TrackedNavLink";
 import { BrandMark } from "@/components/brand/BrandMark";
 import {
   CalloutCard,
@@ -9,7 +10,6 @@ import {
   SectionHeader,
   StampLabel,
 } from "@/components/ui/design";
-import { BRAND } from "@/lib/brand";
 import { ROUTES } from "@/lib/routes";
 
 const legalCapabilities = [
@@ -49,21 +49,47 @@ export default function UmbrellaLandingPage() {
         <PaperShell className="py-14 sm:py-20 lg:py-24">
           <div className="max-w-4xl">
             <BrandMark variant="full" size="lg" className="mb-6" />
-            <StampLabel tone="teal">ONE PREPARATION PLATFORM</StampLabel>
+            <StampLabel tone="teal">FREE · NO ACCOUNT NEEDED · ABOUT 15 MINUTES</StampLabel>
             <h1 className="headline-editorial mt-5 text-4xl leading-[1.05] sm:text-5xl lg:text-6xl">
-              {BRAND.platformTagline}
+              Get your invention ready for a patent professional.
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-relaxed text-muted-blue sm:text-xl">
-              {BRAND.platformPositioning}
+              Answer guided questions and leave with an organized IP readiness packet: what you built,
+              when you shared it, who helped, and the questions to bring to an expert. Preparation
+              only — not legal advice.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="#choose-a-path" className="btn-primary-lg">
-                Choose what you need help with
-              </Link>
-              <Link href={ROUTES.trust} className="btn-secondary-lg">
-                How SmartProBono stays in bounds
-              </Link>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <TrackedNavLink
+                href={ROUTES.disclaimer}
+                event="start_clicked"
+                className="btn-primary-lg w-full justify-center sm:w-auto"
+                ctaId="home_hero_start_ip"
+                pageSection="home_hero"
+              >
+                Start my invention packet
+              </TrackedNavLink>
+              <TrackedNavLink
+                href={ROUTES.sample}
+                event="sample_packet_viewed"
+                className="btn-secondary-lg w-full justify-center sm:w-auto"
+                ctaId="home_hero_sample"
+                pageSection="home_hero"
+              >
+                See a sample packet
+              </TrackedNavLink>
             </div>
+            <p className="mt-5 text-sm text-navy-600">
+              Have a legal issue or document instead?{" "}
+              <TrackedNavLink
+                href={ROUTES.legal}
+                event="landing_cta_clicked"
+                className="font-semibold text-teal-700 underline hover:text-teal-800"
+                ctaId="home_hero_legal"
+                pageSection="home_hero"
+              >
+                Go to Legal help
+              </TrackedNavLink>
+            </p>
           </div>
         </PaperShell>
       </section>
@@ -72,8 +98,8 @@ export default function UmbrellaLandingPage() {
         <PaperShell>
           <SectionHeader
             kicker="Choose a path"
-            title="One account direction. Different preparation workflows."
-            lead="Legal matters and IP records need different questions and safeguards. SmartProBono keeps those workflows distinct while giving them one clear home."
+            title="Pick the help you need"
+            lead="Inventions and legal matters need different questions and safeguards, so each has its own guided workflow."
           />
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             <article className="dossier-card flex h-full flex-col border-2 border-aqua-200/80">
@@ -94,9 +120,15 @@ export default function UmbrellaLandingPage() {
                   <li>• Prepare for legal aid, court staff, or attorney review</li>
                 </ul>
                 <div className="mt-auto pt-7">
-                  <Link href={ROUTES.legal} className="btn-primary">
+                  <TrackedNavLink
+                    href={ROUTES.legal}
+                    event="landing_cta_clicked"
+                    className="btn-primary"
+                    ctaId="home_choose_legal"
+                    pageSection="home_choose_path"
+                  >
                     Go to Legal Help
-                  </Link>
+                  </TrackedNavLink>
                 </div>
               </div>
             </article>
@@ -119,9 +151,15 @@ export default function UmbrellaLandingPage() {
                   <li>• Professional intake mapping and explicit sharing</li>
                 </ul>
                 <div className="mt-auto pt-7">
-                  <Link href={ROUTES.ip} className="btn-primary">
+                  <TrackedNavLink
+                    href={ROUTES.ip}
+                    event="landing_cta_clicked"
+                    className="btn-primary"
+                    ctaId="home_choose_ip"
+                    pageSection="home_choose_path"
+                  >
                     Go to SmartProBonoIP
-                  </Link>
+                  </TrackedNavLink>
                 </div>
               </div>
             </article>
@@ -177,8 +215,8 @@ export default function UmbrellaLandingPage() {
             <div>
               <SectionHeader
                 kicker="IP side"
-                title="SmartProBonoIP stays a real product inside the platform"
-                lead="The canonical IP record and professional handoff work remains intact rather than being flattened into a generic legal form."
+                title="Built for inventors heading to an expert"
+                lead="Capture the facts a patent professional asks for first, then choose exactly what to share."
               />
               <div className="mt-7 space-y-4">
                 {ipCapabilities.map((item) => (
@@ -196,9 +234,9 @@ export default function UmbrellaLandingPage() {
       <Section soft>
         <PaperShell>
           <MissionBand
-            kicker="Why combine them"
-            quote="One trusted front door. Specialized workflows behind it."
-            body="People should not have to understand SmartProBono's internal product structure before they can get started. The platform chooses the right preparation path while preserving the differences between legal matters and IP readiness."
+            kicker="Why prepare first"
+            quote="Walk into your first expert conversation organized."
+            body="Most first meetings are spent gathering basics: what the invention does, when it was shown publicly, and who contributed. SmartProBono helps you have those answers ready, so the conversation can focus on your options."
           />
           <div className="mt-8">
             <CalloutCard

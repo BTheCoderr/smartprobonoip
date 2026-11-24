@@ -126,6 +126,11 @@ body {
     @apply inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium text-navy-600 transition hover:bg-mist-100;
   }
 
+  /* Used by nav, workspace and partner links; previously undefined. */
+  .link-brand {
+    @apply text-navy-700 transition hover:text-teal-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500;
+  }
+
   .input-surface {
     @apply w-full rounded-md border border-mist-200 bg-white px-4 py-3 text-sm text-navy-900 shadow-[var(--shadow-soft)] outline-none transition placeholder:text-navy-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100;
   }
