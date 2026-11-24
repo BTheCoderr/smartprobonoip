@@ -3,6 +3,7 @@ import { getPlatformAuth } from "@/lib/account/auth";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { recordProjectEvent } from "@/lib/db/events";
 import { createRecord } from "@/lib/db/records";
+import { CONSENT_REQUIRED_ERROR, parseIntakeConsent } from "@/lib/consent";
 import { validateForGeneration } from "@/lib/intakeValidation";
 import {
   GENERIC_SERVER_ERROR,
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
       profile: ReadinessProfile;
       preClarity: number;
       isDemo?: boolean;
+      consent?: unknown;
       tracking?: {
         partnerSlug?: string;
         partnerName?: string;
@@ -62,6 +64,15 @@ export async function POST(request: Request) {
       );
     }
 
+    const isDemo = body.isDemo ?? false;
+    const consent = parseIntakeConsent(body.consent);
+    if (!isDemo && !consent) {
+      return NextResponse.json(
+        { error: CONSENT_REQUIRED_ERROR, code: "consent_required" },
+        { status: 422 },
+      );
+    }
+
     const auth = await getPlatformAuth().catch(() => null);
     const record = await createRecord({
       answers: body.answers,
@@ -71,9 +82,12 @@ export async function POST(request: Request) {
       isDemo: body.isDemo ?? false,
       tracking: body.tracking ?? null,
       ownerUserId: auth?.userId ?? null,
+      consent,
     });
 
     await Promise.all([
+      // With consent, createRecord already wrote idea_created strictly
+      // (carrying the consent record); this is a no-op on the dedupe index.
       recordProjectEvent({
         projectId: record.id,
         pilotSessionId: pilotSession,
