@@ -4,7 +4,14 @@ import Script from "next/script";
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { captureCampaignAttribution } from "@/lib/analytics/campaignAttribution";
-import { gtmContainerId, trackGtmPageView } from "@/lib/analytics/gtm";
+import {
+  ga4MeasurementId,
+  gtmContainerId,
+  publicGtmPaths,
+  shouldLoadGtm,
+  trackGtmPageView,
+} from "@/lib/analytics/gtm";
+import { buildGtmBootstrapScript } from "@/lib/analytics/gtmGuard";
 
 const CONSENT_KEY = "smartprobonoip:analytics-notice";
 
@@ -27,6 +34,21 @@ function GtmRouteTracker() {
     trackGtmPageView(pathname);
   }, [pathname]);
 
+  return null;
+}
+
+/**
+ * If GTM was loaded on a public page and the visitor then navigates in-app to
+ * a private route, switch GA4 collection off with Google's documented
+ * `ga-disable-<measurement id>` flag, and back on when they return.
+ */
+function PrivateRouteGuard({ pathname }: { pathname: string | null }) {
+  useEffect(() => {
+    const id = ga4MeasurementId();
+    if (!id) return;
+    (window as unknown as Record<string, unknown>)[`ga-disable-${id}`] =
+      !shouldLoadGtm(pathname);
+  }, [pathname]);
   return null;
 }
 
@@ -75,24 +97,34 @@ function AnalyticsNotice() {
 
 export function GtmProvider() {
   const containerId = gtmContainerId();
+  const pathname = usePathname();
   if (!containerId) return null;
+
+  // Never inject GTM on private routes. The bootstrap script also turns any
+  // in-app navigation from a public page to a private URL into a full page
+  // load, so GTM is never in memory while a private URL is in the address bar.
+  // PrivateRouteGuard is a second layer (ga-disable flag).
+  const allowed = shouldLoadGtm(pathname);
 
   return (
     <>
-      <Script id="gtm-init" strategy="afterInteractive">
-        {`
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','${containerId}');
-        `}
-      </Script>
-      <Suspense fallback={null}>
-        <CampaignCapture />
-        <GtmRouteTracker />
-      </Suspense>
-      <AnalyticsNotice />
+      <PrivateRouteGuard pathname={pathname} />
+      {allowed ? (
+        <>
+          <Script id="gtm-init" strategy="afterInteractive">
+            {buildGtmBootstrapScript({
+              containerId,
+              publicPaths: publicGtmPaths(),
+              ga4MeasurementId: ga4MeasurementId(),
+            })}
+          </Script>
+          <Suspense fallback={null}>
+            <CampaignCapture />
+            <GtmRouteTracker />
+          </Suspense>
+          <AnalyticsNotice />
+        </>
+      ) : null}
     </>
   );
 }
