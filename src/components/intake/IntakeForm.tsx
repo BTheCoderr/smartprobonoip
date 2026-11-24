@@ -36,6 +36,8 @@ import type {
   ReadinessProfile,
   SharingChannel,
 } from "@/lib/types";
+import { clearAcknowledgement, getIntakeConsent } from "@/lib/ack";
+import { CONSENT_REQUIRED_ERROR } from "@/lib/consent";
 
 const INITIAL: IntakeAnswers = {
   whatCreated: "",
@@ -392,6 +394,7 @@ export function IntakeForm() {
             preClarity: answers.preClarity,
             isDemo: demoActive,
             tracking: demoActive ? null : getStoredTracking(),
+            consent: getIntakeConsent(),
           });
       if (!demoActive) {
         markPortfolioPresent();
@@ -414,6 +417,10 @@ export function IntakeForm() {
       }
       router.push(`/smartprobonoip/profile/${record.id}#readiness-dashboard`);
     } catch (err) {
+      if (err instanceof Error && err.message === CONSENT_REQUIRED_ERROR) {
+        // Draft is autosaved; send the inventor back through the disclaimer.
+        clearAcknowledgement();
+      }
       setError(
         err instanceof Error
           ? err.message

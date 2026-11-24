@@ -3,7 +3,9 @@ import { getPlatformAuth } from "@/lib/account/auth";
 import { trackServerEvent } from "@/lib/analytics/server";
 import { recordProjectEvent } from "@/lib/db/events";
 import { createRecord } from "@/lib/db/records";
+import { CONSENT_REQUIRED_ERROR, parseIntakeConsent } from "@/lib/consent";
 import { validateForGeneration } from "@/lib/intakeValidation";
+import { validateClientProfile } from "@/lib/profileValidation";
 import {
   GENERIC_SERVER_ERROR,
   isValidPilotSessionId,
@@ -37,6 +39,7 @@ export async function POST(request: Request) {
       profile: ReadinessProfile;
       preClarity: number;
       isDemo?: boolean;
+      consent?: unknown;
       tracking?: {
         partnerSlug?: string;
         partnerName?: string;
@@ -54,6 +57,11 @@ export async function POST(request: Request) {
 
     assertIntakeAnswersWithinLimits(body.answers);
 
+    const checkedProfile = validateClientProfile(body.profile, { generated: true });
+    if (!checkedProfile.ok) {
+      return NextResponse.json({ error: checkedProfile.error }, { status: 422 });
+    }
+
     const validationErrors = validateForGeneration(body.answers);
     if (validationErrors.length > 0) {
       return NextResponse.json(
@@ -62,18 +70,30 @@ export async function POST(request: Request) {
       );
     }
 
+    const isDemo = body.isDemo ?? false;
+    const consent = parseIntakeConsent(body.consent);
+    if (!isDemo && !consent) {
+      return NextResponse.json(
+        { error: CONSENT_REQUIRED_ERROR, code: "consent_required" },
+        { status: 422 },
+      );
+    }
+
     const auth = await getPlatformAuth().catch(() => null);
     const record = await createRecord({
       answers: body.answers,
-      profile: body.profile,
+      profile: checkedProfile.profile,
       preClarity: body.preClarity,
       pilotSessionId: pilotSession,
       isDemo: body.isDemo ?? false,
       tracking: body.tracking ?? null,
       ownerUserId: auth?.userId ?? null,
+      consent,
     });
 
     await Promise.all([
+      // With consent, createRecord already wrote idea_created strictly
+      // (carrying the consent record); this is a no-op on the dedupe index.
       recordProjectEvent({
         projectId: record.id,
         pilotSessionId: pilotSession,
@@ -111,7 +131,7 @@ export async function POST(request: Request) {
       metadata: {
         demo: body.isDemo ?? false,
         clarityRating: body.preClarity,
-        signalKeys: body.profile.signals,
+        signalKeys: checkedProfile.profile.signals,
       },
     };
     await trackServerEvent("packet_generated", analyticsContext);

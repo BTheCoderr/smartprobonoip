@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ROUTES } from "@/lib/routes";
+import { safeRelativeRedirect } from "@/lib/security/safeRedirect";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
@@ -14,7 +15,10 @@ export async function GET(request: Request) {
 
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const next = requestUrl.searchParams.get("next") ?? ROUTES.organization;
+  const next = safeRelativeRedirect(
+    requestUrl.searchParams.get("next"),
+    ROUTES.organization,
+  );
 
   if (!code) {
     return NextResponse.redirect(new URL(ROUTES.organizationLogin, request.url));

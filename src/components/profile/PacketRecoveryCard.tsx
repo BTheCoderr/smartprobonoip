@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RecoveryCard } from "@/components/ui/design";
 import { RECOVERY_COPY } from "@/lib/copy";
 import { trackEvent } from "@/lib/analytics/client";
 import { pilotSessionHeaders } from "@/lib/pilotSession";
 import { isApiStoreAvailable } from "@/lib/store/api";
+import { ROUTES } from "@/lib/routes";
 import type { ProjectRecord } from "@/lib/types";
 
 export function PacketRecoveryCard({ record }: { record: ProjectRecord }) {
@@ -131,6 +133,17 @@ export function PacketRecoveryCard({ record }: { record: ProjectRecord }) {
           </button>
         </div>
       ) : null}
+
+      <p className="mt-5 text-sm text-navy-600" data-testid="packet-save-account">
+        Switching devices or browsers? This packet is saved to this browser.{" "}
+        <Link
+          href={`${ROUTES.signIn}?next=${encodeURIComponent(ROUTES.workspace)}`}
+          className="font-semibold text-teal-700 underline hover:text-teal-800"
+        >
+          Sign in with your email
+        </Link>{" "}
+        to keep it in your workspace on any device.
+      </p>
 
       {recoveryUrl ? (
         <div className="mt-5 rounded-xl border border-mist-200 bg-white p-4">
