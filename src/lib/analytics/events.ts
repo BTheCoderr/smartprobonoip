@@ -1,5 +1,8 @@
 export const ANALYTICS_EVENTS = [
   "landing_viewed",
+  "landing_cta_clicked",
+  "learn_started",
+  "learn_completed",
   "sample_packet_viewed",
   "sample_pdf_downloaded",
   "pilot_page_viewed",

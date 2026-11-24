@@ -1,12 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { trackEvent } from "@/lib/analytics/client";
 import Link from "next/link";
 import { LEARN_COPY } from "@/lib/copy";
 import { ROUTES } from "@/lib/routes";
 
 export function LearnJourney() {
   const [openIndex, setOpenIndex] = useState(0);
+  const learnStarted = useRef(false);
+
+  function markLearnStarted() {
+    if (learnStarted.current) return;
+    learnStarted.current = true;
+    trackEvent("learn_started", { metadata: { pageSection: "learn_modules" } });
+  }
+
+  function markLearnCompleted(pageSection: string) {
+    trackEvent("learn_completed", { metadata: { pageSection } });
+  }
 
   return (
     <div className="space-y-8">
@@ -33,7 +45,11 @@ export function LearnJourney() {
           ))}
         </ol>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href={ROUTES.disclaimer} className="btn-primary text-sm">
+          <Link
+            href={ROUTES.disclaimer}
+            className="btn-primary text-sm"
+            onClick={() => markLearnCompleted("learn_journey_top")}
+          >
             Start your readiness packet
           </Link>
           <Link href={ROUTES.sample} className="btn-secondary text-sm">
@@ -49,7 +65,10 @@ export function LearnJourney() {
             <div key={module.id} className="paper-card overflow-hidden">
               <button
                 type="button"
-                onClick={() => setOpenIndex(open ? -1 : index)}
+                onClick={() => {
+                  markLearnStarted();
+                  setOpenIndex(open ? -1 : index);
+                }}
                 className="flex w-full items-start justify-between gap-4 px-5 py-4 text-left sm:px-6"
               >
                 <div>
@@ -85,6 +104,7 @@ export function LearnJourney() {
                         : ROUTES.disclaimer
                     }
                     className="btn-ghost mt-4 px-0 text-sm"
+                    onClick={() => markLearnCompleted("learn_module_cta")}
                   >
                     {'ctaLabel' in module && module.ctaLabel
                       ? module.ctaLabel

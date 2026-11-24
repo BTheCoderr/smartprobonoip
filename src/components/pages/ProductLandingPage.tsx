@@ -55,6 +55,8 @@ export default function ProductLandingPage() {
             href={ROUTES.disclaimer}
             event="start_clicked"
             className="btn-primary"
+            ctaId="ip_hero_start"
+            pageSection="ip_hero"
           >
             Start patent readiness
           </TrackedNavLink>
@@ -62,6 +64,8 @@ export default function ProductLandingPage() {
             href={ROUTES.sample}
             event="sample_packet_viewed"
             className="btn-secondary"
+            ctaId="ip_hero_sample"
+            pageSection="ip_hero"
           >
             {LANDING_COPY.ctaSample}
           </TrackedNavLink>
@@ -127,6 +131,8 @@ export default function ProductLandingPage() {
               href={ROUTES.disclaimerDemo}
               event="demo_started"
               className="btn-ghost"
+              ctaId="ip_proof_demo"
+              pageSection="ip_product_proof"
             >
               Try demo intake
             </TrackedNavLink>
@@ -159,6 +165,8 @@ export default function ProductLandingPage() {
               href={ROUTES.disclaimer}
               event="start_clicked"
               className="btn-primary"
+              ctaId="ip_how_it_works_start"
+              pageSection="ip_how_it_works"
             >
               {LANDING_COPY.ctaPrimary}
             </TrackedNavLink>
@@ -307,6 +315,8 @@ export default function ProductLandingPage() {
               href={ROUTES.disclaimer}
               event="start_clicked"
               className="btn-primary"
+              ctaId="ip_how_it_works_start"
+              pageSection="ip_how_it_works"
             >
               {LANDING_COPY.ctaPrimary}
             </TrackedNavLink>
