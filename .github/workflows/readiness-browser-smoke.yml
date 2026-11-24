@@ -9,7 +9,9 @@ permissions:
 
 jobs:
   browser-smoke:
-    runs-on: ubuntu-latest
+    # ubuntu-latest moved to 26.04, which Playwright 1.56 does not support
+    # ("Playwright does not support chromium on ubuntu26.04-x64").
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
       CI: "true"
