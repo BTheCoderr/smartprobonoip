@@ -9,6 +9,17 @@ declare global {
 
 const PUBLIC_MARKETING_PATHS = new Set([
   "/",
+  "/ip",
+  "/legal",
+  "/protect",
+  "/protect/patent",
+  "/protect/trademark",
+  "/protect/copyright",
+  "/protect/trade-secret",
+  "/protect/unsure",
+  "/for-professionals/playbook",
+  "/privacy",
+  "/terms",
   "/pilot",
   "/sample",
   "/trust",
@@ -112,11 +123,35 @@ export function isPublicMarketingPath(pathname: string): boolean {
   return PUBLIC_MARKETING_PATHS.has(pathname);
 }
 
+/** Public paths where the GTM container may run (used by the inline guard). */
+export function publicGtmPaths(): string[] {
+  return [...PUBLIC_FUNNEL_PATHS].filter(
+    (path) => !BLOCKED_PATH_PREFIXES.some((prefix) => path.startsWith(prefix)),
+  );
+}
+
 export function isPublicGtmEventPath(pathname: string): boolean {
   if (BLOCKED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     return false;
   }
   return PUBLIC_FUNNEL_PATHS.has(pathname);
+}
+
+/**
+ * Whether the GTM container may be loaded for this pathname. GTM (and any GA4
+ * tag inside it) must never load on private routes such as packets,
+ * /recover?token=..., workspaces, dashboards, or organization pages: a GA4
+ * tag records page_location including the query string.
+ */
+export function shouldLoadGtm(pathname: string | null | undefined): boolean {
+  if (!pathname) return false;
+  return isPublicGtmEventPath(pathname);
+}
+
+/** Optional GA4 measurement ID used only for the documented ga-disable opt-out flag. */
+export function ga4MeasurementId(): string | null {
+  const id = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID?.trim();
+  return id && /^G-[A-Z0-9]+$/.test(id) ? id : null;
 }
 
 function pushDataLayer(payload: Record<string, unknown>): void {

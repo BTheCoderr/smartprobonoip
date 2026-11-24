@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import ProductLandingPage from "@/components/pages/ProductLandingPage";
-import { PORTFOLIO_MARKER_COOKIE } from "@/lib/portfolio/marker";
-import { ROUTES } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "SmartProBonoIP — IP Readiness Platform",
@@ -13,13 +9,9 @@ export const metadata: Metadata = {
 
 /**
  * The IP product has its own entry point inside the SmartProBono umbrella.
- * Returning inventors can still go directly to their inventor workspace.
+ * Returning inventors are redirected to their workspace in middleware, so
+ * this page can be statically rendered and cached at the CDN.
  */
-export default async function IpHomePage() {
-  const cookieStore = await cookies();
-  if (cookieStore.get(PORTFOLIO_MARKER_COOKIE)?.value === "1") {
-    redirect(ROUTES.workspace);
-  }
-
+export default function IpHomePage() {
   return <ProductLandingPage />;
 }

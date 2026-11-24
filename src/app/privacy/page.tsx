@@ -60,8 +60,7 @@ export default function PrivacyPage() {
           </a>
         </div>
         <p className="mt-4 text-xs text-navy-500">
-          Contact: {LEGAL.privacyEmail} — update before production pilot if
-          needed.
+          Contact: {LEGAL.privacyEmail}
         </p>
       </Card>
 

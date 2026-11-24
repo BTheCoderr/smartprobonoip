@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { RecoveryCard } from "@/components/ui/design";
@@ -16,6 +16,13 @@ function RecoverForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [token, setToken] = useState(searchParams.get("token") ?? "");
+
+  // Keep the bearer token out of the address bar, browser history, and any
+  // analytics or referrer that might later read location.href.
+  useEffect(() => {
+    if (!window.location.search.includes("token=")) return;
+    window.history.replaceState(window.history.state, "", window.location.pathname);
+  }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

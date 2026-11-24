@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAnalyticsEventName } from "@/lib/analytics/events";
+import { isAnalyticsEventName, isServerRecordedEvent } from "@/lib/analytics/events";
 import { readAnalyticsHeaders, trackServerEvent } from "@/lib/analytics/server";
 import { resolvePartnerName } from "@/lib/partnerTracking";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
@@ -27,6 +27,13 @@ export async function POST(request: Request) {
 
     if (!body.eventName || !isAnalyticsEventName(body.eventName)) {
       return NextResponse.json({ error: "Invalid event" }, { status: 400 });
+    }
+
+    // Server-recorded milestones are never accepted from browsers (prevents
+    // double counting and forged completions). Accept silently: older cached
+    // clients may still send them.
+    if (isServerRecordedEvent(body.eventName)) {
+      return new NextResponse(null, { status: 204 });
     }
 
     const headers = readAnalyticsHeaders(request);

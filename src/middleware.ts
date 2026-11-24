@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { PORTFOLIO_MARKER_COOKIE } from "@/lib/portfolio/marker";
 import { applySecurityHeaders } from "@/lib/security/headers";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
@@ -13,6 +14,19 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/smartprobonoip/smartprobonoip/")
   ) {
     return new NextResponse(null, { status: 404 });
+  }
+
+  // Returning inventors go straight to their workspace. Done here (not in the
+  // page) so /ip stays statically rendered and served from the CDN.
+  if (
+    pathname === "/ip" &&
+    request.cookies.get(PORTFOLIO_MARKER_COOKIE)?.value === "1"
+  ) {
+    const redirect = NextResponse.redirect(new URL("/workspace", request.url));
+    applySecurityHeaders(redirect.headers, {
+      includeHsts: request.nextUrl.hostname !== "localhost",
+    });
+    return redirect;
   }
 
   let response = NextResponse.next({

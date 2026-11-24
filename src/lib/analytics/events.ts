@@ -98,3 +98,33 @@ const EVENT_SET = new Set<string>(ANALYTICS_EVENTS);
 export function isAnalyticsEventName(value: string): value is AnalyticsEventName {
   return EVENT_SET.has(value);
 }
+
+/**
+ * Milestones the server records itself after the underlying write succeeds.
+ * The browser must not also send these to /api/analytics/track: doing so
+ * double-counted every completion and let anonymous clients forge milestones.
+ * Browser calls still reach GTM (public marketing paths only) via trackEvent.
+ */
+export const SERVER_RECORDED_EVENTS = [
+  "intake_completed",
+  "packet_generated",
+  "clarity_before_recorded",
+  "clarity_after_recorded",
+  "csv_exported",
+  "feedback_submitted",
+  "followup_requested",
+  "interest_submitted",
+  "organization_referral_shared",
+  "recommendation_dismissals_restored",
+  "recovery_claim_failed",
+  "recovery_claim_succeeded",
+  "recovery_email_requested",
+  "recovery_link_created",
+  "timeline_saved",
+] as const satisfies readonly AnalyticsEventName[];
+
+const SERVER_RECORDED_SET = new Set<string>(SERVER_RECORDED_EVENTS);
+
+export function isServerRecordedEvent(value: string): boolean {
+  return SERVER_RECORDED_SET.has(value);
+}
